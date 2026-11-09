@@ -1,12 +1,8 @@
 ---
 import PanelLayout from '../../layouts/PanelLayout.astro';
-import PaginaPendiente from '../../components/panel/PaginaPendiente.astro';
+import { FormularioReporte } from '../../components/FormularioReporte';
 ---
 
 <PanelLayout titulo="Nuevo reporte" roles={['ciudadano']}>
-  <PaginaPendiente
-    titulo="Formulario web en preparación"
-    texto="Por ahora reporta desde la app móvil, que funciona sin internet. El formulario web usará los mismos pasos: tipo de emergencia, foto, ubicación y familia afectada."
-    endpoint="POST /reportes  ·  POST /reportes/{id}/foto"
-  />
+  <FormularioReporte client:only="react" />
 </PanelLayout>

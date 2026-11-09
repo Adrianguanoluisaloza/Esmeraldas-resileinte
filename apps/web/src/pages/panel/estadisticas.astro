@@ -1,12 +1,9 @@
 ---
 import PanelLayout from '../../layouts/PanelLayout.astro';
-import PaginaPendiente from '../../components/panel/PaginaPendiente.astro';
+import { Estadisticas } from '../../components/Estadisticas';
+import '../../styles/operaciones.css';
 ---
 
 <PanelLayout titulo="Estadísticas" roles={['operador_911', 'admin']}>
-  <PaginaPendiente
-    titulo="Indicadores del COE, pronto"
-    texto="Totales por estado, personas afectadas, necesidades acumuladas y sectores con recurrencia para priorizar."
-    endpoint="GET /estadisticas  ·  GET /estadisticas/recurrencia"
-  />
+  <Estadisticas client:only="react" />
 </PanelLayout>

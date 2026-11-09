@@ -30,10 +30,7 @@ const rutaActual = Astro.url.pathname.replace(/\/+$/, '') || '/';
     <aside class="pn-lateral" id="pn-lateral" aria-label="Menú principal">
       <a class="pn-marca" href="/">
         <span class="pn-marca__logo" aria-hidden="true"></span>
-        <span class="pn-marca__texto">
-          <strong>Esmeraldas Resiliente</strong>
-          <span>Gestión de emergencias</span>
-        </span>
+        <strong class="pn-marca__texto">Esmeraldas Resiliente</strong>
       </a>
 
       <nav class="pn-nav">
@@ -50,7 +47,6 @@ const rutaActual = Astro.url.pathname.replace(/\/+$/, '') || '/';
                   >
                     <IconoNav nombre={item.icono} />
                     <span>{item.etiqueta}</span>
-                    {item.pendiente && <span class="pn-pronto">Pronto</span>}
                   </a>
                 </li>
               ))}
@@ -62,9 +58,8 @@ const rutaActual = Astro.url.pathname.replace(/\/+$/, '') || '/';
       <div class="pn-lateral__pie">
         <button class="er-btn er-btn--fantasma er-btn--sm er-btn--bloque" type="button" id="pn-tema">
           <MoonStar size={16} aria-hidden="true" />
-          <span id="pn-tema-texto">Tema: automático</span>
+          <span id="pn-tema-texto">Automático</span>
         </button>
-        <p class="pn-osm">Mapas © colaboradores de OpenStreetMap</p>
       </div>
     </aside>
 
@@ -77,11 +72,9 @@ const rutaActual = Astro.url.pathname.replace(/\/+$/, '') || '/';
           <span class="er-sr">Abrir menú</span>
         </button>
         <h1 class="pn-titulo">{titulo}</h1>
-        <span class="er-insignia er-insignia--origen-simulado pn-prototipo">Prototipo · datos simulados</span>
         <div class="pn-sesion">
           <span class="pn-sesion__nombre" id="pn-nombre"></span>
           <span class="er-insignia" id="pn-rol"></span>
-          <span class="pn-sesion__expira er-num" id="pn-expira" hidden></span>
           <button class="er-btn er-btn--secundario er-btn--sm" type="button" id="pn-salir">
             <LogOut size={16} aria-hidden="true" />
             <span>Salir</span>
@@ -119,21 +112,9 @@ const rutaActual = Astro.url.pathname.replace(/\/+$/, '') || '/';
     document.getElementById('pn-nombre')!.textContent = sesion.nombre;
     document.getElementById('pn-rol')!.textContent = ETIQUETA_ROL[sesion.rol] ?? sesion.rol;
 
-    // Cuenta regresiva de la sesión (igual que el prototipo móvil), si el token trae "exp".
-    const expira = document.getElementById('pn-expira')!;
+    // Sesión vencida: se cierra sola.
     const exp = leerExp(obtenerTokenActual());
-    if (exp) {
-      expira.hidden = false;
-      const pintar = () => {
-        const s = Math.max(0, exp - Math.floor(Date.now() / 1000));
-        const h = Math.floor(s / 3600);
-        const m = Math.floor((s % 3600) / 60);
-        expira.textContent = h > 0 ? `Sesión: ${h} h ${m} min` : `Sesión: ${m}:${String(s % 60).padStart(2, '0')}`;
-        if (s === 0) salir();
-      };
-      pintar();
-      setInterval(pintar, 1000);
-    }
+    if (exp) setTimeout(salir, Math.max(0, exp * 1000 - Date.now()));
   }
 
   function leerExp(token: string | null): number | null {
@@ -166,7 +147,7 @@ const rutaActual = Astro.url.pathname.replace(/\/+$/, '') || '/';
 
   // Tema: automático -> claro -> oscuro.
   const ORDEN = ['auto', 'light', 'dark'] as const;
-  const TEXTO = { auto: 'Tema: automático', light: 'Tema: claro', dark: 'Tema: oscuro' };
+  const TEXTO = { auto: 'Automático', light: 'Claro', dark: 'Oscuro' };
   const leerTema = (): (typeof ORDEN)[number] => {
     try {
       const t = localStorage.getItem('er-tema');

@@ -1,5 +1,5 @@
 import { PUNTOS_SERVICIO_INICIALES, REPORTES_INICIALES } from '../data/mockEscenario';
-import type { EstadoReporte, PuntoServicioMapa, ReporteMapa } from '../types/mapa';
+import type { EstadoReporte, Gravedad, Necesidad, PuntoServicioMapa, ReporteMapa, TipoIncidente } from '../types/mapa';
 import { obtenerTokenActual } from './auth';
 import { semaforoCupo } from './catalogos';
 
@@ -21,6 +21,7 @@ export type CodigoApi =
   | 'CONFLICTO'
   | 'TRANSICION_INVALIDA'
   | 'NO_IMPLEMENTADO'
+  | 'DEMASIADAS_PETICIONES'
   | 'ERROR_INTERNO'
   | 'SIN_CONEXION';
 
@@ -38,7 +39,8 @@ export const MENSAJE_ERROR: Record<CodigoApi, string> = {
   NO_ENCONTRADO: 'No encontramos ese registro.',
   CONFLICTO: 'Ese registro ya existe.',
   TRANSICION_INVALIDA: 'Ese cambio de estado no está permitido.',
-  NO_IMPLEMENTADO: 'Esta función estará disponible pronto.',
+  NO_IMPLEMENTADO: 'Función no disponible.',
+  DEMASIADAS_PETICIONES: 'Demasiados intentos. Espera un momento.',
   ERROR_INTERNO: 'El servidor tuvo un problema. Intenta otra vez.',
   SIN_CONEXION: 'Sin conexión con el servidor.',
 };
@@ -154,4 +156,137 @@ export function urlTiempoReal(): string | null {
   const token = obtenerTokenActual();
   if (!token) return null;
   return `${BASE.replace(/^http/, 'ws')}/ws?token=${encodeURIComponent(token)}`;
+}
+
+// ── Reportes: detalle y creación ──────────────────────────────────────────────────────────────────
+
+export interface CambioHistorial {
+  id: string;
+  estado_anterior: EstadoReporte;
+  estado_nuevo: EstadoReporte;
+  operador_nombre: string | null;
+  nota: string | null;
+  fecha: string;
+}
+
+export function obtenerReporte(id: string) {
+  return pedir<ReporteMapa & { historial: CambioHistorial[] }>(`/reportes/${encodeURIComponent(id)}`);
+}
+
+export interface NuevoReporte {
+  id: string;
+  tipo: TipoIncidente;
+  descripcion: string;
+  gravedad: Gravedad;
+  latitud: number;
+  longitud: number;
+  precision_m?: number | null;
+  capturado_en: string;
+  personas_afectadas?: number;
+  ninos?: number;
+  adultos_mayores?: number;
+  necesidades?: Necesidad[];
+}
+
+export function crearReporte(datos: NuevoReporte) {
+  return pedir<ReporteMapa>('/reportes', { method: 'POST', body: JSON.stringify(datos) });
+}
+
+export function subirFoto(id: string, archivo: Blob) {
+  const cuerpo = new FormData();
+  cuerpo.append('foto', archivo, `${id}.jpg`);
+  return pedir<{ ruta: string }>(`/reportes/${encodeURIComponent(id)}/foto`, { method: 'POST', body: cuerpo });
+}
+
+// ── Alertas y vías ──────────────────────────────────────────────────────────────────────────────
+
+export interface Alerta {
+  id: string;
+  sector: string;
+  mensaje: string;
+  nivel: Gravedad;
+  origen: 'oficial' | 'simulada';
+  creado_en: string;
+  vigente: boolean;
+}
+
+export function listarAlertas(todas = false) {
+  return pedir<Alerta[]>(`/alertas${todas ? '?todas=true' : ''}`);
+}
+
+export function emitirAlerta(datos: Pick<Alerta, 'sector' | 'mensaje' | 'nivel' | 'origen'>) {
+  return pedir<Alerta>('/alertas', { method: 'POST', body: JSON.stringify(datos) });
+}
+
+export function cerrarAlerta(id: string) {
+  return pedir<Alerta>(`/alertas/${encodeURIComponent(id)}/cerrar`, { method: 'PATCH' });
+}
+
+export type EstadoVia = 'habilitada' | 'parcial' | 'bloqueada';
+
+export function cambiarVia(id: string, estado: EstadoVia) {
+  return pedir<Record<string, unknown>>(`/vias/${encodeURIComponent(id)}/estado`, { method: 'PATCH', body: JSON.stringify({ estado }) });
+}
+
+// ── Indicadores y asistencia ────────────────────────────────────────────────────────────────────
+
+export interface Estadisticas {
+  total_reportes: number;
+  pendientes: number;
+  en_proceso: number;
+  atendidos: number;
+  criticos: number;
+  personas_afectadas_total: number;
+  ninos_total: number;
+  adultos_mayores_total: number;
+  vias_bloqueadas_total: number;
+  albergues_disponibles: number;
+  necesidades_acumuladas: Record<Necesidad, number>;
+}
+
+export interface SectorPrioridad {
+  sector: string;
+  cantidad: number;
+  abiertos: number;
+  personas_afectadas: number;
+  gravedad_promedio: Gravedad;
+  puntaje: number;
+}
+
+export function estadisticas() {
+  return pedir<Estadisticas>('/estadisticas');
+}
+
+export function prioridadSectores() {
+  return pedir<SectorPrioridad[]>('/estadisticas/recurrencia');
+}
+
+export interface NecesidadPendiente {
+  reporte_id: string;
+  necesidad: Necesidad;
+  sector: string | null;
+  personas: number;
+  gravedad: Gravedad;
+  prioridad: number;
+}
+
+export interface Entrega {
+  id: string;
+  reporte_id: string;
+  necesidad: Necesidad;
+  cantidad: number;
+  nota: string | null;
+  entregado_en: string;
+}
+
+export function necesidadesPendientes() {
+  return pedir<NecesidadPendiente[]>('/asistencia/pendientes');
+}
+
+export function listarEntregas() {
+  return pedir<Entrega[]>('/asistencia/entregas');
+}
+
+export function registrarEntrega(datos: { reporte_id: string; necesidad: Necesidad; cantidad: number; nota?: string }) {
+  return pedir<Entrega>('/asistencia/entregas', { method: 'POST', body: JSON.stringify(datos) });
 }

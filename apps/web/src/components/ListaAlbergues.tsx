@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
-import { Navigation, Phone } from 'lucide-react';
+import { Minus, Navigation, Phone, Plus } from 'lucide-react';
+import { obtenerSesionActual } from '../lib/auth';
 import type { PuntoServicioMapa } from '../types/mapa';
 import * as api from '../lib/api';
-import { ETIQUETA_PUNTO } from '../lib/catalogos';
+import { ETIQUETA_PUNTO, semaforoCupo } from '../lib/catalogos';
 import { Aviso, AvisoRespaldo, BarraCapacidad, Boton, Cargando } from './ui/Basicos';
 import { InsigniaCupo } from './ui/Insignias';
 
@@ -18,6 +19,22 @@ export function ListaAlbergues() {
   const [aviso, setAviso] = useState<string | null>(null);
   const [personas, setPersonas] = useState(1);
   const [buscando, setBuscando] = useState(false);
+  const [esCoe, setEsCoe] = useState(false);
+
+  useEffect(() => {
+    const rol = obtenerSesionActual()?.rol;
+    setEsCoe(rol === 'operador_911' || rol === 'admin');
+  }, []);
+
+  async function ajustar(p: Cercano, delta: number) {
+    const ocupacion = Math.max(0, p.ocupacion + delta);
+    try {
+      const actualizado = await api.actualizarOcupacion(p.id, ocupacion);
+      setPuntos((l) => l?.map((x) => (x.id === p.id ? { ...x, ...actualizado, estado_cupo: semaforoCupo(actualizado.capacidad, actualizado.ocupacion) } : x)) ?? null);
+    } catch (e) {
+      setAviso(e instanceof api.ErrorApi ? e.message : 'No se pudo actualizar la ocupación.');
+    }
+  }
 
   useEffect(() => {
     api
@@ -88,6 +105,13 @@ export function ListaAlbergues() {
               <span>{p.ocupacion} de {p.capacidad} ocupados</span>
               {p.distancia_m !== undefined && <span>{p.distancia_m < 1000 ? `${p.distancia_m} m` : `${(p.distancia_m / 1000).toFixed(1)} km`}</span>}
             </div>
+            {esCoe && !respaldo && (
+              <div className="pn-form__fila" role="group" aria-label={`Ocupación de ${p.nombre}`}>
+                <Boton tamano="sm" onClick={() => ajustar(p, -1)} aria-label="Restar una persona"><Minus aria-hidden="true" /></Boton>
+                <Boton tamano="sm" onClick={() => ajustar(p, 1)} aria-label="Sumar una persona"><Plus aria-hidden="true" /></Boton>
+                <Boton tamano="sm" onClick={() => ajustar(p, 5)}>+5</Boton>
+              </div>
+            )}
             {p.telefono && (
               <a className="er-btn er-btn--secundario er-btn--sm" href={`tel:${p.telefono.replace(/[^\d+]/g, '')}`}>
                 <Phone aria-hidden="true" /> {p.telefono}

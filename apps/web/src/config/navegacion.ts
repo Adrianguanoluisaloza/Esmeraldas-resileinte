@@ -16,15 +16,14 @@ export type IconoNav =
   | 'estadisticas'
   | 'reportar'
   | 'mis-reportes'
-  | 'zonas';
+  | 'zonas'
+  | 'asistencia';
 
 export interface ItemNav {
   ruta: string;
   etiqueta: string;
   icono: IconoNav;
   roles: RolUsuario[];
-  /** true mientras el backend responde 501 en esa función. Muestra una marca discreta "Pronto". */
-  pendiente?: boolean;
 }
 
 export interface GrupoNav {
@@ -37,29 +36,26 @@ const TODOS: RolUsuario[] = ['ciudadano', 'operador_911', 'admin'];
 
 export const NAVEGACION: GrupoNav[] = [
   {
-    titulo: 'Centro de operaciones',
+    titulo: 'Operaciones',
     items: [
       { ruta: '/panel', etiqueta: 'Mapa operativo', icono: 'mapa', roles: COE },
       { ruta: '/panel/reportes', etiqueta: 'Reportes', icono: 'reportes', roles: COE },
-      { ruta: '/panel/alertas', etiqueta: 'Alertas por sector', icono: 'alertas', roles: COE, pendiente: true },
-      { ruta: '/panel/estadisticas', etiqueta: 'Estadísticas', icono: 'estadisticas', roles: COE, pendiente: true },
+      { ruta: '/panel/alertas', etiqueta: 'Alertas y vías', icono: 'alertas', roles: COE },
+      { ruta: '/panel/asistencia', etiqueta: 'Asistencia', icono: 'asistencia', roles: COE },
+      { ruta: '/panel/estadisticas', etiqueta: 'Estadísticas', icono: 'estadisticas', roles: COE },
     ],
   },
   {
-    // Las 4 pantallas del prototipo móvil de Franco (fire-shield): inicio y mapa, nuevo reporte,
-    // mis reportes y albergues con alertas.
     titulo: 'Ciudadanía',
     items: [
-      { ruta: '/panel/inicio', etiqueta: 'Inicio y mapa', icono: 'zonas', roles: ['ciudadano'] },
-      { ruta: '/panel/reportar', etiqueta: 'Nuevo reporte', icono: 'reportar', roles: ['ciudadano'], pendiente: true },
+      { ruta: '/panel/inicio', etiqueta: 'Inicio', icono: 'zonas', roles: ['ciudadano'] },
+      { ruta: '/panel/reportar', etiqueta: 'Nuevo reporte', icono: 'reportar', roles: ['ciudadano'] },
       { ruta: '/panel/mis-reportes', etiqueta: 'Mis reportes', icono: 'mis-reportes', roles: ['ciudadano'] },
     ],
   },
   {
     titulo: 'Territorio',
-    items: [
-      { ruta: '/panel/albergues', etiqueta: 'Albergues y alertas', icono: 'albergues', roles: TODOS },
-    ],
+    items: [{ ruta: '/panel/albergues', etiqueta: 'Albergues', icono: 'albergues', roles: TODOS }],
   },
 ];
 

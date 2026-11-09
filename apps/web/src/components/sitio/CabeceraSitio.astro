@@ -1,0 +1,16 @@
+---
+/** Cabecera de las páginas públicas (portada y acceso). */
+const ruta = Astro.url.pathname;
+---
+
+<header class="st-cabecera">
+  <a class="pn-marca" href="/">
+    <span class="pn-marca__logo" aria-hidden="true"></span>
+    <strong class="pn-marca__texto">Esmeraldas Resiliente</strong>
+  </a>
+  <nav class="st-nav" aria-label="Principal">
+    <a href="/#modulos">Módulos</a>
+    <a href="/#escenario">Escenario</a>
+  </nav>
+  {ruta !== '/login' && <a class="er-btn st-btn-oscuro" href="/login">Ingresar</a>}
+</header>
