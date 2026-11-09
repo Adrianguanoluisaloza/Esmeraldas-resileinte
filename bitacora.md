@@ -84,3 +84,18 @@ Este documento registra decisiones, avances, bloqueos y pendientes importantes. 
 - **Cambio:** Se homogenizó toda la plataforma web con un tema visual limpio, blanco y moderno estilo SaaS (inspirado en Remote.com y Stripe). Tanto la página del Centro de Mando / Mapa (`/mapa`) como la de autenticación (`/login`) fueron actualizadas con fondos blancos `#f8fafc`, tarjetas `#ffffff` con sombras suaves, bordes finos `#e2e8f0`, selects y botones limpios (pill y redondeados modernos).
 - **Validación:** Astro dev server activo, HMR instantáneo en 4ms en `/` y `/mapa`. Comprobación de contraste y legibilidad con OpenStreetMap y capas operacionales.
 - **Pendientes:** Verificar responsive y publicar actualización en Cloudflare Pages.
+
+## 2026-11-09
+- **Área:** backend | base de datos | infraestructura
+- **Cambio:** Esqueleto de `apps/api` con Hono y TypeScript en Clean Architecture (dominio, aplicación, infraestructura, http). Repositorios en memoria y en PostgreSQL + PostGIS. Esquema y semilla del escenario Jueves 06:00 en `database/`. `docker-compose.yml` con PostGIS y la API. WebSocket `/ws` para el COE.
+- **Decisión:** Se siguen las recomendaciones del reto (PostgreSQL + PostGIS, Docker Compose, REST + WebSockets, JWT). Endpoints que la app de Franco ya usa (`/salud`, `/reportes`, `/reportes/{id}/foto`) quedan funcionando; alertas, estadísticas y clasificación IA responden 501 con código estable para integrar sin romper. La API vive en Oracle Cloud; la web sigue en Cloudflare.
+- **Validación:** `npm run ci` (18 pruebas) y la misma suite contra PostGIS 16 local (14 pruebas). Servidor real probado: `/salud`, `ST_Distance` en albergues cercanos y WebSocket rechazando token inválido. El build de la imagen Docker no se pudo probar en la sesión (sin demonio Docker).
+- **Pendientes:** B1 a B8 en `docs/orquestacion/TAREAS_BACKEND.md`.
+
+## 2026-11-09
+- **Área:** web | diseño | orquestación
+- **Cambio:** Sistema de diseño con la paleta de la app de Franco (verde `#0B6E4F` y semáforo), claro y oscuro. Componentes reutilizables y `PanelLayout` con barra lateral por rol: COE (mapa operativo, reportes, alertas, estadísticas) y las 4 pantallas ciudadanas del prototipo móvil. Cliente API único con respaldo a datos simulados. Mapa con capas de zonas y vías desde PostGIS. Login contra la API real.
+- **Decisión:** Rojo solo para emergencia y peligro. Origen del dato con color y texto propios (simulado con borde discontinuo). Cuentas demo con dominio propio, no `.gob.ec`. Se corrigió un riesgo de XSS en los popups del mapa y el YAML inválido del contrato. `wrangler.jsonc` usa `/` para que funcione fuera de Windows.
+- **Validación:** `astro build` (11 páginas) y typecheck sin errores. Recorrido con Playwright contra la API con PostGIS: login operador, despachar unidad (cambio guardado), tabla, albergues, modo oscuro, ciudadano en móvil y bloqueo del ciudadano en pantallas del COE.
+- **Pendientes:** Portada y login todavía con su CSS antiguo (tarea W1). Tareas W1 a W5 para Gemini y M1 a M5 para Franco en `docs/orquestacion/`.
+
