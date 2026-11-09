@@ -10,7 +10,7 @@ import { semaforoCupo } from './catalogos';
  * URL: PUBLIC_API_URL (ver .env.example). Contrato: contrato/openapi.yaml.
  */
 
-const BASE = (import.meta.env.PUBLIC_API_URL as string | undefined)?.replace(/\/+$/, '') ?? 'http://localhost:3000';
+export const BASE = (import.meta.env.PUBLIC_API_URL as string | undefined)?.replace(/\/+$/, '') ?? 'http://localhost:3000';
 const TIEMPO_MAX_MS = 8000;
 
 export type CodigoApi =

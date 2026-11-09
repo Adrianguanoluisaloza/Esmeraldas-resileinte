@@ -1,6 +1,6 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import { Eye, EyeOff } from 'lucide-react';
-import { ErrorApi, login as loginApi, registro as registroApi } from '../lib/api';
+import { BASE, ErrorApi, login as loginApi, registro as registroApi } from '../lib/api';
 import { inicioSegunRol } from '../config/navegacion';
 import { USUARIOS_DEMO, guardarSesion, obtenerSesionActual, type RolUsuario } from '../lib/auth';
 import { Aviso, Boton } from './ui/Basicos';
@@ -40,20 +40,14 @@ export function LoginCard() {
     setCargando(true);
     setError(null);
     try {
-      let respuesta;
-      try {
-        respuesta = registro ? await registroApi(nombre, correo, password) : await loginApi(correo, password);
-      } catch (err) {
-        // Sin servidor, solo las cuentas demo entran en modo local con datos simulados.
-        const cuenta = demo ? USUARIOS_DEMO[demo] : null;
-        if (!(err instanceof ErrorApi) || err.codigo !== 'SIN_CONEXION' || registro || !cuenta || cuenta.correo !== correo || cuenta.pass !== password) throw err;
-        respuesta = { token: `demo-sin-servidor-${Date.now()}`, usuario: cuenta.usuario };
-      }
+      // Siempre contra la API: sin servidor no se entra (antes se entraba "a medias" y nada funcionaba).
+      const respuesta = registro ? await registroApi(nombre, correo, password) : await loginApi(correo, password);
       guardarSesion(respuesta);
       const volver = new URLSearchParams(window.location.search).get('volver');
       window.location.href = volver && volver.startsWith('/panel') ? volver : inicioSegunRol(respuesta.usuario.rol);
     } catch (err) {
-      setError(err instanceof ErrorApi ? (err.codigo === 'NO_AUTENTICADO' ? 'Correo o contraseña incorrectos.' : err.message) : 'No se pudo ingresar.');
+      if (err instanceof ErrorApi && err.codigo === 'SIN_CONEXION') setError(`Sin conexión con el servidor (${BASE}).`);
+      else setError(err instanceof ErrorApi ? (err.codigo === 'NO_AUTENTICADO' ? 'Correo o contraseña incorrectos.' : err.message) : 'No se pudo ingresar.');
     } finally {
       setCargando(false);
     }
