@@ -6,6 +6,9 @@ Todos los cambios relevantes del proyecto se registran aquí. Se sigue una estru
 
 ### Added
 
+- Mapa offline en formato MBTiles 1.3 (`mobile/assets/mapas/esmeraldas.mbtiles`, 155 teselas OpenMapTiles/OpenStreetMap de la Provincia de Esmeraldas `z=8..15`) con proveedor híbrido `EsmeraldasHybridTileProvider` y `sqflite`.
+- Envío de punto GPS de emergencia por SMS (`TelephonyService` con `another_telephony`) y captura GPS forzada de hardware (`AndroidSettings(forceLocationManager: true)`) en `LocalLocationService` y `CrearReportePage`.
+- Verificación de máquina de estados de la cola offline (`SyncWorkerService` y `MisReportesPage`): eliminación de todos los datos demo/semillas falsas, validación estricta del contrato Zod (`ReporteEntrada`), reintento manual con `forzar: true` y visualización de errores en la cola.
 - Inventario de agua, alimentos y medicinas: la entrega descuenta stock en la misma transacción y no permite entregar más de lo que hay.
 - Ruta de evacuación: los albergues cuyo camino cruza una vía bloqueada se marcan y van al final (PostGIS `ST_Intersects`).
 - Nuevo reporte web: marcar la ubicación tocando el mapa cuando no hay GPS.

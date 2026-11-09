@@ -5,6 +5,7 @@ import 'package:latlong2/latlong.dart' hide Path;
 import '../../data/models/punto_servicio_model.dart';
 import '../config/app_config.dart';
 import '../enums/app_enums.dart';
+import '../services/mbtiles_service.dart';
 import '../theme/app_theme.dart';
 
 /// Marcador de incidente para mostrar sobre el mapa de Esmeraldas.
@@ -54,7 +55,9 @@ class MapaFondoEsmeraldas extends StatelessWidget {
           AppConfig.esmeraldasCenterLng,
         );
 
-    if (!tieneConexion) {
+    final bool usarMbtilesLocal = EsmeraldasMbTilesService.estaListo;
+
+    if (!tieneConexion && !usarMbtilesLocal) {
       return GestureDetector(
         onTapUp: onTapMapa == null
             ? null
@@ -90,6 +93,12 @@ class MapaFondoEsmeraldas extends StatelessWidget {
             initialZoom: AppConfig.defaultZoom,
             minZoom: AppConfig.minZoom,
             maxZoom: AppConfig.maxZoom,
+            cameraConstraint: CameraConstraint.containCenter(
+              bounds: LatLngBounds(
+                const LatLng(-0.5, -80.3),
+                const LatLng(1.6, -78.4),
+              ),
+            ),
             onTap: onTapMapa == null
                 ? null
                 : (TapPosition _, LatLng punto) => onTapMapa!(punto),
@@ -98,6 +107,9 @@ class MapaFondoEsmeraldas extends StatelessWidget {
             TileLayer(
               urlTemplate: AppConfig.osmTileUrlTemplate,
               userAgentPackageName: AppConfig.osmUserAgentPackageName,
+              tileProvider: EsmeraldasHybridTileProvider(
+                tieneConexion: tieneConexion,
+              ),
             ),
             MarkerLayer(
               markers: <Marker>[
@@ -294,9 +306,11 @@ class MapaFondoEsmeraldas extends StatelessWidget {
               borderRadius: BorderRadius.circular(4),
               border: Border.all(color: AppTheme.colorBorde),
             ),
-            child: const Text(
-              AppConfig.osmAttribution,
-              style: TextStyle(fontSize: 10, color: AppTheme.colorTexto),
+            child: Text(
+              (!tieneConexion && usarMbtilesLocal)
+                  ? 'MBTiles Offline Esmeraldas · ${AppConfig.osmAttribution}'
+                  : AppConfig.osmAttribution,
+              style: const TextStyle(fontSize: 10, color: AppTheme.colorTexto),
             ),
           ),
         ),

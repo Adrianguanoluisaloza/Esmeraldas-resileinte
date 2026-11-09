@@ -41,6 +41,7 @@ pnpm-debug.log*
 
 # Environment and secrets
 .env
+env
 .env.production
 .env.local
 .env.*.local
@@ -48,6 +49,9 @@ pnpm-debug.log*
 *.key
 **/google-services.json
 **/GoogleService-Info.plist
+mobile/android/.kotlin/
+mobile/android/.gradle/
+mobile/build/
 
 # Editor and OS
 .DS_Store

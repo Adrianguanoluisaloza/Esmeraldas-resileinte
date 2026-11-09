@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/enums/app_enums.dart';
+import '../../../../core/services/telephony_service.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../data/models/reporte_cola_model.dart';
 
@@ -11,12 +12,14 @@ class MisReportesPage extends StatelessWidget {
     super.key,
     required this.reportes,
     required this.onSincronizarManual,
+    this.onEliminarReporte,
     this.sinCuenta = false,
     this.onIniciarSesion,
   });
 
   final List<ReporteColaModel> reportes;
   final VoidCallback onSincronizarManual;
+  final ValueChanged<String>? onEliminarReporte;
   final bool sinCuenta;
   final VoidCallback? onIniciarSesion;
 
@@ -126,9 +129,50 @@ class MisReportesPage extends StatelessWidget {
                 Text(
                   'ID ${item.id.substring(0, 8)}… · '
                   'GPS ${item.latitud.toStringAsFixed(4)}, ${item.longitud.toStringAsFixed(4)}'
-                  '${item.ubicacionAproximada ? " (aprox.)" : ""}',
+                  '${item.ubicacionAproximada ? " (aprox.)" : ""}'
+                  '${item.intentos > 0 && !item.estadoCola.estaSincronizado ? " · Intentos: ${item.intentos}" : ""}',
                   style: const TextStyle(fontSize: 11, color: Colors.black54),
                 ),
+                if (item.mensajeError != null &&
+                    item.mensajeError!.isNotEmpty &&
+                    !item.estadoCola.estaSincronizado) ...<Widget>[
+                  const SizedBox(height: 6),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 5,
+                    ),
+                    decoration: BoxDecoration(
+                      color: AppTheme.colorSemaforoRojo.withValues(alpha: 0.08),
+                      borderRadius: BorderRadius.circular(6),
+                      border: Border.all(
+                        color: AppTheme.colorSemaforoRojo.withValues(
+                          alpha: 0.35,
+                        ),
+                      ),
+                    ),
+                    child: Row(
+                      children: <Widget>[
+                        const Icon(
+                          Icons.error_outline,
+                          size: 14,
+                          color: AppTheme.colorSemaforoRojo,
+                        ),
+                        const SizedBox(width: 6),
+                        Expanded(
+                          child: Text(
+                            item.mensajeError!,
+                            style: const TextStyle(
+                              fontSize: 11,
+                              color: AppTheme.colorSemaforoRojo,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
                 const SizedBox(height: 8),
                 Row(
                   children: <Widget>[
@@ -145,7 +189,38 @@ class MisReportesPage extends StatelessWidget {
                       activo: item.estadoCola == EstadoColaReporte.enviandoFoto,
                     ),
                     const Spacer(),
-                    if (!item.estadoCola.estaSincronizado)
+                    if (!item.estadoCola.estaSincronizado) ...<Widget>[
+                      IconButton(
+                        tooltip: 'Enviar punto GPS por SMS',
+                        onPressed: () async {
+                          const TelephonyService telephony = TelephonyService();
+                          final bool ok = await telephony
+                              .enviarPuntoEmergenciaPorSms(
+                                latitud: item.latitud,
+                                longitud: item.longitud,
+                                tipo: item.tipo,
+                                gravedad: item.gravedad,
+                                precisionMetros: item.precisionM,
+                                personasAfectadas: item.personasAfectadas,
+                                descripcion: item.descripcion,
+                              );
+                          if (!context.mounted) return;
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                ok
+                                    ? 'Coordenada GPS (${item.latitud.toStringAsFixed(4)}, ${item.longitud.toStringAsFixed(4)}) enviada por SMS.'
+                                    : 'Envío SMS disponible en dispositivos Android.',
+                              ),
+                            ),
+                          );
+                        },
+                        icon: const Icon(
+                          Icons.sms_outlined,
+                          size: 18,
+                          color: AppTheme.colorPrimario,
+                        ),
+                      ),
                       TextButton.icon(
                         onPressed: onSincronizarManual,
                         icon: const Icon(Icons.sync, size: 16),
@@ -154,6 +229,18 @@ class MisReportesPage extends StatelessWidget {
                           style: TextStyle(fontSize: 12),
                         ),
                       ),
+                      if (item.estadoCola == EstadoColaReporte.error &&
+                          onEliminarReporte != null)
+                        IconButton(
+                          tooltip: 'Quitar reporte con error',
+                          onPressed: () => onEliminarReporte!(item.id),
+                          icon: const Icon(
+                            Icons.delete_outline,
+                            size: 18,
+                            color: AppTheme.colorSemaforoRojo,
+                          ),
+                        ),
+                    ],
                   ],
                 ),
               ],

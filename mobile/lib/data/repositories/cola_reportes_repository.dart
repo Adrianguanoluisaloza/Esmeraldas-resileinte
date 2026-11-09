@@ -15,7 +15,9 @@ abstract interface class ColaReportesRepository {
 
   Future<List<ReporteColaModel>> obtenerTodosLosReportes();
 
-  Future<List<ReporteColaModel>> obtenerReportesPendientesDeEnvio();
+  Future<List<ReporteColaModel>> obtenerReportesPendientesDeEnvio({
+    bool ignorarEspera = false,
+  });
 
   Future<void> actualizarEstadoReporte({
     required String id,
@@ -25,6 +27,8 @@ abstract interface class ColaReportesRepository {
     String? mensajeError,
     String? rutaFotoLocal,
   });
+
+  Future<void> eliminarReporte(String id);
 
   Future<List<PuntoServicioModel>> obtenerDirectorioPuntosServicio();
 
@@ -59,10 +63,6 @@ class HiveColaReportesRepository implements ColaReportesRepository {
       _nombreCajaDirectorio,
     );
 
-    if (_cajaDirectorio.isEmpty) {
-      await _sembrarDirectorioInicial();
-    }
-
     _inicializado = true;
   }
 
@@ -79,14 +79,19 @@ class HiveColaReportesRepository implements ColaReportesRepository {
   }
 
   @override
-  Future<List<ReporteColaModel>> obtenerReportesPendientesDeEnvio() async {
+  Future<List<ReporteColaModel>> obtenerReportesPendientesDeEnvio({
+    bool ignorarEspera = false,
+  }) async {
     final DateTime ahora = DateTime.now().toUtc();
     return _cajaCola.values.where((reporte) {
-      if (reporte.estadoCola == EstadoColaReporte.enviado ||
-          reporte.estadoCola == EstadoColaReporte.error) {
+      if (reporte.estadoCola == EstadoColaReporte.enviado) {
         return false;
       }
-      if (reporte.proximoIntentoUtc != null &&
+      if (!ignorarEspera && reporte.estadoCola == EstadoColaReporte.error) {
+        return false;
+      }
+      if (!ignorarEspera &&
+          reporte.proximoIntentoUtc != null &&
           reporte.proximoIntentoUtc!.isAfter(ahora)) {
         return false;
       }
@@ -117,6 +122,11 @@ class HiveColaReportesRepository implements ColaReportesRepository {
   }
 
   @override
+  Future<void> eliminarReporte(String id) async {
+    await _cajaCola.delete(id);
+  }
+
+  @override
   Future<List<PuntoServicioModel>> obtenerDirectorioPuntosServicio() async {
     return _cajaDirectorio.values.where((p) => p.activo).toList();
   }
@@ -129,61 +139,5 @@ class HiveColaReportesRepository implements ColaReportesRepository {
     for (final PuntoServicioModel punto in puntos) {
       await _cajaDirectorio.put(punto.id, punto);
     }
-  }
-
-  Future<void> _sembrarDirectorioInicial() async {
-    const List<PuntoServicioModel> puntosSemilla = <PuntoServicioModel>[
-      PuntoServicioModel(
-        id: 'a3000000-0000-4000-8000-000000000001',
-        nombre: 'Albergue temporal UTLVTE',
-        tipo: TipoPuntoServicio.albergue,
-        latitud: 0.9515,
-        longitud: -79.6732,
-        telefono: '911',
-        capacidad: 120,
-        ocupacion: 112,
-      ),
-      PuntoServicioModel(
-        id: 'a3000000-0000-4000-8000-000000000002',
-        nombre: 'Coliseo Nubia Villacís',
-        tipo: TipoPuntoServicio.albergue,
-        latitud: 0.9635,
-        longitud: -79.6542,
-        telefono: '911',
-        capacidad: 200,
-        ocupacion: 70,
-      ),
-      PuntoServicioModel(
-        id: 'a3000000-0000-4000-8000-000000000003',
-        nombre: 'Unidad educativa Las Palmas',
-        tipo: TipoPuntoServicio.albergue,
-        latitud: 0.9880,
-        longitud: -79.6470,
-        telefono: '911',
-        capacidad: 90,
-        ocupacion: 20,
-      ),
-      PuntoServicioModel(
-        id: 'a3000000-0000-4000-8000-000000000004',
-        nombre: 'Hospital Delfina Torres de Concha',
-        tipo: TipoPuntoServicio.centroSalud,
-        latitud: 0.9428,
-        longitud: -79.6812,
-        telefono: '911',
-        capacidad: 150,
-        ocupacion: 138,
-      ),
-      PuntoServicioModel(
-        id: 'a3000000-0000-4000-8000-000000000005',
-        nombre: 'Centro de salud Las Palmas',
-        tipo: TipoPuntoServicio.centroSalud,
-        latitud: 0.9902,
-        longitud: -79.6455,
-        telefono: '911',
-        capacidad: 40,
-        ocupacion: 22,
-      ),
-    ];
-    await guardarDirectorioPuntosServicio(puntosSemilla);
   }
 }

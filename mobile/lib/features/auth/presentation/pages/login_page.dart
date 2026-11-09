@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-import '../../../../core/config/app_config.dart';
 import '../../../../core/security/validadores.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/mapa_fondo_esmeraldas.dart';
@@ -9,7 +8,6 @@ import '../widgets/google_sign_in_button.dart';
 import 'registro_page.dart';
 
 /// Pantalla de inicio de sesión único sobre el mapa de Esmeraldas (`FlutterMap`).
-/// Cero emojis (M4) y soporte para las credenciales demo de `TAREAS_MOVIL_FRANCO.md` (M2).
 class LoginPage extends StatefulWidget {
   const LoginPage({
     super.key,
@@ -73,12 +71,6 @@ class _LoginPageState extends State<LoginPage> {
     } finally {
       if (mounted) setState(() => _cargando = false);
     }
-  }
-
-  void _rellenarDemo(String correo, String pass) {
-    _correoCtrl.text = correo;
-    _passCtrl.text = pass;
-    setState(() => _error = null);
   }
 
   @override
@@ -251,99 +243,10 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                   ),
                 ),
-                if (AppConfig.modoDemo) ...<Widget>[
-                  const SizedBox(height: 12),
-                  Card(
-                    child: Padding(
-                      padding: const EdgeInsets.all(14),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: <Widget>[
-                          const Row(
-                            children: <Widget>[
-                              InsigniaOrigenDato(esOficial: false),
-                              SizedBox(width: 8),
-                              Expanded(
-                                child: Text(
-                                  'Cuentas de demostración (toca para rellenar):',
-                                  style: TextStyle(fontSize: 11.5),
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 8),
-                          _BotonDemo(
-                            icono: Icons.person_outline,
-                            etiqueta: 'Reporte ciudadano — ciudadano@demo.esmeraldas-resiliente.ec',
-                            onTap: () => _rellenarDemo(
-                              'ciudadano@demo.esmeraldas-resiliente.ec',
-                              'demo-resiliente-2026',
-                            ),
-                          ),
-                          _BotonDemo(
-                            icono: Icons.support_agent,
-                            etiqueta: 'Operador 911 — operador@demo.esmeraldas-resiliente.ec',
-                            onTap: () => _rellenarDemo(
-                              'operador@demo.esmeraldas-resiliente.ec',
-                              'demo-resiliente-2026',
-                            ),
-                          ),
-                          _BotonDemo(
-                            icono: Icons.admin_panel_settings_outlined,
-                            etiqueta: 'Administrador — admin@demo.esmeraldas-resiliente.ec',
-                            onTap: () => _rellenarDemo(
-                              'admin@demo.esmeraldas-resiliente.ec',
-                              'demo-resiliente-2026',
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
               ],
             ),
           ),
         ],
-      ),
-    );
-  }
-}
-
-class _BotonDemo extends StatelessWidget {
-  const _BotonDemo({
-    required this.icono,
-    required this.etiqueta,
-    required this.onTap,
-  });
-
-  final IconData icono;
-  final String etiqueta;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(top: 6),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(8),
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-          decoration: BoxDecoration(
-            border: Border.all(color: AppTheme.colorBorde),
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: Row(
-            children: <Widget>[
-              Icon(icono, size: 16, color: AppTheme.colorPrimario),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Text(etiqueta, style: const TextStyle(fontSize: 11.5)),
-              ),
-            ],
-          ),
-        ),
       ),
     );
   }

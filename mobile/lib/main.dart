@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'core/location/location_service.dart';
 import 'core/network/api_client.dart';
 import 'core/routing/app_router.dart';
+import 'core/services/mbtiles_service.dart';
 import 'core/theme/app_theme.dart';
 import 'data/repositories/cola_reportes_repository.dart';
 import 'features/auth/data/repositories/auth_repository_impl.dart';
@@ -13,9 +14,12 @@ import 'features/sync/data/services/sync_worker_service.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Inicialización única de Hive a través del repositorio de la cola
+  // Inicialización de Hive y del paquete offline MBTiles de la Provincia de Esmeraldas
   final ColaReportesRepository colaRepository = HiveColaReportesRepository();
-  await colaRepository.inicializar();
+  await Future.wait(<Future<void>>[
+    colaRepository.inicializar(),
+    EsmeraldasMbTilesService.inicializar(),
+  ]);
 
   runApp(EsmeraldasResilienteApp(colaRepository: colaRepository));
 }

@@ -11,6 +11,7 @@ import flutter_appauth
 import flutter_image_compress_macos
 import flutter_secure_storage_darwin
 import geolocator_apple
+import sqflite_darwin
 
 func RegisterGeneratedPlugins(registry: FlutterPluginRegistry) {
   ConnectivityPlusPlugin.register(with: registry.registrar(forPlugin: "ConnectivityPlusPlugin"))
@@ -19,4 +20,5 @@ func RegisterGeneratedPlugins(registry: FlutterPluginRegistry) {
   FlutterImageCompressMacosPlugin.register(with: registry.registrar(forPlugin: "FlutterImageCompressMacosPlugin"))
   FlutterSecureStorageDarwinPlugin.register(with: registry.registrar(forPlugin: "FlutterSecureStorageDarwinPlugin"))
   GeolocatorPlugin.register(with: registry.registrar(forPlugin: "GeolocatorPlugin"))
+  SqflitePlugin.register(with: registry.registrar(forPlugin: "SqflitePlugin"))
 }

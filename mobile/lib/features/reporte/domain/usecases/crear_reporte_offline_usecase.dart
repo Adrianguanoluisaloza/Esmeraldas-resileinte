@@ -39,18 +39,33 @@ class CrearReporteOfflineUseCase {
   final Uuid _uuid;
 
   Future<ReporteColaModel> ejecutar(DatosNuevoReporte datos) async {
+    final bool coordValida = LocalLocationService.estaEnProvinciaEsmeraldas(
+      datos.coordenada.latitud,
+      datos.coordenada.longitud,
+    );
+    final double lat = coordValida ? datos.coordenada.latitud : 0.9592;
+    final double lon = coordValida ? datos.coordenada.longitud : -79.6539;
+    final String descLimpia = datos.descripcion.trim();
+    final String descFinal = descLimpia.length >= 3
+        ? descLimpia
+        : '${datos.tipo.etiqueta} (${datos.gravedad.etiqueta}) en Esmeraldas (${lat.toStringAsFixed(4)}, ${lon.toStringAsFixed(4)})';
+    final int minPersonas = datos.ninos + datos.adultosMayores;
+    final int totalPersonas = datos.personasAfectadas < minPersonas
+        ? minPersonas
+        : datos.personasAfectadas;
+
     final ReporteColaModel reporte = ReporteColaModel(
       id: _uuid.v4(),
       tipo: datos.tipo,
-      descripcion: datos.descripcion.trim(),
+      descripcion: descFinal,
       gravedad: datos.gravedad,
-      latitud: datos.coordenada.latitud,
-      longitud: datos.coordenada.longitud,
+      latitud: lat,
+      longitud: lon,
       precisionM: datos.coordenada.precisionMetros,
-      ubicacionAproximada: datos.coordenada.esAproximada,
+      ubicacionAproximada: datos.coordenada.esAproximada || !coordValida,
       capturadoEnUtc: DateTime.now().toUtc(),
       rutaFotoLocal: datos.rutaFotoLocal,
-      personasAfectadas: datos.personasAfectadas,
+      personasAfectadas: totalPersonas,
       ninos: datos.ninos,
       adultosMayores: datos.adultosMayores,
       necesidades: datos.necesidades,

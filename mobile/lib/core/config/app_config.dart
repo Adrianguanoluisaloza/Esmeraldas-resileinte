@@ -18,13 +18,6 @@ class AppConfig {
     return kIsWeb ? 'http://localhost:3000' : 'http://10.0.2.2:3000';
   }
 
-  /// Modo demostración: usa cuentas y datos simulados en el dispositivo
-  /// mientras el backend no está listo. `--dart-define=MODO_DEMO=false` para usar la API.
-  static const bool modoDemo = bool.fromEnvironment(
-    'MODO_DEMO',
-    defaultValue: true,
-  );
-
   /// OAuth de Google (cliente configurado en `google-services.json`, proyecto `esmeralsrelesiente`).
   static const String googleClientId = String.fromEnvironment(
     'GOOGLE_CLIENT_ID',
@@ -61,7 +54,13 @@ class AppConfig {
   static const double esmeraldasCenterLng = -79.6539;
   static const double defaultZoom = 13.5;
   static const double maxZoom = 18.0;
-  static const double minZoom = 10.0;
+  static const double minZoom = 8.0;
+
+  /// Número telefónico de emergencia para envío de punto GPS por SMS / llamada.
+  static const String smsEmergenciaNumero = String.fromEnvironment(
+    'EMERGENCY_SMS_NUMBER',
+    defaultValue: '911',
+  );
 
   /// Parámetros de captura offline.
   static const Duration gpsTimeout = Duration(seconds: 20);
