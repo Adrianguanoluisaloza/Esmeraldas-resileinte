@@ -113,9 +113,12 @@ paths:
       summary: 'Crear reporte ciudadano (Paso 1 offline: datos livianos)'
       description: >-
         Idempotente mediante UUID v4 generado en el celular. Si el reporte ya fue
-        recibido, retorna 200/201 sin duplicar registros.
+        recibido, retorna 200/201 sin duplicar registros. Sin cabecera Authorization se
+        guarda como reporte de emergencia sin cuenta (usuario_id null). Con un token
+        inválido o vencido responde 401.
       tags: [Reportes]
       security:
+        - {}
         - BearerAuth: []
       requestBody:
         required: true
@@ -250,8 +253,11 @@ paths:
       description: >-
         Sube el archivo JPEG/PNG (máx 2MB, recomendado 150-400 KB).
         El servidor genera automáticamente una miniatura (20-40 KB).
+        Reporte con cuenta: solo su dueño. Reporte sin cuenta: sin token, una sola vez y
+        dentro de 2 horas desde que se recibió.
       tags: [Fotos]
       security:
+        - {}
         - BearerAuth: []
       parameters:
         - name: id
@@ -467,6 +473,107 @@ paths:
               schema:
                 $ref: '#/components/schemas/Alerta'
 
+  /alertas/{id}/cerrar:
+    patch:
+      summary: Cerrar una alerta (deja de estar vigente). Solo COE
+      tags: [Alertas]
+      security:
+        - BearerAuth: []
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200':
+          description: Alerta cerrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Alerta'
+
+  /vias/{id}/estado:
+    patch:
+      summary: Cambiar el estado de una vía (habilitada, parcial, bloqueada). Solo COE
+      tags: [Zonas de Riesgo]
+      security:
+        - BearerAuth: []
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [estado]
+              properties:
+                estado: { type: string, enum: [habilitada, parcial, bloqueada] }
+      responses:
+        '200':
+          description: Propiedades de la vía actualizada
+
+  /asistencia/pendientes:
+    get:
+      summary: Necesidades de reportes sin entrega registrada, ordenadas por prioridad. Solo COE
+      tags: [Asistencia]
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Necesidades pendientes
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    reporte_id: { type: string, format: uuid }
+                    necesidad: { $ref: '#/components/schemas/Necesidad' }
+                    sector: { type: string, nullable: true }
+                    personas: { type: integer }
+                    gravedad: { $ref: '#/components/schemas/Gravedad' }
+                    prioridad: { type: integer }
+
+  /asistencia/entregas:
+    get:
+      summary: Entregas registradas. Solo COE
+      tags: [Asistencia]
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Lista de entregas
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Entrega'
+    post:
+      summary: Registrar entrega de agua, alimentos, medicinas o rescate para un reporte. Solo COE
+      description: La necesidad debe estar pedida en el reporte. Las entregas no se editan ni se borran (auditoría).
+      tags: [Asistencia]
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [reporte_id, necesidad, cantidad]
+              properties:
+                reporte_id: { type: string, format: uuid }
+                necesidad: { $ref: '#/components/schemas/Necesidad' }
+                cantidad: { type: integer, minimum: 1 }
+                nota: { type: string, maxLength: 500 }
+      responses:
+        '201':
+          description: Entrega registrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Entrega'
+
   /estadisticas:
     get:
       summary: Obtener contadores del centro de operaciones (Panel 911)
@@ -504,6 +611,13 @@ paths:
                       type: integer
                     gravedad_promedio:
                       type: string
+                    abiertos:
+                      type: integer
+                    personas_afectadas:
+                      type: integer
+                    puntaje:
+                      type: integer
+                      description: Prioridad por reglas (gravedad, personas, vulnerables, rescate y recurrencia). Ordenado de mayor a menor
 
 components:
   securitySchemes:
@@ -731,6 +845,17 @@ components:
         subida_en:
           type: string
           format: date-time
+
+    Entrega:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        reporte_id: { type: string, format: uuid }
+        necesidad: { $ref: '#/components/schemas/Necesidad' }
+        cantidad: { type: integer }
+        nota: { type: string, nullable: true }
+        entregado_por: { type: string, format: uuid, nullable: true }
+        entregado_en: { type: string, format: date-time }
 
     SugerenciaIA:
       type: object
