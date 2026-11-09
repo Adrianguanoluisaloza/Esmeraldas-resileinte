@@ -70,14 +70,17 @@ INSERT INTO reportes (id, usuario_id, origen, tipo, descripcion, gravedad, estad
   ST_SetSRID(ST_MakePoint(-79.6490, 0.9700), 4326), 10, 'El Arenal',
   '2026-11-12T11:10:00Z', '2026-11-12T11:11:00Z', false, 22, 8, 4, ARRAY['agua', 'alimentos', 'medicinas']);
 
--- Alerta del escenario (simulada: el sistema no reemplaza los canales oficiales) -------------------
-INSERT INTO alertas (id, sector, mensaje, nivel, origen) VALUES
+-- Alertas del escenario (todas simuladas: las oficiales las emite el COE en vivo; no reemplaza canales oficiales) -------------------
+INSERT INTO alertas (id, sector, mensaje, nivel, origen, vigente) VALUES
 ('a5000000-0000-4000-8000-000000000001', 'Ribera del río Teaone (Tabiazo)',
-  'Simulacro: crecida del río. Dirigirse a zonas altas y seguir indicaciones de las autoridades.', 'critica', 'simulada');
+  'Simulacro: crecida del río. Dirigirse a zonas altas y seguir indicaciones de las autoridades.', 'critica', 'simulada', true),
+('a5000000-0000-4000-8000-000000000002', 'Isla Piedad',
+  'Simulacro: desbordamiento inminente por marea alta. Evacuar familias vulnerables al Coliseo Nubia Villacís.', 'alta', 'simulada', true),
+('a5000000-0000-4000-8000-000000000003', 'Vía Esmeraldas - Atacames',
+  'Simulacro: paso vehicular restringido a un solo carril por árbol caído. Maquinaria en camino.', 'media', 'simulada', true);
 
 -- Inventario inicial del escenario (simulado) -----------------------------------------------------
 INSERT INTO inventario (necesidad, cantidad, unidad) VALUES
 ('agua', 400, 'bidones de 20 L'),
 ('alimentos', 250, 'kits familiares'),
 ('medicinas', 80, 'botiquines');
-

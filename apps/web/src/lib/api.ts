@@ -181,6 +181,7 @@ export interface NuevoReporte {
   latitud: number;
   longitud: number;
   precision_m?: number | null;
+  ubicacion_aproximada?: boolean;
   capturado_en: string;
   personas_afectadas?: number;
   ninos?: number;
