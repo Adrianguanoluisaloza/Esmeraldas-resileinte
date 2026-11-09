@@ -1,5 +1,27 @@
 # Reglas del proyecto
 
+## Leer primero (en este orden, solo lo que tu tarea pida)
+
+1. Este archivo.
+2. `docs/orquestacion/README.md`: quién hace qué y cómo se pasa una tarea a una IA.
+3. Tu carril: `docs/orquestacion/TAREAS_WEB_GEMINI.md`, `TAREAS_MOVIL_FRANCO.md` o `TAREAS_BACKEND.md`.
+4. Diseño: `docs/DISENO.md`. Despliegue: `docs/DESPLIEGUE.md`. Contrato: `contrato/openapi.yaml`.
+
+Reto oficial: https://educaysoft.org/Hackathon/reto.html (rúbrica: funcionalidad 25, innovación 15,
+arquitectura 15, mapas 15, IA 10, usabilidad 10, impacto 10). Escenario de prueba: "Jueves 06:00 AM".
+
+## Reglas que nunca se rompen
+
+1. Con Adrian se habla en español, frases cortas.
+2. Cero emojis en la interfaz (web y app). Iconos Lucide en web, Material en Flutter.
+3. Nunca publicar ni hacer merge a `main` sin orden de Adrian.
+4. Contrato primero: ningún cliente inventa campos que no estén en `contrato/openapi.yaml`.
+5. Diferenciar siempre en la interfaz: reporte ciudadano, dato simulado y alerta oficial.
+6. Nada inventado presentado como real (teléfonos, cifras, instituciones). Si es de demo, se marca "simulado".
+7. Sin secretos en el repo. Solo variables `PUBLIC_*` llegan al navegador.
+8. Diseño sólido y limpio: tokens `--er-*`, sin degradados ni hex sueltos (ver `docs/DISENO.md`).
+9. Registrar cada tarea grande en `CHANGELOG.md` y `bitacora.md`.
+
 ## Objetivo
 
 Construir una plataforma escalable con una aplicación móvil en Flutter y una página web en Astro con componentes React. La solución debe priorizar mantenibilidad, accesibilidad, rendimiento, seguridad y una experiencia consistente entre web y móvil.
@@ -12,6 +34,9 @@ Construir una plataforma escalable con una aplicación móvil en Flutter y una p
 - **Página web:** Astro.
 - **Componentes interactivos:** React dentro de Astro, únicamente donde aporten estado o interacción real.
 - **Infraestructura web:** Cloudflare Pages para el despliegue web; Cloudflare Workers solo para lógica de servidor o integraciones que lo necesiten.
+- **Backend:** Hono + TypeScript en Node 22 (`apps/api`), Clean Architecture, validación con zod, JWT, WebSocket.
+- **Base de datos:** PostgreSQL 16 + PostGIS (`database/`), con `docker-compose.yml` en la raíz.
+- **Servidor:** VM de Oracle Cloud con Docker; HTTPS con Cloudflare Tunnel. Detalle en `docs/DESPLIEGUE.md`.
 - **Distribución de la aplicación:** automatizar builds firmadas para Android e iOS mediante CI/CD y publicar en Google Play y App Store Connect según los entornos configurados.
 
 ## Estructura esperada
@@ -20,8 +45,11 @@ Cuando se incorporen fuentes al repositorio, mantener una separación similar a 
 
 ```text
 apps/
+  api/                    # Backend Hono + PostGIS (dominio, aplicacion, infraestructura, http)
   mobile/                 # Proyecto Flutter
   web/                    # Proyecto Astro
+database/                 # 01_schema_postgis.sql, 02_seed_escenario_06am.sql
+docker-compose.yml        # PostGIS + API (Oracle Cloud y local)
 backend/                  # Espacio de trabajo de servicios y API
 frontend/                 # Espacio de trabajo de la rama web
 mobile/                   # Espacio de trabajo de la rama móvil de Franco
@@ -32,6 +60,9 @@ packages/
 infra/                    # Configuración de Cloudflare y CI/CD
 docs/
   OPENSTREETMAP.md        # Teselas, atribución y OAuth
+  DISENO.md               # Sistema de diseño y piezas reutilizables
+  DESPLIEGUE.md           # Oracle Cloud + Cloudflare
+  orquestacion/           # Tareas por carril para cada IA
 bitacora.md
 CHANGELOG.md
 AGENTS.md
@@ -102,6 +133,7 @@ Antes de integrar cambios:
 
 - Flutter: `dart format`, `flutter analyze` y pruebas unitarias/widget relevantes.
 - Web: formateo, lint, typecheck y build de Astro.
+- API: `cd apps/api && npm run ci` (typecheck + pruebas) y `npm run test:db` contra PostGIS cuando se toque SQL.
 - Probar primero casos de uso y adaptadores; después la integración visual.
 - Añadir pruebas para errores, estados vacíos, permisos y pérdida de conectividad.
 - No aceptar warnings nuevos sin documentar la razón.
