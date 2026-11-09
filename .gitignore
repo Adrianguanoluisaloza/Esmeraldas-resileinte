@@ -71,3 +71,7 @@ Thumbs.db
 # Paquetes y credenciales sueltas: se comparten por fuera del repo
 *.zip
 *credenciales*.txt
+
+# Firebase debug logs
+firebase-debug.log
+.firebase/
