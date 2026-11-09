@@ -116,3 +116,21 @@ Si el archivo de la foto ya no existe, `subirFotoReporte` sube un JPEG mínimo d
 - Con sesión vencida la API responde `401`: no reenviar en silencio como anónimo. Pedir login y conservar la cola.
 - "Mis reportes" solo muestra los enviados con cuenta.
 
+## M12. GPS sin internet (urgente, es el corazón de la demo)
+
+Hoy `capturarUbicacionConRespaldo()` en `lib/core/location/location_service.dart`:
+- espera solo **6 segundos** (`timeLimit`). Sin datos el GPS no tiene ayuda de antenas y la primera ubicación puede
+  tardar de 30 segundos a varios minutos;
+- si falla, devuelve **el centro de Esmeraldas con 12 m de precisión y `esAproximada: false`**. Todos los reportes sin
+  señal caerían en el centro de la ciudad como si fueran exactos, y el COE iría al lugar equivocado.
+
+Corregir así:
+1. Usar `AppConfig.gpsTimeout` (20 s) en lugar de 6 s, y mostrar "Buscando satélites..." mientras espera.
+2. Si no llega: `Geolocator.getLastKnownPosition()` y devolverla con `esAproximada: true` y su precisión real.
+3. Si tampoco hay: devolver `null` (nunca un punto inventado). La pantalla ofrece elegir el sector o tocar el mapa,
+   y ese punto va con `ubicacion_aproximada: true`.
+4. Si el GPS está apagado: pedir activarlo (`Geolocator.openLocationSettings()`), no inventar la ubicación.
+
+Prueba: modo avión con ubicación encendida junto a una ventana; el reporte debe salir con la coordenada real o
+marcado como aproximado, nunca en el centro con 12 m.
+
