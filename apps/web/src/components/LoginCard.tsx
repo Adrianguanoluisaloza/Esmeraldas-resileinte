@@ -1,5 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import {
+  ArrowRight,
+  Eye,
+  EyeOff,
+  LockKeyhole,
+  Mail,
+  ShieldCheck,
+  UserRound,
+  UsersRound,
+  Zap,
+} from 'lucide-react';
+import {
   type RolUsuario,
   type UsuarioSesion,
   USUARIOS_DEMO,
@@ -84,7 +95,13 @@ export const LoginCard: React.FC<Props> = ({ redirectUrl = '/' }) => {
       <div className="login-card-container">
         <div className="login-card sesion-activa-card">
           <div className="sesion-avatar">
-            {sesionActiva.rol === 'operador_911' ? '🛡️' : sesionActiva.rol === 'admin' ? '⚡' : '👤'}
+            {sesionActiva.rol === 'operador_911' ? (
+              <ShieldCheck aria-hidden="true" />
+            ) : sesionActiva.rol === 'admin' ? (
+              <Zap aria-hidden="true" />
+            ) : (
+              <UserRound aria-hidden="true" />
+            )}
           </div>
           <h2 className="login-titulo">Sesión Iniciada</h2>
           <p className="login-subtitulo">
@@ -106,7 +123,7 @@ export const LoginCard: React.FC<Props> = ({ redirectUrl = '/' }) => {
 
           <div className="sesion-acciones">
             <a href="/" className="btn-ir-panel">
-              Ir al Centro de Mando 911 →
+              Ir al Centro de Mando 911 <ArrowRight aria-hidden="true" />
             </a>
             <button onClick={manejarCerrarSesion} className="btn-cerrar-sesion">
               Cerrar Sesión
@@ -148,21 +165,21 @@ export const LoginCard: React.FC<Props> = ({ redirectUrl = '/' }) => {
               onClick={() => seleccionarDemo('operador_911')}
               className={`demo-pill ${rolSeleccionado === 'operador_911' ? 'demo-pill-activo' : ''}`}
             >
-              🛡️ Operador 911
+              <ShieldCheck aria-hidden="true" /> Operador 911
             </button>
             <button
               type="button"
               onClick={() => seleccionarDemo('admin')}
               className={`demo-pill ${rolSeleccionado === 'admin' ? 'demo-pill-activo' : ''}`}
             >
-              ⚡ Admin
+              <Zap aria-hidden="true" /> Admin
             </button>
             <button
               type="button"
               onClick={() => seleccionarDemo('ciudadano')}
               className={`demo-pill ${rolSeleccionado === 'ciudadano' ? 'demo-pill-activo' : ''}`}
             >
-              👥 Ciudadano
+              <UsersRound aria-hidden="true" /> Ciudadano
             </button>
           </div>
         </div>
@@ -199,7 +216,7 @@ export const LoginCard: React.FC<Props> = ({ redirectUrl = '/' }) => {
             <div className="form-group">
               <label className="form-label">Nombre Completo</label>
               <div className="input-wrapper">
-                <span className="input-icon">👤</span>
+                <span className="input-icon"><UserRound aria-hidden="true" /></span>
                 <input
                   type="text"
                   required
@@ -215,7 +232,7 @@ export const LoginCard: React.FC<Props> = ({ redirectUrl = '/' }) => {
           <div className="form-group">
             <label className="form-label">Correo Institucional / Personal</label>
             <div className="input-wrapper">
-              <span className="input-icon">✉️</span>
+              <span className="input-icon"><Mail aria-hidden="true" /></span>
               <input
                 type="email"
                 required
@@ -235,7 +252,7 @@ export const LoginCard: React.FC<Props> = ({ redirectUrl = '/' }) => {
               )}
             </div>
             <div className="input-wrapper">
-              <span className="input-icon">🔒</span>
+              <span className="input-icon"><LockKeyhole aria-hidden="true" /></span>
               <input
                 type={mostrarPassword ? 'text' : 'password'}
                 required
@@ -250,7 +267,7 @@ export const LoginCard: React.FC<Props> = ({ redirectUrl = '/' }) => {
                 className="toggle-password-btn"
                 title={mostrarPassword ? 'Ocultar' : 'Mostrar'}
               >
-                {mostrarPassword ? '👁️' : '👁️‍🗨️'}
+                {mostrarPassword ? <EyeOff aria-hidden="true" /> : <Eye aria-hidden="true" />}
               </button>
             </div>
           </div>
@@ -286,13 +303,14 @@ export const LoginCard: React.FC<Props> = ({ redirectUrl = '/' }) => {
         {/* Pie de seguridad */}
         <div className="login-footer">
           <div className="seguridad-item">
-            <span>🛡️</span> Cifrado seguro de extremo a extremo
+            <ShieldCheck aria-hidden="true" /> Cifrado seguro de extremo a extremo
           </div>
           <div className="seguridad-item">
-            <span>⚡</span> Protocolo offline-first resiliente
+            <Zap aria-hidden="true" /> Protocolo offline-first resiliente
           </div>
         </div>
       </div>
     </div>
   );
 };
+

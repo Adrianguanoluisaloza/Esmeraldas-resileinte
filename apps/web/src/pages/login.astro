@@ -12,35 +12,31 @@ import { LoginCard } from '../components/LoginCard';
     <title>Iniciar Sesión — ESMERALDAS RESILIENTE</title>
   </head>
   <body>
-    <!-- Barra superior de navegación moderna tipo SaaS -->
+    <!-- Barra superior de navegación moderna tipo SaaS en blanco -->
     <header class="login-nav">
       <a href="/" class="nav-brand">
         <span class="nav-logo-dot"></span>
-        <span class="nav-brand-title">ESMERALDAS RESILIENTE</span>
+        <span class="nav-brand-title">Esmeraldas Resiliente</span>
       </a>
 
       <div class="nav-links">
-        <a href="/" class="nav-link">Centro de Mando 911</a>
-        <a href="/" class="nav-link">Mapa Territorial</a>
+        <a href="/" class="nav-link">Inicio</a>
+        <a href="/mapa" class="nav-link">Centro de Mando</a>
         <a href="https://github.com/Adrianguanoluisaloza/Esmeraldas-resileinte" target="_blank" rel="noopener noreferrer" class="nav-link">GitHub</a>
       </div>
 
       <div class="nav-cta">
-        <a href="/" class="btn-nav-outline">
-          ← Volver al Mapa
+        <a href="/mapa" class="btn-nav-outline">
+          ← Ir al Mapa
         </a>
       </div>
     </header>
 
-    <!-- Contenedor Principal con el Fondo Hero y la Tarjeta de Login -->
+    <!-- Contenedor Principal con fondo blanco limpio -->
     <main class="login-main-section">
-      <!-- Elementos gráficos de fondo sutiles tipo Remote/SaaS -->
-      <div class="ambient-glow-top"></div>
-      <div class="ambient-glow-center"></div>
-
-      <!-- Tarjetas flotantes decorativas de contexto (similares a la imagen de referencia) -->
+      <!-- Tarjetas flotantes de contexto -->
       <div class="floating-badge badge-top-right">
-        <span class="badge-flag">🇪🇨</span>
+        <span class="badge-flag" aria-hidden="true">🇪🇨</span>
         <div class="badge-info">
           <strong>Esmeraldas, EC</strong>
           <span>Fenómeno de El Niño</span>
@@ -48,7 +44,7 @@ import { LoginCard } from '../components/LoginCard';
       </div>
 
       <div class="floating-badge badge-bottom-left">
-        <span class="badge-icon">📡</span>
+        <span class="badge-icon" aria-hidden="true">📡</span>
         <div class="badge-info">
           <strong>Offline-First Ready</strong>
           <span>Sync automático en reconexión</span>
@@ -57,7 +53,7 @@ import { LoginCard } from '../components/LoginCard';
 
       <!-- Componente interactivo de inicio de sesión -->
       <div class="login-card-wrapper">
-        <LoginCard client:only="react">
+        <LoginCard client:only="react" redirectUrl="/mapa">
           <div slot="fallback" class="login-skeleton">
             <div class="skeleton-spinner"></div>
             <p>Cargando módulo de autenticación segura...</p>
@@ -66,11 +62,15 @@ import { LoginCard } from '../components/LoginCard';
       </div>
     </main>
 
-    <!-- Pie de página discreto -->
+    <!-- Pie de página blanco limpio -->
     <footer class="login-page-footer">
       <div>Plataforma de Emergencias Esmeraldas Resiliente 2026 · UTLVTE & COE Cantonal</div>
-      <div>
-        Cartografía: <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">© OpenStreetMap</a>
+      <div class="footer-links">
+        <a href="/">Inicio</a>
+        <span>·</span>
+        <a href="/mapa">Centro de Mando</a>
+        <span>·</span>
+        <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">© OpenStreetMap</a>
       </div>
     </footer>
   </body>
@@ -78,14 +78,12 @@ import { LoginCard } from '../components/LoginCard';
 
 <style is:global>
   :root {
-    --bg-dark: #070a12;
-    --card-bg: rgba(15, 23, 42, 0.75);
-    --border-color: rgba(255, 255, 255, 0.1);
-    --border-glow: rgba(56, 189, 248, 0.2);
-    --accent-blue: #0284c7;
-    --accent-cyan: #38bdf8;
-    --text-main: #f8fafc;
-    --text-muted: #94a3b8;
+    --bg-page: #f8fafc;
+    --card-bg: #ffffff;
+    --border-color: #e2e8f0;
+    --accent-blue: #2563eb;
+    --text-main: #0f172a;
+    --text-muted: #64748b;
   }
 
   * {
@@ -96,7 +94,7 @@ import { LoginCard } from '../components/LoginCard';
 
   body {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    background-color: var(--bg-dark);
+    background: linear-gradient(155deg, #f8faff 0%, #eef2ff 50%, #f0f9ff 100%);
     color: var(--text-main);
     min-height: 100vh;
     display: flex;
@@ -110,13 +108,14 @@ import { LoginCard } from '../components/LoginCard';
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 18px 40px;
-    background: rgba(7, 10, 18, 0.8);
-    backdrop-filter: blur(12px);
+    padding: 0 48px;
+    height: 68px;
+    background: #ffffff;
     border-bottom: 1px solid var(--border-color);
     position: sticky;
     top: 0;
     z-index: 50;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.03);
   }
 
   .nav-brand {
@@ -124,27 +123,27 @@ import { LoginCard } from '../components/LoginCard';
     align-items: center;
     gap: 10px;
     text-decoration: none;
-    color: #ffffff;
+    color: #0f172a;
   }
 
   .nav-logo-dot {
     width: 10px;
     height: 10px;
     border-radius: 9999px;
-    background-color: #38bdf8;
-    box-shadow: 0 0 12px #38bdf8;
+    background-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
   }
 
   .nav-brand-title {
-    font-size: 14px;
+    font-size: 15px;
     font-weight: 800;
-    letter-spacing: 0.05em;
+    letter-spacing: -0.02em;
   }
 
   .nav-links {
     display: flex;
     align-items: center;
-    gap: 24px;
+    gap: 28px;
   }
 
   @media (max-width: 768px) {
@@ -152,37 +151,39 @@ import { LoginCard } from '../components/LoginCard';
       display: none;
     }
     .login-nav {
-      padding: 14px 20px;
+      padding: 0 20px;
     }
   }
 
   .nav-link {
-    color: var(--text-muted);
-    font-size: 13px;
+    color: #475569;
+    font-size: 14px;
     font-weight: 500;
     text-decoration: none;
     transition: color 0.15s ease;
   }
 
   .nav-link:hover {
-    color: #ffffff;
+    color: #0f172a;
   }
 
   .btn-nav-outline {
-    border: 1px solid var(--border-color);
-    background: rgba(255, 255, 255, 0.03);
-    color: #ffffff;
-    font-size: 12px;
+    border: 1px solid #cbd5e1;
+    background: #ffffff;
+    color: #334155;
+    font-size: 13px;
     font-weight: 600;
-    padding: 8px 16px;
+    padding: 8px 18px;
     border-radius: 9999px;
     text-decoration: none;
     transition: all 0.2s ease;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.04);
   }
 
   .btn-nav-outline:hover {
-    background: rgba(255, 255, 255, 0.1);
-    border-color: rgba(255, 255, 255, 0.3);
+    background: #f1f5f9;
+    color: #0f172a;
+    border-color: #94a3b8;
   }
 
   /* Sección Principal Hero */
@@ -196,40 +197,18 @@ import { LoginCard } from '../components/LoginCard';
     overflow: hidden;
   }
 
-  /* Resplandores ambientales estilo SaaS moderno */
-  .ambient-glow-top {
-    position: absolute;
-    top: -120px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 600px;
-    height: 350px;
-    background: radial-gradient(circle, rgba(2, 132, 199, 0.18) 0%, rgba(7, 10, 18, 0) 70%);
-    pointer-events: none;
-  }
-
-  .ambient-glow-center {
-    position: absolute;
-    bottom: -80px;
-    right: 15%;
-    width: 450px;
-    height: 350px;
-    background: radial-gradient(circle, rgba(56, 189, 248, 0.12) 0%, rgba(7, 10, 18, 0) 70%);
-    pointer-events: none;
-  }
-
   /* Tarjetas Flotantes de Contexto */
   .floating-badge {
     position: absolute;
-    background: rgba(15, 23, 42, 0.7);
-    border: 1px solid var(--border-color);
+    background: rgba(255, 255, 255, 0.95);
+    border: 1px solid rgba(99, 102, 241, 0.2);
     backdrop-filter: blur(10px);
     border-radius: 12px;
     padding: 10px 16px;
     display: flex;
     align-items: center;
     gap: 12px;
-    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 10px 25px rgba(37, 99, 235, 0.1);
     z-index: 10;
     pointer-events: none;
     animation: float-badge 6s ease-in-out infinite;
@@ -268,7 +247,7 @@ import { LoginCard } from '../components/LoginCard';
   }
 
   .badge-info strong {
-    color: #ffffff;
+    color: #0f172a;
     font-size: 12px;
   }
 
@@ -292,12 +271,11 @@ import { LoginCard } from '../components/LoginCard';
 
   .login-card {
     width: 100%;
-    background: var(--card-bg);
+    background: #ffffff;
     border: 1px solid var(--border-color);
-    backdrop-filter: blur(16px);
     border-radius: 20px;
     padding: 36px 32px;
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.05);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08), 0 1px 3px rgba(0, 0, 0, 0.04);
     position: relative;
   }
 
@@ -310,14 +288,14 @@ import { LoginCard } from '../components/LoginCard';
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    background: rgba(56, 189, 248, 0.1);
-    border: 1px solid rgba(56, 189, 248, 0.25);
-    padding: 4px 12px;
+    background: #eff6ff;
+    border: 1px solid #bfdbfe;
+    padding: 5px 14px;
     border-radius: 9999px;
     font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 0.05em;
-    color: var(--accent-cyan);
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    color: #2563eb;
     margin-bottom: 12px;
   }
 
@@ -325,27 +303,27 @@ import { LoginCard } from '../components/LoginCard';
     width: 6px;
     height: 6px;
     border-radius: 9999px;
-    background-color: var(--accent-cyan);
+    background-color: #2563eb;
   }
 
   .login-titulo {
-    font-size: 22px;
-    font-weight: 800;
-    color: #ffffff;
+    font-size: 24px;
+    font-weight: 900;
+    color: #0f172a;
     letter-spacing: -0.02em;
     margin-bottom: 6px;
   }
 
   .login-subtitulo {
-    font-size: 13px;
+    font-size: 14px;
     color: var(--text-muted);
-    line-height: 1.4;
+    line-height: 1.5;
   }
 
   /* Selector de Acceso Rápido Demo */
   .demo-roles-seccion {
-    background: rgba(2, 132, 199, 0.06);
-    border: 1px solid rgba(2, 132, 199, 0.2);
+    background: #f8fafc;
+    border: 1px solid var(--border-color);
     border-radius: 12px;
     padding: 12px;
     margin-bottom: 20px;
@@ -355,8 +333,8 @@ import { LoginCard } from '../components/LoginCard';
   .demo-label {
     display: block;
     font-size: 11px;
-    font-weight: 600;
-    color: var(--accent-cyan);
+    font-weight: 700;
+    color: #475569;
     margin-bottom: 8px;
     text-transform: uppercase;
     letter-spacing: 0.05em;
@@ -370,34 +348,36 @@ import { LoginCard } from '../components/LoginCard';
   }
 
   .demo-pill {
-    background: #1e293b;
-    border: 1px solid var(--border-color);
-    color: #e2e8f0;
+    background: #ffffff;
+    border: 1px solid #cbd5e1;
+    color: #334155;
     font-size: 11px;
-    font-weight: 600;
-    padding: 5px 12px;
+    font-weight: 700;
+    padding: 6px 14px;
     border-radius: 9999px;
     cursor: pointer;
     transition: all 0.15s ease;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.04);
   }
 
   .demo-pill:hover {
-    background: #334155;
-    border-color: #64748b;
+    background: #f1f5f9;
+    border-color: #94a3b8;
+    color: #0f172a;
   }
 
   .demo-pill-activo {
-    background: var(--accent-blue) !important;
-    border-color: var(--accent-cyan) !important;
+    background: #2563eb !important;
+    border-color: #2563eb !important;
     color: #ffffff !important;
-    box-shadow: 0 0 10px rgba(2, 132, 199, 0.5);
+    box-shadow: 0 2px 8px rgba(37, 99, 235, 0.35) !important;
   }
 
   /* Pestañas */
   .auth-tabs {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    background: #0f172a;
+    background: #f1f5f9;
     border: 1px solid var(--border-color);
     border-radius: 10px;
     padding: 4px;
@@ -408,18 +388,18 @@ import { LoginCard } from '../components/LoginCard';
     background: transparent;
     border: none;
     color: var(--text-muted);
-    font-size: 12px;
-    font-weight: 600;
-    padding: 8px;
-    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 700;
+    padding: 9px;
+    border-radius: 8px;
     cursor: pointer;
     transition: all 0.15s ease;
   }
 
   .auth-tab-activo {
-    background: #1e293b;
-    color: #ffffff;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    background: #ffffff;
+    color: #0f172a;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
   }
 
   /* Formulario */
@@ -443,16 +423,17 @@ import { LoginCard } from '../components/LoginCard';
 
   .form-label {
     font-size: 12px;
-    font-weight: 600;
-    color: #cbd5e1;
+    font-weight: 700;
+    color: #334155;
   }
 
   .form-hint {
-    font-size: 10px;
-    color: #38bdf8;
-    background: rgba(56, 189, 248, 0.1);
-    padding: 2px 6px;
-    border-radius: 4px;
+    font-size: 11px;
+    color: #2563eb;
+    background: #eff6ff;
+    padding: 2px 8px;
+    border-radius: 6px;
+    font-weight: 600;
   }
 
   .input-wrapper {
@@ -466,24 +447,25 @@ import { LoginCard } from '../components/LoginCard';
     left: 12px;
     font-size: 14px;
     pointer-events: none;
-    opacity: 0.6;
+    opacity: 0.7;
   }
 
   .form-input {
     width: 100%;
-    background: #162032;
-    border: 1px solid var(--border-color);
+    background: #ffffff;
+    border: 1px solid #cbd5e1;
     border-radius: 10px;
-    padding: 10px 14px 10px 38px;
-    color: #ffffff;
+    padding: 11px 14px 11px 38px;
+    color: #0f172a;
     font-size: 13px;
+    font-weight: 500;
     outline: none;
-    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    transition: all 0.15s ease;
   }
 
   .form-input:focus {
-    border-color: var(--accent-cyan);
-    box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.2);
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
   }
 
   .toggle-password-btn {
@@ -493,7 +475,7 @@ import { LoginCard } from '../components/LoginCard';
     border: none;
     cursor: pointer;
     font-size: 14px;
-    opacity: 0.7;
+    opacity: 0.6;
     transition: opacity 0.15s;
   }
 
@@ -508,15 +490,15 @@ import { LoginCard } from '../components/LoginCard';
 
   .btn-submit-auth {
     width: 100%;
-    background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
-    border: 1px solid rgba(56, 189, 248, 0.3);
+    background: #2563eb;
+    border: none;
     color: #ffffff;
     font-size: 14px;
-    font-weight: 700;
-    padding: 12px;
+    font-weight: 800;
+    padding: 13px;
     border-radius: 9999px;
     cursor: pointer;
-    box-shadow: 0 10px 20px -5px rgba(2, 132, 199, 0.4);
+    box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35);
     transition: all 0.2s ease;
     margin-top: 4px;
     display: flex;
@@ -526,8 +508,8 @@ import { LoginCard } from '../components/LoginCard';
 
   .btn-submit-auth:hover {
     transform: translateY(-1px);
-    box-shadow: 0 14px 24px -5px rgba(2, 132, 199, 0.5);
-    background: linear-gradient(135deg, #0369a1 0%, #0284c7 100%);
+    background: #1d4ed8;
+    box-shadow: 0 6px 18px rgba(37, 99, 235, 0.45);
   }
 
   .btn-submit-auth:disabled {
@@ -545,7 +527,7 @@ import { LoginCard } from '../components/LoginCard';
   .mini-spinner {
     width: 14px;
     height: 14px;
-    border: 2px solid rgba(255, 255, 255, 0.3);
+    border: 2px solid rgba(255, 255, 255, 0.4);
     border-top-color: #ffffff;
     border-radius: 50%;
     animation: spin 0.8s linear infinite;
@@ -565,15 +547,16 @@ import { LoginCard } from '../components/LoginCard';
   .seguridad-item {
     display: flex;
     align-items: center;
-    gap: 4px;
+    gap: 6px;
   }
 
   .login-error-alert {
-    background: rgba(220, 38, 38, 0.15);
-    border: 1px solid rgba(220, 38, 38, 0.4);
-    color: #fca5a5;
+    background: #fee2e2;
+    border: 1px solid #fecaca;
+    color: #dc2626;
     font-size: 12px;
-    padding: 8px 12px;
+    font-weight: 600;
+    padding: 10px 14px;
     border-radius: 8px;
     margin-bottom: 16px;
   }
@@ -589,16 +572,16 @@ import { LoginCard } from '../components/LoginCard';
   }
 
   .sesion-detalles {
-    background: #162032;
+    background: #f8fafc;
     border: 1px solid var(--border-color);
-    border-radius: 10px;
-    padding: 12px 16px;
-    margin: 16px 0;
+    border-radius: 12px;
+    padding: 14px 18px;
+    margin: 18px 0;
     text-align: left;
     display: flex;
     flex-direction: column;
-    gap: 8px;
-    font-size: 12px;
+    gap: 10px;
+    font-size: 13px;
   }
 
   .sesion-fila {
@@ -612,47 +595,55 @@ import { LoginCard } from '../components/LoginCard';
   }
 
   .badge-rol-pill {
-    padding: 2px 8px;
+    padding: 3px 10px;
     border-radius: 9999px;
-    font-size: 10px;
-    font-weight: 700;
+    font-size: 11px;
+    font-weight: 800;
   }
 
-  .rol-operador_911 { background: rgba(2, 132, 199, 0.2); color: #38bdf8; }
-  .rol-admin { background: rgba(217, 119, 6, 0.2); color: #fbbf24; }
-  .rol-ciudadano { background: rgba(22, 163, 74, 0.2); color: #4ade80; }
+  .rol-operador_911 { background: #eff6ff; color: #2563eb; border: 1px solid #bfdbfe; }
+  .rol-admin { background: #fef3c7; color: #d97706; border: 1px solid #fde68a; }
+  .rol-ciudadano { background: #d1fae5; color: #059669; border: 1px solid #a7f3d0; }
 
   .sesion-acciones {
     display: flex;
     flex-direction: column;
     gap: 10px;
-    margin-top: 16px;
+    margin-top: 18px;
   }
 
   .btn-ir-panel {
-    background: var(--accent-blue);
+    background: #2563eb;
     color: white;
-    padding: 10px;
+    padding: 11px;
     border-radius: 9999px;
     font-size: 13px;
-    font-weight: 700;
+    font-weight: 800;
     text-decoration: none;
-    transition: opacity 0.15s;
+    transition: all 0.15s ease;
+    box-shadow: 0 2px 8px rgba(37,99,235,0.3);
+  }
+
+  .btn-ir-panel:hover {
+    background: #1d4ed8;
   }
 
   .btn-cerrar-sesion {
-    background: transparent;
-    border: 1px solid var(--border-color);
-    color: var(--text-muted);
-    padding: 8px;
+    background: #ffffff;
+    border: 1px solid #cbd5e1;
+    color: #64748b;
+    padding: 9px;
     border-radius: 9999px;
     font-size: 12px;
+    font-weight: 600;
     cursor: pointer;
+    transition: all 0.15s ease;
   }
 
   .btn-cerrar-sesion:hover {
-    color: #f87171;
-    border-color: #f87171;
+    color: #dc2626;
+    border-color: #fca5a5;
+    background: #fee2e2;
   }
 
   /* Skeleton */
@@ -670,8 +661,8 @@ import { LoginCard } from '../components/LoginCard';
   .skeleton-spinner {
     width: 32px;
     height: 32px;
-    border: 3px solid var(--border-color);
-    border-top-color: var(--accent-cyan);
+    border: 3px solid #e2e8f0;
+    border-top-color: #2563eb;
     border-radius: 50%;
     animation: spin 0.9s linear infinite;
   }
@@ -681,16 +672,21 @@ import { LoginCard } from '../components/LoginCard';
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 14px 40px;
-    background: rgba(7, 10, 18, 0.9);
+    padding: 16px 48px;
+    background: #ffffff;
     border-top: 1px solid var(--border-color);
-    font-size: 11px;
+    font-size: 12px;
     color: var(--text-muted);
   }
 
   .login-page-footer a {
-    color: var(--accent-cyan);
+    color: #2563eb;
     text-decoration: none;
+    font-weight: 500;
+  }
+
+  .login-page-footer a:hover {
+    text-decoration: underline;
   }
 
   @media (max-width: 640px) {

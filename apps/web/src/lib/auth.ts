@@ -79,3 +79,4 @@ export function cerrarSesion(): void {
   localStorage.removeItem(STORAGE_KEY_TOKEN);
   localStorage.removeItem(STORAGE_KEY_USER);
 }
+
