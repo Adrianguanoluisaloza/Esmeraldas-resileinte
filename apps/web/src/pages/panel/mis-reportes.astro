@@ -1,0 +1,11 @@
+---
+import PanelLayout from '../../layouts/PanelLayout.astro';
+import { TablaReportes } from '../../components/TablaReportes';
+---
+
+<PanelLayout titulo="Mis reportes" roles={['ciudadano']}>
+  <div class="pn-encabezado">
+    <p>Solo ves los reportes creados con tu cuenta y en qué estado de atención están.</p>
+  </div>
+  <TablaReportes client:only="react" modo="ciudadano" />
+</PanelLayout>

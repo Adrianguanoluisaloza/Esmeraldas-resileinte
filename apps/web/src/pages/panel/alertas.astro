@@ -1,0 +1,12 @@
+---
+import PanelLayout from '../../layouts/PanelLayout.astro';
+import PaginaPendiente from '../../components/panel/PaginaPendiente.astro';
+---
+
+<PanelLayout titulo="Alertas por sector" roles={['operador_911', 'admin']}>
+  <PaginaPendiente
+    titulo="Emisión de alertas, pronto"
+    texto="El COE podrá emitir alertas por sector, marcadas como oficiales o simuladas, y se enviarán en tiempo real a la app."
+    endpoint="GET /alertas  ·  POST /alertas"
+  />
+</PanelLayout>

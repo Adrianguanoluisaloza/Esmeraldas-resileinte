@@ -1,0 +1,38 @@
+---
+/**
+ * Esqueleto HTML común. Carga los estilos globales UNA vez y aplica el tema guardado antes de pintar
+ * (sin parpadeo). Toda página usa este layout directamente o a través de PanelLayout / SitioLayout.
+ */
+import '../styles/tokens.css';
+import '../styles/base.css';
+import '../styles/ui.css';
+
+interface Props {
+  titulo: string;
+  descripcion?: string;
+}
+
+const { titulo, descripcion = 'Plataforma de gestión de emergencias por el fenómeno El Niño en Esmeraldas.' } = Astro.props;
+---
+
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content={descripcion} />
+    <meta name="theme-color" content="#0b6e4f" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <title>{titulo} · Esmeraldas Resiliente</title>
+    <script is:inline>
+      try {
+        const tema = localStorage.getItem('er-tema');
+        if (tema === 'light' || tema === 'dark') document.documentElement.dataset.theme = tema;
+      } catch {}
+    </script>
+  </head>
+  <body>
+    <a class="er-saltar" href="#contenido">Saltar al contenido</a>
+    <slot />
+  </body>
+</html>

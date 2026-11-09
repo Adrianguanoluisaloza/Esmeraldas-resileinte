@@ -21,12 +21,12 @@ import { LoginCard } from '../components/LoginCard';
 
       <div class="nav-links">
         <a href="/" class="nav-link">Inicio</a>
-        <a href="/mapa" class="nav-link">Centro de Mando</a>
+        <a href="/panel" class="nav-link">Centro de Mando</a>
         <a href="https://github.com/Adrianguanoluisaloza/Esmeraldas-resileinte" target="_blank" rel="noopener noreferrer" class="nav-link">GitHub</a>
       </div>
 
       <div class="nav-cta">
-        <a href="/mapa" class="btn-nav-outline">
+        <a href="/panel" class="btn-nav-outline">
           ← Ir al Mapa
         </a>
       </div>
@@ -53,7 +53,7 @@ import { LoginCard } from '../components/LoginCard';
 
       <!-- Componente interactivo de inicio de sesión -->
       <div class="login-card-wrapper">
-        <LoginCard client:only="react" redirectUrl="/mapa">
+        <LoginCard client:only="react">
           <div slot="fallback" class="login-skeleton">
             <div class="skeleton-spinner"></div>
             <p>Cargando módulo de autenticación segura...</p>
@@ -68,7 +68,7 @@ import { LoginCard } from '../components/LoginCard';
       <div class="footer-links">
         <a href="/">Inicio</a>
         <span>·</span>
-        <a href="/mapa">Centro de Mando</a>
+        <a href="/panel">Centro de Mando</a>
         <span>·</span>
         <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">© OpenStreetMap</a>
       </div>
