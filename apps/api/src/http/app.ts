@@ -49,6 +49,21 @@ export function crearApp(deps: Dependencias) {
     if (!c.res.headers.has("Cache-Control")) c.header("Cache-Control", "no-store");
   });
 
+  app.get("/", (c) => c.json({
+    nombre: "Esmeraldas Resiliente API",
+    estado: "ok",
+    version: "0.1.0",
+    escenario: "Jueves 06:00 AM",
+    endpoints: {
+      salud: "/salud",
+      zonas: "/zonas",
+      vias: "/vias",
+      albergues: "/puntos-servicio",
+      reportes: "/reportes",
+      login: "/auth/login"
+    }
+  }));
+
   app.get("/salud", async (c) => {
     const almacen = await deps.comprobarAlmacen().catch(() => false);
     return c.json({ estado: almacen ? "ok" : "degradado", timestamp: new Date().toISOString() }, almacen ? 200 : 503);
