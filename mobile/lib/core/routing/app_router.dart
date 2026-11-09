@@ -21,6 +21,7 @@ import '../enums/app_enums.dart';
 import '../location/location_service.dart';
 import '../network/api_client.dart';
 import '../theme/app_theme.dart';
+import '../widgets/mapa_fondo_esmeraldas.dart';
 
 /// Shell principal de navegación de Esmeraldas Resiliente.
 class HomeShellPage extends StatefulWidget {
@@ -65,12 +66,19 @@ class _HomeShellPageState extends State<HomeShellPage> {
   void initState() {
     super.initState();
     _ops = widget.operacionesRepository ?? OperacionesRepository();
-    _recargarDatosLocales();
+    _inicializarDatosYSincronizar();
     _restaurarSesion();
     _relojSesion = Timer.periodic(
       const Duration(seconds: 15),
       (_) => _vigilarSesion(),
     );
+  }
+
+  Future<void> _inicializarDatosYSincronizar() async {
+    await _recargarDatosLocales();
+    if (!_modoOfflineSimulado && _cantidadPendientes > 0) {
+      await _ejecutarSincronizacion();
+    }
   }
 
   @override
@@ -112,6 +120,10 @@ class _HomeShellPageState extends State<HomeShellPage> {
         .obtenerTodosLosReportes();
     final List<PuntoServicioModel> listaPuntos = await widget.colaRepository
         .obtenerDirectorioPuntosServicio();
+    _ops.sincronizarDesdeColaLocal(
+      listaReportes,
+      usuarioIdActual: _sesion?.id ?? 'u1',
+    );
     if (!mounted) return;
     setState(() {
       _reportes = listaReportes;
@@ -284,6 +296,21 @@ class _HomeShellPageState extends State<HomeShellPage> {
   ) {
     switch (s.rol) {
       case RolUsuario.ciudadano:
+        final Set<String> idsCola = _reportes.map((r) => r.id).toSet();
+        final List<PinMapaIncidente> incidentesSector = _ops.reportes
+            .where(
+              (op) =>
+                  op.estado != EstadoReporte.atendido &&
+                  !idsCola.contains(op.id),
+            )
+            .map(
+              (op) => PinMapaIncidente(
+                punto: op.punto,
+                gravedad: op.gravedad,
+                etiqueta: '${op.tipo.etiqueta} (${op.sector})',
+              ),
+            )
+            .toList();
         return (
           <Widget>[
             CrearReportePage(
@@ -291,9 +318,31 @@ class _HomeShellPageState extends State<HomeShellPage> {
               locationService: widget.locationService,
               tieneConexionReal: !_modoOfflineSimulado,
               puntosServicio: _puntos,
+              reportes: _reportes,
+              incidentesExtra: incidentesSector,
               onReporteGuardado: () async {
                 await _recargarDatosLocales();
-                setState(() => _indiceActual = 1);
+                if (!_modoOfflineSimulado) {
+                  await _ejecutarSincronizacion();
+                }
+                if (!mounted) return;
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(
+                      _modoOfflineSimulado
+                          ? 'Sin señal: reporte en cola local y marcado en el mapa.'
+                          : 'Reporte sincronizado y publicado en el mapa de Esmeraldas.',
+                    ),
+                    action: SnackBarAction(
+                      label: 'Mis reportes',
+                      onPressed: () {
+                        if (mounted) {
+                          setState(() => _indiceActual = 1);
+                        }
+                      },
+                    ),
+                  ),
+                );
               },
             ),
             MisReportesPage(

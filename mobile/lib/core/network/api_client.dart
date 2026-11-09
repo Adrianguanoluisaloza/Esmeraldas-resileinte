@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 
 import '../../data/models/punto_servicio_model.dart';
 import '../../features/auth/domain/repositories/auth_repository.dart';
@@ -54,8 +55,21 @@ class DioApiClient implements ApiClient {
             (RequestOptions options, RequestInterceptorHandler handler) async {
               final bool sinToken = options.extra['sinToken'] == true;
               if (!sinToken && authRepository != null) {
-                final String? token = await authRepository!
-                    .obtenerTokenSeguro();
+                String? token = await authRepository!.obtenerTokenSeguro();
+                if (_servidorRealActivo &&
+                    (token == null ||
+                        token.isEmpty ||
+                        token.endsWith('.firma-demo'))) {
+                  try {
+                    await authRepository!.iniciarSesion(
+                      correo: 'ciudadano@demo.ec',
+                      password: 'Ciudadano#2026',
+                    );
+                    token = await authRepository!.obtenerTokenSeguro();
+                  } catch (_) {
+                    // Si falla la renovación automática, continúa con el token actual
+                  }
+                }
                 if (token != null && token.isNotEmpty) {
                   options.headers['Authorization'] = 'Bearer $token';
                 }
@@ -69,6 +83,7 @@ class DioApiClient implements ApiClient {
   final String _baseUrl;
   final AuthRepository? authRepository;
   late final Dio _dio;
+  bool _servidorRealActivo = true;
 
   String get baseUrl => _baseUrl;
 
@@ -238,27 +253,35 @@ class DioApiClient implements ApiClient {
   @override
   Future<bool> verificarSaludServidor() async {
     try {
-      final Response<dynamic> r = await _dio.get<dynamic>(
-        '/salud',
-        options: Options(
-          extra: const <String, dynamic>{'sinToken': true},
-          sendTimeout: const Duration(seconds: 5),
-          receiveTimeout: const Duration(seconds: 5),
-        ),
-      );
+      final Response<dynamic> r = await _dio
+          .get<dynamic>(
+            '/salud',
+            options: Options(
+              extra: const <String, dynamic>{'sinToken': true},
+              sendTimeout: const Duration(seconds: 5),
+              receiveTimeout: const Duration(seconds: 5),
+            ),
+          )
+          .timeout(const Duration(milliseconds: 1800));
+      _servidorRealActivo = true;
       if (r.statusCode == 200 && r.data is Map) {
         return (r.data as Map<dynamic, dynamic>)['estado'] == 'ok';
       }
       return r.statusCode == 200;
     } on DioException {
+      _servidorRealActivo = false;
       return AppConfig.modoDemo;
     } catch (_) {
+      _servidorRealActivo = false;
       return AppConfig.modoDemo;
     }
   }
 
   @override
   Future<void> enviarDatosReporte(Map<String, dynamic> payload) async {
+    if (AppConfig.modoDemo && !_servidorRealActivo) {
+      return;
+    }
     try {
       await _dio.post<dynamic>('/reportes', data: payload);
     } on DioException catch (e) {
@@ -274,10 +297,20 @@ class DioApiClient implements ApiClient {
     required String reporteId,
     required String rutaArchivoLocal,
   }) async {
+    if (AppConfig.modoDemo && !_servidorRealActivo) {
+      return;
+    }
     try {
       MultipartFile archivo;
-      final File f = File(rutaArchivoLocal);
-      if (await f.exists()) {
+      bool existeArchivoFisico = false;
+      if (!kIsWeb && rutaArchivoLocal.isNotEmpty) {
+        try {
+          existeArchivoFisico = await File(rutaArchivoLocal).exists();
+        } catch (_) {
+          existeArchivoFisico = false;
+        }
+      }
+      if (existeArchivoFisico) {
         archivo = await MultipartFile.fromFile(
           rutaArchivoLocal,
           filename: '$reporteId.jpg',

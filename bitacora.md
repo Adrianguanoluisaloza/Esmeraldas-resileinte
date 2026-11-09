@@ -112,3 +112,15 @@ Este documento registra decisiones, avances, bloqueos y pendientes importantes. 
 
 
 
+- **Área:** mobile | seguridad | infraestructura
+- **Cambio:** Se instalaron Android SDK (`cmdline-tools`, `platform-tools`, `platforms;android-36`, `build-tools;36.0.0`, NDK `28.2.13676358`, CMake `3.22.1`) en `C:\src\android-sdk` y OpenJDK 21 (`21.0.13 LTS`) en `C:\src\jdk21`, generando `mobile/build/app/outputs/flutter-apk/app-release.apk`. Se ajustó el inicio del ciudadano (`CrearReportePage`) al flujo en 3 pasos sobre el mapa de Esmeraldas (mapa despejado y seleccionable con botón flotante lateral de GPS y botón inferior "Reportar emergencia" -> confirmación de ubicación -> formulario). Se integró `google-services.json` en `mobile/android/app/google-services.json`, se configuraron `googleClientId` y `appAuthRedirectScheme`, y se añadió `**/google-services.json` a `.gitignore`.
+- **Decisión:** Se fijó OpenJDK 21 para las compilaciones de Android porque el JDK 26 preinstalado en el equipo rompe `JdkImageTransform` de Android Gradle Plugin.
+- **Validación:** `dart format --set-exit-if-changed lib test`, `flutter analyze` (0 issues), `flutter test` (pass) y `flutter build apk --release` exitoso (`53.8 MB`).
+- **Pendientes:** Registrar la huella SHA-1 del equipo en Firebase Console si se requiere el selector nativo de cliente Android tipo 1 y continuar con los ajustes de las vistas de operador 911 y administrador.
+
+## 2026-11-09
+- **Área:** backend | base de datos | infraestructura
+- **Cambio:** Se integró la API TypeScript en `apps/api/` con autenticación, reportes, territorio, pendientes y tiempo real; se añadieron persistencia en memoria/PostGIS, esquema y semilla PostGIS en `database/`, y orquestación local mediante `docker-compose.yml`.
+- **Decisión:** El backend mantiene Clean Architecture y usa memoria como respaldo de desarrollo cuando PostgreSQL no está disponible; los secretos se suministran mediante variables de entorno.
+- **Validación:** Se añadieron pruebas de API y dominio en `apps/api/test/`; queda pendiente ejecutarlas con las dependencias instaladas y validar la conexión real a PostGIS.
+- **Pendientes:** Configurar las variables de entorno del backend, levantar PostgreSQL con Docker y probar los endpoints contra la base de datos.
