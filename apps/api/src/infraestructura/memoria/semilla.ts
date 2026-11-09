@@ -82,6 +82,26 @@ export const ALERTAS: Alerta[] = [
     creado_en: "2026-11-12T11:15:00.000Z",
     vigente: true,
   },
+  {
+    id: "a5000000-0000-4000-8000-000000000002",
+    sector: "Isla Piedad",
+    mensaje: "Simulacro: desbordamiento inminente por marea alta. Evacuar familias vulnerables al Coliseo Nubia Villacís.",
+    nivel: "alta",
+    origen: "simulada",
+    creado_por: null,
+    creado_en: "2026-11-12T11:20:00.000Z",
+    vigente: true,
+  },
+  {
+    id: "a5000000-0000-4000-8000-000000000003",
+    sector: "Vía Esmeraldas - Atacames",
+    mensaje: "Simulacro: paso vehicular restringido a un solo carril por árbol caído. Maquinaria en camino.",
+    nivel: "media",
+    origen: "simulada",
+    creado_por: null,
+    creado_en: "2026-11-12T11:25:00.000Z",
+    vigente: true,
+  },
 ];
 
 export const INVENTARIO: ItemInventario[] = [
