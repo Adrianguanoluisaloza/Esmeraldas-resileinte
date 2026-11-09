@@ -9,6 +9,10 @@ Todos los cambios relevantes del proyecto se registran aquí. Se sigue una estru
 - Reglas de colaboración y arquitectura en `AGENTS.md`.
 - Bitácora inicial del proyecto en `bitacora.md`.
 - Definición base del stack: Flutter, OpenStreetMap, Astro, React y Cloudflare.
+- Proyecto Astro inicial en `apps/web` con React y Vite configurados.
+- Dependencias de mapas y ubicación para web y Flutter.
+- Proyecto Flutter inicial en `apps/mobile`.
+- Guía de teselas, atribución y conexión OAuth 2.0 de OpenStreetMap en `docs/OPENSTREETMAP.md`.
 
 ### Planned
 
