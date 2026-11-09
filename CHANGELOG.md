@@ -14,6 +14,7 @@ Todos los cambios relevantes del proyecto se registran aquí. Se sigue una estru
 - Proyecto Flutter inicial en `apps/mobile`.
 - Guía de teselas, atribución y conexión OAuth 2.0 de OpenStreetMap en `docs/OPENSTREETMAP.md`.
 - Plantillas de variables de entorno para desarrollo, Cloudflare y distribución móvil.
+- Esqueleto de la aplicación Flutter en `mobile/` con Clean Architecture, cola offline en `hive_ce`, flujo de sincronización en dos pasos (`POST /reportes` y `POST /reportes/:id/foto`) y directorio de albergues con respaldo sin internet.
 
 ### Planned
 
