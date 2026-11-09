@@ -1,16 +1,549 @@
 ---
+// index.astro - Landing page oficial estilo Remote.com para Esmeraldas Resiliente
 ---
 
-<html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<link rel="icon" href="/favicon.ico" />
-		<meta name="viewport" content="width=device-width" />
-		<meta name="generator" content={Astro.generator} />
-		<title>Astro</title>
-	</head>
-	<body>
-		<h1>Astro</h1>
-	</body>
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Plataforma de Emergencias Esmeraldas Resiliente - Centro de Operaciones 911 ante el Fenómeno de El Niño." />
+    <title>Esmeraldas Resiliente — Gestión Territorial de Emergencias</title>
+  </head>
+  <body>
+
+    <!-- ══════════════════════════════════════════════════
+         NAVBAR estilo Remote.com: blanco, limpio, pill CTA
+         ══════════════════════════════════════════════════ -->
+    <header class="navbar">
+      <a href="/" class="navbar-brand" aria-label="Inicio">
+        <div class="brand-dot"></div>
+        <span class="brand-name">Esmeraldas Resiliente</span>
+      </a>
+
+      <nav class="navbar-links" aria-label="Navegación principal">
+        <a href="/mapa" class="nav-link">Centro de Mando</a>
+        <a href="/mapa" class="nav-link">Mapa Territorial</a>
+        <a
+          href="https://github.com/Adrianguanoluisaloza/Esmeraldas-resileinte"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="nav-link"
+        >GitHub</a>
+      </nav>
+
+      <div class="navbar-actions">
+        <div class="status-live-row">
+          <span class="status-live-dot"></span>
+          <span class="status-live-label">EN VIVO · 06:00 UTC</span>
+        </div>
+        <a href="/login" class="btn-nav-cta">Iniciar sesión →</a>
+      </div>
+    </header>
+
+    <!-- ══════════════════════════════════════════════════
+         HERO SECTION idéntico a Remote.com
+         ══════════════════════════════════════════════════ -->
+    <main class="hero-section" aria-label="Presentación">
+
+      <!-- Columna izquierda: texto + CTAs -->
+      <div class="hero-copy">
+        <span class="hero-pill">🚨 Plataforma de Emergencias · Esmeraldas, EC</span>
+        <h1 class="hero-headline">
+          La gestión de<br/>
+          emergencias corre<br/>
+          en <span class="hero-accent">Esmeraldas.</span>
+        </h1>
+        <p class="hero-subline">
+          El sistema de respuesta más completo — tecnología offline-first,
+          cartografía OpenStreetMap y coordinación en tiempo real para proteger
+          comunidades ante el Fenómeno de El Niño.
+        </p>
+        <div class="hero-ctas">
+          <a href="/mapa" class="btn-hero-primary">Ver Panel de Mando →</a>
+          <a href="/login" class="btn-hero-secondary">Iniciar sesión</a>
+        </div>
+      </div>
+
+      <!-- Columna derecha: red de nodos SVG inspirada en Remote.com -->
+      <div class="hero-network" aria-hidden="true">
+        <svg class="network-svg" viewBox="0 0 700 420" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Líneas de conexión discontinuas -->
+          <line x1="350" y1="210" x2="140" y2="90"  stroke="#c7d2fe" stroke-width="1.5" stroke-dasharray="6 4" opacity="0.7"/>
+          <line x1="350" y1="210" x2="560" y2="90"  stroke="#c7d2fe" stroke-width="1.5" stroke-dasharray="6 4" opacity="0.7"/>
+          <line x1="350" y1="210" x2="80"  y2="300" stroke="#bfdbfe" stroke-width="1.5" stroke-dasharray="6 4" opacity="0.5"/>
+          <line x1="350" y1="210" x2="620" y2="300" stroke="#bfdbfe" stroke-width="1.5" stroke-dasharray="6 4" opacity="0.5"/>
+          <line x1="350" y1="210" x2="350" y2="390" stroke="#bfdbfe" stroke-width="1.5" stroke-dasharray="6 4" opacity="0.4"/>
+          <line x1="350" y1="210" x2="210" y2="340" stroke="#c7d2fe" stroke-width="1"   stroke-dasharray="4 4" opacity="0.4"/>
+          <line x1="350" y1="210" x2="490" y2="340" stroke="#c7d2fe" stroke-width="1"   stroke-dasharray="4 4" opacity="0.4"/>
+          <!-- Nodo central COE -->
+          <circle cx="350" cy="210" r="44" fill="#2563eb" opacity="0.07"/>
+          <circle cx="350" cy="210" r="32" fill="#2563eb" opacity="0.13"/>
+          <circle cx="350" cy="210" r="22" fill="#2563eb"/>
+          <text x="350" y="215" text-anchor="middle" fill="white" font-size="11" font-weight="700" font-family="system-ui">COE</text>
+          <!-- Nodos satélite -->
+          <circle cx="140" cy="90"  r="16" fill="white" stroke="#818cf8" stroke-width="2"/>
+          <text x="140" y="95"  text-anchor="middle" font-size="14">🚑</text>
+          <circle cx="560" cy="90"  r="16" fill="white" stroke="#818cf8" stroke-width="2"/>
+          <text x="560" y="95"  text-anchor="middle" font-size="14">🚒</text>
+          <circle cx="80"  cy="300" r="14" fill="white" stroke="#93c5fd" stroke-width="2"/>
+          <text x="80"  y="305" text-anchor="middle" font-size="12">📡</text>
+          <circle cx="620" cy="300" r="14" fill="white" stroke="#93c5fd" stroke-width="2"/>
+          <text x="620" y="305" text-anchor="middle" font-size="12">🏥</text>
+          <circle cx="350" cy="390" r="14" fill="white" stroke="#93c5fd" stroke-width="2"/>
+          <text x="350" y="395" text-anchor="middle" font-size="12">🏘️</text>
+          <circle cx="210" cy="340" r="10" fill="white" stroke="#bfdbfe" stroke-width="1.5"/>
+          <circle cx="490" cy="340" r="10" fill="white" stroke="#bfdbfe" stroke-width="1.5"/>
+        </svg>
+
+        <!-- Badge flotante — derecha superior -->
+        <div class="hero-badge badge-ec">
+          <span>🇪🇨</span>
+          <div class="badge-text">
+            <strong>Esmeraldas, EC</strong>
+            <span>Fenómeno de El Niño</span>
+          </div>
+        </div>
+
+        <!-- Badge flotante — izquierda inferior -->
+        <div class="hero-badge badge-offline">
+          <span>📡</span>
+          <div class="badge-text">
+            <strong>Offline-First</strong>
+            <span>Sync automático</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Logos organismos aliados (estilo "Global companies grow with...") -->
+      <div class="hero-logos">
+        <span class="logos-label">ORGANISMOS Y ENTIDADES ALIADAS</span>
+        <div class="logos-row">
+          <span class="org-logo">▲ COE CANTONAL</span>
+          <span class="org-logo">◈ UTLVTE</span>
+          <span class="org-logo">⬡ ECU 911</span>
+          <span class="org-logo">◻ INOCAR</span>
+          <span class="org-logo">⬢ SNGRE</span>
+        </div>
+      </div>
+    </main>
+
+    <!-- ══════════════════════════════════════════════════
+         FOOTER elegante y continuo (estilo Remote.com)
+         ══════════════════════════════════════════════════ -->
+    <footer class="footer-remote">
+      <div class="footer-remote-content">
+        <div>Plataforma Esmeraldas Resiliente 2026 · UTLVTE &amp; COE Cantonal</div>
+        <div class="footer-links">
+          <a href="/mapa">Centro de Mando</a>
+          <span>·</span>
+          <a href="/login">Acceso Operadores</a>
+          <span>·</span>
+          <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">© OpenStreetMap</a>
+        </div>
+      </div>
+    </footer>
+
+  </body>
 </html>
+
+<style is:global>
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background-color: #f4f7fb;
+    color: #0f172a;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow-x: hidden;
+  }
+
+  /* ══════════════════════════════════════════
+     NAVBAR — blanco, limpio, pill CTA (Remote style)
+     ══════════════════════════════════════════ */
+  .navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 48px;
+    height: 68px;
+    background: #ffffff;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+  }
+
+  .navbar-brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+    color: #0f172a;
+  }
+
+  .brand-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
+  }
+
+  .brand-name {
+    font-size: 15px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    color: #0f172a;
+  }
+
+  .navbar-links {
+    display: flex;
+    align-items: center;
+    gap: 32px;
+  }
+
+  .nav-link {
+    font-size: 14px;
+    font-weight: 500;
+    color: #475569;
+    text-decoration: none;
+    transition: color 0.15s ease;
+  }
+
+  .nav-link:hover {
+    color: #0f172a;
+  }
+
+  .navbar-actions {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .status-live-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .status-live-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #22c55e;
+    box-shadow: 0 0 6px #22c55e;
+    animation: pulse-dot 2s infinite;
+  }
+
+  @keyframes pulse-dot {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50%       { opacity: 0.6; transform: scale(1.3); }
+  }
+
+  .status-live-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    color: #16a34a;
+    text-transform: uppercase;
+  }
+
+  .btn-nav-cta {
+    font-size: 13px;
+    font-weight: 700;
+    color: #ffffff;
+    text-decoration: none;
+    padding: 9px 20px;
+    border-radius: 9999px;
+    background: #2563eb;
+    box-shadow: 0 2px 8px rgba(37, 99, 235, 0.3);
+    transition: all 0.15s ease;
+  }
+
+  .btn-nav-cta:hover {
+    background: #1d4ed8;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
+  }
+
+  @media (max-width: 768px) {
+    .navbar-links { display: none; }
+    .navbar { padding: 0 20px; }
+  }
+
+  /* ══════════════════════════════════════════
+     HERO SECTION — fondo claro continuo
+     ══════════════════════════════════════════ */
+  .hero-section {
+    flex: 1;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr auto;
+    align-items: center;
+    padding: 60px 80px 48px;
+    gap: 40px;
+    background: linear-gradient(155deg, #f8faff 0%, #eef2ff 50%, #f0f9ff 100%);
+    position: relative;
+    min-height: calc(100vh - 68px - 60px);
+  }
+
+  .hero-copy {
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+    max-width: 540px;
+  }
+
+  .hero-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: #e0e7ff;
+    color: #3730a3;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 6px 14px;
+    border-radius: 9999px;
+    border: 1px solid rgba(99, 102, 241, 0.25);
+    width: fit-content;
+  }
+
+  .hero-headline {
+    font-size: clamp(38px, 4.4vw, 56px);
+    font-weight: 900;
+    line-height: 1.08;
+    letter-spacing: -0.03em;
+    color: #0f172a;
+  }
+
+  .hero-accent {
+    color: #2563eb;
+  }
+
+  .hero-subline {
+    font-size: 16px;
+    line-height: 1.65;
+    color: #475569;
+    max-width: 480px;
+  }
+
+  .hero-ctas {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex-wrap: wrap;
+    margin-top: 6px;
+  }
+
+  .btn-hero-primary {
+    background: #2563eb;
+    color: #ffffff;
+    font-size: 15px;
+    font-weight: 700;
+    padding: 13px 28px;
+    border-radius: 9999px;
+    text-decoration: none;
+    box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35);
+    transition: all 0.2s ease;
+  }
+
+  .btn-hero-primary:hover {
+    background: #1d4ed8;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(37, 99, 235, 0.45);
+  }
+
+  .btn-hero-secondary {
+    font-size: 15px;
+    font-weight: 600;
+    color: #475569;
+    background: #ffffff;
+    text-decoration: none;
+    padding: 13px 24px;
+    border-radius: 9999px;
+    border: 1px solid #cbd5e1;
+    transition: all 0.15s ease;
+  }
+
+  .btn-hero-secondary:hover {
+    background: #f8fafc;
+    color: #0f172a;
+    border-color: #94a3b8;
+  }
+
+  /* Columna derecha — red de nodos */
+  .hero-network {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 420px;
+  }
+
+  .network-svg {
+    width: 100%;
+    max-width: 640px;
+    height: auto;
+    animation: net-float 7s ease-in-out infinite;
+  }
+
+  @keyframes net-float {
+    0%, 100% { transform: translateY(0); }
+    50%       { transform: translateY(-10px); }
+  }
+
+  /* Badges flotantes */
+  .hero-badge {
+    position: absolute;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(255, 255, 255, 0.95);
+    border: 1px solid rgba(99, 102, 241, 0.2);
+    backdrop-filter: blur(8px);
+    border-radius: 12px;
+    padding: 10px 16px;
+    font-size: 12px;
+    box-shadow: 0 10px 25px rgba(37, 99, 235, 0.1);
+    pointer-events: none;
+  }
+
+  .badge-ec {
+    top: 6%;
+    right: 2%;
+    animation: badge-fl 6s ease-in-out infinite;
+  }
+
+  .badge-offline {
+    bottom: 6%;
+    left: 2%;
+    animation: badge-fl 6s ease-in-out infinite;
+    animation-delay: -3s;
+  }
+
+  @keyframes badge-fl {
+    0%, 100% { transform: translateY(0); }
+    50%       { transform: translateY(-6px); }
+  }
+
+  .badge-text {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .badge-text strong {
+    font-size: 12px;
+    font-weight: 700;
+    color: #0f172a;
+  }
+
+  .badge-text span {
+    font-size: 10px;
+    color: #64748b;
+  }
+
+  /* Logos inferiores */
+  .hero-logos {
+    grid-column: 1 / -1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    padding-top: 36px;
+    border-top: 1px solid rgba(99, 102, 241, 0.12);
+  }
+
+  .logos-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    color: #94a3b8;
+  }
+
+  .logos-row {
+    display: flex;
+    align-items: center;
+    gap: 40px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .org-logo {
+    font-size: 13px;
+    font-weight: 800;
+    color: #64748b;
+    letter-spacing: 0.04em;
+    opacity: 0.8;
+    transition: opacity 0.15s ease;
+    white-space: nowrap;
+  }
+
+  .org-logo:hover {
+    opacity: 1;
+    color: #1e293b;
+  }
+
+  @media (max-width: 900px) {
+    .hero-section {
+      grid-template-columns: 1fr;
+      padding: 40px 20px 32px;
+    }
+    .hero-network { min-height: 280px; }
+    .hero-badge   { display: none; }
+    .hero-logos   { grid-column: 1; }
+  }
+
+  /* ══════════════════════════════════════════
+     FOOTER continuo estilo Remote.com
+     ══════════════════════════════════════════ */
+  .footer-remote {
+    background: #ffffff;
+    border-top: 1px solid rgba(0, 0, 0, 0.06);
+    padding: 18px 48px;
+    font-size: 12px;
+    color: #64748b;
+  }
+
+  .footer-remote-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .footer-links {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .footer-links a {
+    color: #2563eb;
+    text-decoration: none;
+    font-weight: 500;
+  }
+
+  .footer-links a:hover {
+    text-decoration: underline;
+  }
+
+  @media (max-width: 640px) {
+    .footer-remote {
+      padding: 18px 20px;
+    }
+    .footer-remote-content {
+      flex-direction: column;
+      text-align: center;
+    }
+  }
+</style>

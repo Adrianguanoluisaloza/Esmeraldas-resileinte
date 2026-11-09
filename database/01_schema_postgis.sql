@@ -110,5 +110,34 @@ CREATE TABLE alertas (
   vigente     BOOLEAN      NOT NULL DEFAULT true
 );
 
--- Pendiente (Módulo 5): familias, inventario y entregas de asistencia. Se agrega en 03_asistencia.sql
--- cuando se decida el alcance; requiere cifrado o acceso restringido de datos personales.
+CREATE INDEX alertas_vigentes ON alertas (vigente, creado_en DESC);
+
+-- Módulo 5: entregas de asistencia humanitaria ----------------------------------------------------
+-- Cada entrega cubre una necesidad de un reporte. Solo el COE la registra; no se edita ni se borra.
+CREATE TABLE entregas (
+  id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  reporte_id    UUID NOT NULL REFERENCES reportes (id) ON DELETE RESTRICT,
+  necesidad     VARCHAR(10)  NOT NULL CHECK (necesidad IN ('agua', 'alimentos', 'medicinas', 'rescate')),
+  cantidad      INTEGER      NOT NULL CHECK (cantidad > 0 AND cantidad <= 100000),
+  nota          VARCHAR(500),
+  entregado_por UUID REFERENCES usuarios (id) ON DELETE SET NULL,
+  entregado_en  TIMESTAMPTZ  NOT NULL DEFAULT now()
+);
+CREATE INDEX entregas_reporte ON entregas (reporte_id, necesidad);
+
+-- Integridad extra --------------------------------------------------------------------------------
+ALTER TABLE reportes ADD CONSTRAINT reportes_vulnerables_coherentes
+  CHECK (ninos + adultos_mayores <= GREATEST(personas_afectadas, ninos + adultos_mayores));
+ALTER TABLE reportes ADD CONSTRAINT reportes_coordenadas_esmeraldas
+  CHECK (ST_Y(geom) BETWEEN -0.5 AND 1.6 AND ST_X(geom) BETWEEN -80.3 AND -78.4);
+
+-- Auditoría: historial y entregas son de solo inserción. Ni la API puede reescribir el pasado.
+CREATE OR REPLACE FUNCTION bloquear_cambios() RETURNS trigger LANGUAGE plpgsql AS $$
+BEGIN
+  RAISE EXCEPTION 'La tabla % es de solo inserción (auditoría)', TG_TABLE_NAME;
+END;
+$$;
+CREATE TRIGGER historial_inmutable BEFORE UPDATE OR DELETE ON reportes_historial
+  FOR EACH ROW EXECUTE FUNCTION bloquear_cambios();
+CREATE TRIGGER entregas_inmutables BEFORE UPDATE OR DELETE ON entregas
+  FOR EACH ROW EXECUTE FUNCTION bloquear_cambios();

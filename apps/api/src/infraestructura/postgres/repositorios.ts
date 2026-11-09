@@ -1,9 +1,10 @@
-import { existsSync, readFileSync } from "node:fs";
-import { resolve } from "node:path";
 import pg from "pg";
 import type { TipoPuntoServicio } from "../../dominio/catalogos.js";
+import type { Alerta, Entrega, EstadoVia, HistorialEstado } from "../../dominio/operacion.js";
 import type {
   Cercania,
+  RepositorioAlertas,
+  RepositorioAsistencia,
   FiltroReportes,
   GeoJsonColeccion,
   RepositorioReportes,
@@ -21,152 +22,6 @@ import type { Reporte } from "../../dominio/reporte.js";
 
 export function crearPool(url: string): pg.Pool {
   return new pg.Pool({ connectionString: url, max: 10, idleTimeoutMillis: 30_000, connectionTimeoutMillis: 5_000 });
-}
-
-const SHIM_SIN_POSTGIS_SQL = `
-CREATE EXTENSION IF NOT EXISTS pgcrypto;
-
-DO $$ BEGIN
-  IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'geometry') THEN
-    CREATE DOMAIN geometry AS TEXT;
-  END IF;
-  IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'geography') THEN
-    CREATE DOMAIN geography AS TEXT;
-  END IF;
-END $$;
-
-CREATE OR REPLACE FUNCTION ST_MakePoint(lon double precision, lat double precision)
-RETURNS geometry LANGUAGE sql IMMUTABLE AS $f$
-  SELECT jsonb_build_object('type', 'Point', 'coordinates', jsonb_build_array(lon, lat))::text::geometry;
-$f$;
-
-CREATE OR REPLACE FUNCTION ST_SetSRID(g geometry, srid integer)
-RETURNS geometry LANGUAGE sql IMMUTABLE AS $f$
-  SELECT g;
-$f$;
-
-CREATE OR REPLACE FUNCTION ST_X(g geometry)
-RETURNS double precision LANGUAGE sql IMMUTABLE AS $f$
-  SELECT ((g::jsonb)->'coordinates'->>0)::double precision;
-$f$;
-
-CREATE OR REPLACE FUNCTION ST_Y(g geometry)
-RETURNS double precision LANGUAGE sql IMMUTABLE AS $f$
-  SELECT ((g::jsonb)->'coordinates'->>1)::double precision;
-$f$;
-
-CREATE OR REPLACE FUNCTION ST_AsGeoJSON(g geometry, max_digits integer DEFAULT 6)
-RETURNS text LANGUAGE sql IMMUTABLE AS $f$
-  SELECT g::text;
-$f$;
-
-CREATE OR REPLACE FUNCTION ST_GeomFromText(wkt text, srid integer DEFAULT 4326)
-RETURNS geometry LANGUAGE plpgsql IMMUTABLE AS $f$
-DECLARE
-  limpio text;
-  par text;
-  partes text[];
-  coords jsonb := '[]'::jsonb;
-BEGIN
-  limpio := btrim(translate(regexp_replace(wkt, '^[A-Za-z]+', ''), '()', ''));
-  FOREACH par IN ARRAY string_to_array(limpio, ',') LOOP
-    partes := regexp_split_to_array(btrim(par), '[[:space:]]+');
-    coords := coords || jsonb_build_array(jsonb_build_array(partes[1]::double precision, partes[2]::double precision));
-  END LOOP;
-  IF upper(btrim(wkt)) LIKE 'POLYGON%' THEN
-    RETURN jsonb_build_object('type', 'Polygon', 'coordinates', jsonb_build_array(coords))::text::geometry;
-  ELSIF upper(btrim(wkt)) LIKE 'LINESTRING%' THEN
-    RETURN jsonb_build_object('type', 'LineString', 'coordinates', coords)::text::geometry;
-  ELSE
-    RETURN wkt::geometry;
-  END IF;
-END;
-$f$;
-
-CREATE OR REPLACE FUNCTION ST_Contains(poly geometry, pt geometry)
-RETURNS boolean LANGUAGE plpgsql IMMUTABLE AS $f$
-DECLARE
-  anillo jsonb;
-  px double precision;
-  py double precision;
-  min_x double precision := 999999;
-  max_x double precision := -999999;
-  min_y double precision := 999999;
-  max_y double precision := -999999;
-  vertice jsonb;
-  vx double precision;
-  vy double precision;
-BEGIN
-  anillo := (poly::jsonb)->'coordinates'->0;
-  px := ST_X(pt);
-  py := ST_Y(pt);
-  FOR vertice IN SELECT * FROM jsonb_array_elements(anillo) LOOP
-    vx := (vertice->>0)::double precision;
-    vy := (vertice->>1)::double precision;
-    IF vx < min_x THEN min_x := vx; END IF;
-    IF vx > max_x THEN max_x := vx; END IF;
-    IF vy < min_y THEN min_y := vy; END IF;
-    IF vy > max_y THEN max_y := vy; END IF;
-  END LOOP;
-  RETURN px >= min_x AND px <= max_x AND py >= min_y AND py <= max_y;
-END;
-$f$;
-
-CREATE OR REPLACE FUNCTION ST_Distance(g1 geography, g2 geography)
-RETURNS double precision LANGUAGE plpgsql IMMUTABLE AS $f$
-DECLARE
-  lon1 double precision := radians(((g1::jsonb)->'coordinates'->>0)::double precision);
-  lat1 double precision := radians(((g1::jsonb)->'coordinates'->>1)::double precision);
-  lon2 double precision := radians(((g2::jsonb)->'coordinates'->>0)::double precision);
-  lat2 double precision := radians(((g2::jsonb)->'coordinates'->>1)::double precision);
-  dlon double precision := lon2 - lon1;
-  dlat double precision := lat2 - lat1;
-  a double precision;
-BEGIN
-  a := pow(sin(dlat / 2), 2) + cos(lat1) * cos(lat2) * pow(sin(dlon / 2), 2);
-  RETURN 6371000.0 * 2.0 * asin(least(1.0, sqrt(a)));
-END;
-$f$;
-`;
-
-function buscarCarpetaDatabase(): string | null {
-  for (const ruta of [resolve(process.cwd(), "database"), resolve(process.cwd(), "../../database")]) {
-    if (existsSync(resolve(ruta, "01_schema_postgis.sql"))) return ruta;
-  }
-  return null;
-}
-
-/**
- * Inicializa automáticamente las tablas y la semilla en PostgreSQL si la base está vacía.
- * Usa la extensión PostGIS nativa cuando está disponible (Docker / Oracle Cloud) o funciones
- * equivalentes en SQL puro si el PostgreSQL local no tiene el binario de PostGIS instalado.
- */
-export async function asegurarEsquemaPostgres(db: pg.Pool): Promise<void> {
-  const ext = await db.query("SELECT 1 FROM pg_available_extensions WHERE name = 'postgis'");
-  const tienePostgis = (ext.rowCount ?? 0) > 0;
-  if (!tienePostgis) {
-    await db.query(SHIM_SIN_POSTGIS_SQL);
-  }
-
-  const existeTabla = await db.query("SELECT to_regclass('public.reportes') AS reg");
-  const dir = buscarCarpetaDatabase();
-  if (!existeTabla.rows[0]?.reg && dir) {
-    let schemaSql = readFileSync(resolve(dir, "01_schema_postgis.sql"), "utf8");
-    if (!tienePostgis) {
-      schemaSql = schemaSql
-        .replace(/CREATE EXTENSION IF NOT EXISTS postgis;/gi, "-- postgis shim")
-        .replace(/GEOMETRY\s*\([^)]+\)/gi, "geometry")
-        .replace(/USING GIST\s*\(geom\)/gi, "(geom)");
-    }
-    await db.query(schemaSql);
-  }
-  if (dir) {
-    const conteoZonas = await db.query("SELECT count(*)::int AS n FROM zonas_riesgo");
-    if ((conteoZonas.rows[0]?.n ?? 0) === 0) {
-      const seedSql = readFileSync(resolve(dir, "02_seed_escenario_06am.sql"), "utf8");
-      await db.query(seedSql);
-    }
-  }
 }
 
 const iso = (v: unknown) => (v instanceof Date ? v.toISOString() : String(v));
@@ -255,7 +110,7 @@ export class ReportesPg implements RepositorioReportes {
   }
 
   /** Cambio de estado + historial en una sola transacción (ACID). */
-  async actualizarEstado(id: string, c: Pick<Reporte, "estado" | "verificado">, nota: string | null, operadorId: string) {
+  async actualizarEstado(id: string, c: Pick<Reporte, "estado" | "verificado">, nota: string | null, operador: { id: string; nombre: string }) {
     const cliente = await this.db.connect();
     try {
       await cliente.query("BEGIN");
@@ -268,7 +123,7 @@ export class ReportesPg implements RepositorioReportes {
       await cliente.query(
         `INSERT INTO reportes_historial (reporte_id, estado_anterior, estado_nuevo, operador_id, nota)
          VALUES ($1, $2, $3, $4, $5)`,
-        [id, previo.rows[0].estado, c.estado, operadorId, nota],
+        [id, previo.rows[0].estado, c.estado, operador.id, nota],
       );
       const r = await cliente.query(`SELECT ${COLUMNAS_REPORTE} FROM reportes WHERE id = $1`, [id]);
       await cliente.query("COMMIT");
@@ -279,6 +134,16 @@ export class ReportesPg implements RepositorioReportes {
     } finally {
       cliente.release();
     }
+  }
+
+  async historial(id: string): Promise<HistorialEstado[]> {
+    const r = await this.db.query(
+      `SELECT h.id, h.estado_anterior, h.estado_nuevo, u.nombre AS operador_nombre, h.nota, h.fecha
+       FROM reportes_historial h LEFT JOIN usuarios u ON u.id = h.operador_id
+       WHERE h.reporte_id = $1 ORDER BY h.fecha`,
+      [id],
+    );
+    return r.rows.map((f) => ({ ...f, fecha: iso(f.fecha) }) as HistorialEstado);
   }
 
   async guardarFoto(id: string, url: string, miniaturaUrl: string) {
@@ -350,11 +215,71 @@ export class TerritorioPg implements RepositorioTerritorio {
     return r.rows.map((f) => ({ ...filaPunto(f), distancia_m: Number(f.distancia_m) }));
   }
 
+  async actualizarVia(id: string, estado: EstadoVia) {
+    const r = await this.db.query(
+      `UPDATE vias SET estado = $2, actualizado_en = now() WHERE id = $1
+       RETURNING id, nombre, estado, origen, actualizado_en`,
+      [id, estado],
+    );
+    return r.rows[0] ? { ...r.rows[0], actualizado_en: iso(r.rows[0].actualizado_en) } : null;
+  }
+
   async actualizarOcupacion(id: string, ocupacion: number) {
     const r = await this.db.query(
       `UPDATE puntos_servicio SET ocupacion = $2, actualizado_en = now() WHERE id = $1 RETURNING ${COLUMNAS_PUNTO}`,
       [id, ocupacion],
     );
     return r.rows[0] ? filaPunto(r.rows[0]) : null;
+  }
+}
+
+const filaAlerta = (f: Record<string, unknown>) => ({ ...(f as unknown as Alerta), creado_en: iso(f.creado_en) });
+
+export class AlertasPg implements RepositorioAlertas {
+  constructor(private readonly db: pg.Pool) {}
+
+  async listar(soloVigentes: boolean) {
+    const r = await this.db.query(
+      `SELECT id, sector, mensaje, nivel, origen, creado_por, creado_en, vigente FROM alertas
+       WHERE (NOT $1 OR vigente) ORDER BY creado_en DESC LIMIT 200`,
+      [soloVigentes],
+    );
+    return r.rows.map(filaAlerta);
+  }
+
+  async crear(a: Alerta) {
+    await this.db.query(
+      `INSERT INTO alertas (id, sector, mensaje, nivel, origen, creado_por, creado_en, vigente)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
+      [a.id, a.sector, a.mensaje, a.nivel, a.origen, a.creado_por, a.creado_en, a.vigente],
+    );
+  }
+
+  async cerrar(id: string) {
+    const r = await this.db.query(
+      `UPDATE alertas SET vigente = false WHERE id = $1
+       RETURNING id, sector, mensaje, nivel, origen, creado_por, creado_en, vigente`,
+      [id],
+    );
+    return r.rows[0] ? filaAlerta(r.rows[0]) : null;
+  }
+}
+
+export class AsistenciaPg implements RepositorioAsistencia {
+  constructor(private readonly db: pg.Pool) {}
+
+  async registrar(e: Entrega) {
+    await this.db.query(
+      `INSERT INTO entregas (id, reporte_id, necesidad, cantidad, nota, entregado_por, entregado_en)
+       VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+      [e.id, e.reporte_id, e.necesidad, e.cantidad, e.nota, e.entregado_por, e.entregado_en],
+    );
+  }
+
+  async listar() {
+    const r = await this.db.query(
+      "SELECT id, reporte_id, necesidad, cantidad, nota, entregado_por, entregado_en FROM entregas ORDER BY entregado_en DESC LIMIT 5000",
+    );
+    return r.rows.map((f) => ({ ...f, entregado_en: iso(f.entregado_en) }) as Entrega);
   }
 }
