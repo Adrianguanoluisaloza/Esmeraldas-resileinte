@@ -124,3 +124,10 @@ Este documento registra decisiones, avances, bloqueos y pendientes importantes. 
 - **Decisión:** El backend mantiene Clean Architecture y usa memoria como respaldo de desarrollo cuando PostgreSQL no está disponible; los secretos se suministran mediante variables de entorno.
 - **Validación:** Se añadieron pruebas de API y dominio en `apps/api/test/`; queda pendiente ejecutarlas con las dependencias instaladas y validar la conexión real a PostGIS.
 - **Pendientes:** Configurar las variables de entorno del backend, levantar PostgreSQL con Docker y probar los endpoints contra la base de datos.
+
+## 2026-11-09
+- **Área:** mobile | backend | base de datos
+- **Cambio:** Se corrigió la sincronización automática de la cola en `HomeShellPage` al guardar un reporte y al iniciar la app, se agregaron los pines interactivos de reportes en el mapa inicial del ciudadano (`CrearReportePage` y `MapaFondoEsmeraldas` tanto en `FlutterMap` como en el mapa vectorial offline) y se unió la cola local de Hive con `OperacionesRepository`. Se implementó `PhotoCaptureService` para pedir permisos nativos de cámara/galería en Android e iOS, comprimir las fotos a máximo 1280 px (calidad 75%) y guardarlas en la carpeta de documentos de la app fuera de Hive. En `apps/api` se añadió `asegurarEsquemaPostgres` con soporte automático para PostGIS y PostgreSQL 18 local, junto con la creación automática de cuentas demo en `ALMACEN=postgres`.
+- **Decisión:** El backend verifica e inicializa automáticamente `01_schema_postgis.sql` y `02_seed_escenario_06am.sql` al arrancar en modo `postgres`, y la app móvil ejecuta la sincronización en dos pasos de inmediato cuando hay conexión activa.
+- **Validación:** `npm run test:db` en `apps/api` (14/14 pruebas pasadas contra PostgreSQL 18), `GET /salud` respondiendo `200 {"estado":"ok"}`, `dart format --set-exit-if-changed lib test`, `flutter analyze` (0 issues) y `flutter test` (100% pass).
+- **Pendientes:** Probar el flujo de cámara y sincronización en dispositivo físico Android conectado al backend.
