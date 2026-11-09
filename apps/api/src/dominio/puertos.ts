@@ -1,6 +1,7 @@
 import type { Rol } from "./catalogos.js";
 import type { PuntoServicio } from "./puntoServicio.js";
 import type { Reporte } from "./reporte.js";
+import type { Alerta, Entrega, EstadoVia, HistorialEstado } from "./operacion.js";
 import type { EstadoReporte, Gravedad, TipoIncidente, TipoPuntoServicio } from "./catalogos.js";
 
 /**
@@ -44,6 +45,19 @@ export interface RepositorioReportes {
   listar(filtro: FiltroReportes): Promise<{ total: number; items: Reporte[] }>;
   actualizarEstado(id: string, cambios: Pick<Reporte, "estado" | "verificado">, nota: string | null, operadorId: string): Promise<Reporte | null>;
   guardarFoto(id: string, url: string, miniaturaUrl: string): Promise<Reporte | null>;
+  historial(id: string): Promise<HistorialEstado[]>;
+}
+
+export interface RepositorioAlertas {
+  listar(soloVigentes: boolean): Promise<Alerta[]>;
+  crear(a: Alerta): Promise<void>;
+  cerrar(id: string): Promise<Alerta | null>;
+}
+
+/** Módulo 5: entregas de asistencia humanitaria ligadas a un reporte. */
+export interface RepositorioAsistencia {
+  registrar(e: Entrega): Promise<void>;
+  listar(): Promise<Entrega[]>;
 }
 
 /** Donde viven los archivos de foto. Hoy disco local (volumen Docker); mañana Object Storage de Oracle o R2. */
@@ -71,6 +85,8 @@ export interface RepositorioTerritorio {
   /** Puntos activos con cupo, ordenados por distancia real (ST_Distance sobre geography). */
   puntosCercanos(c: Cercania): Promise<Array<PuntoServicio & { distancia_m: number }>>;
   actualizarOcupacion(id: string, ocupacion: number): Promise<PuntoServicio | null>;
+  /** Cambia el estado de una vía; devuelve sus propiedades o null si no existe. */
+  actualizarVia(id: string, estado: EstadoVia): Promise<Record<string, unknown> | null>;
 }
 
 export interface GeoJsonColeccion {
@@ -93,7 +109,9 @@ export type EventoTiempoReal =
   | { tipo: "reporte.creado"; datos: Reporte }
   | { tipo: "reporte.estado"; datos: Reporte }
   | { tipo: "punto.ocupacion"; datos: PuntoServicio }
-  | { tipo: "alerta.emitida"; datos: unknown };
+  | { tipo: "alerta.emitida"; datos: Alerta }
+  | { tipo: "via.estado"; datos: Record<string, unknown> }
+  | { tipo: "asistencia.entrega"; datos: Entrega };
 
 export interface PublicadorEventos {
   publicar(evento: EventoTiempoReal): void;

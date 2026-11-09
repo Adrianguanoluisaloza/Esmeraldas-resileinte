@@ -15,11 +15,14 @@ services:
       POSTGRES_DB: ${POSTGRES_DB:-resiliente}
       POSTGRES_USER: ${POSTGRES_USER:-resiliente}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Define POSTGRES_PASSWORD en .env}
+      # Clave del usuario restringido que usa la API (lo crea 03_rol_aplicacion.sh).
+      APP_DB_PASSWORD: ${APP_DB_PASSWORD:?Define APP_DB_PASSWORD en .env}
     volumes:
       - datos_db:/var/lib/postgresql/data
       # Solo se ejecutan la primera vez (base vacía). Para recargar: docker compose down -v
       - ./database/01_schema_postgis.sql:/docker-entrypoint-initdb.d/01_schema_postgis.sql:ro
       - ./database/02_seed_escenario_06am.sql:/docker-entrypoint-initdb.d/02_seed_escenario_06am.sql:ro
+      - ./database/03_rol_aplicacion.sh:/docker-entrypoint-initdb.d/03_rol_aplicacion.sh:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
       interval: 10s
@@ -40,13 +43,26 @@ services:
       APP_ENV: ${APP_ENV:-production}
       PORT: 3000
       ALMACEN: postgres
-      DATABASE_URL: postgres://${POSTGRES_USER:-resiliente}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-resiliente}
+      # La API entra con el usuario de permisos mínimos, nunca con el dueño de la base.
+      DATABASE_URL: postgres://resiliente_app:${APP_DB_PASSWORD}@db:5432/${POSTGRES_DB:-resiliente}
       JWT_SECRET: ${JWT_SECRET:?Define JWT_SECRET en .env}
       CORS_ORIGENES: ${CORS_ORIGENES:-http://localhost:4321,https://esmeraldas-resiliente.eliasadrianlozadaguanoluisa.workers.dev}
+      # Detrás de Cloudflare Tunnel: usar CF-Connecting-IP para el límite de peticiones.
+      CONFIAR_EN_PROXY: ${CONFIAR_EN_PROXY:-true}
+    # Contenedor endurecido: sin privilegios extra y sistema de archivos de solo lectura (fotos en volumen).
+    read_only: true
+    tmpfs:
+      - /tmp
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
     volumes:
       - fotos:/datos/fotos
     ports:
-      - "${API_PUERTO:-3000}:3000"
+      # Solo escucha en la propia máquina: el acceso público entra por Cloudflare Tunnel.
+      # Para probar desde otro equipo de la red local: API_ESCUCHA=0.0.0.0 en .env.
+      - "${API_ESCUCHA:-127.0.0.1}:${API_PUERTO:-3000}:3000"
 
 networks:
   esmeraldas-net:

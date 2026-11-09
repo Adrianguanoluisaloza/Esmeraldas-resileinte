@@ -1,6 +1,7 @@
 import type { Context, MiddlewareHandler } from "hono";
 import type { z } from "zod";
 import type { CasosAuth } from "../aplicacion/auth.js";
+import type { CasosOperacion } from "../aplicacion/operacion.js";
 import type { CasosReportes } from "../aplicacion/reportes.js";
 import type { CasosTerritorio } from "../aplicacion/territorio.js";
 import type { Rol } from "../dominio/catalogos.js";
@@ -12,10 +13,13 @@ export interface Dependencias {
   auth: CasosAuth;
   reportes: CasosReportes;
   territorio: CasosTerritorio;
+  operacion: CasosOperacion;
   repoReportes: RepositorioReportes;
   fotos: AlmacenFotos;
   tokens: ServicioTokens;
   corsOrigenes: string[];
+  confiarEnProxy: boolean;
+  limiteEscriturasMinuto: number;
   /** Comprueba la base de datos para GET /salud. */
   comprobarAlmacen: () => Promise<boolean>;
 }
