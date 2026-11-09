@@ -1,7 +1,7 @@
-# Tareas móvil para Franco y su IA
+# Tareas móvil
 
-Carril: app Flutter (rama `desarrollofranco`). Complementa `indicaciones-flutter-franco.md` y
-`decision-mapas-hive-postgis.md`. La API ya responde de verdad: estas tareas conectan la app.
+Carril: app Flutter (rama `desarrollofranco`). Complementa `docs/movil/indicaciones-flutter.md` y
+`docs/arquitectura/decision-mapas-hive-postgis.md`. La API ya responde de verdad: estas tareas conectan la app.
 
 > [!IMPORTANT]
 > **API PÚBLICA EN VIVO PARA CONECTARTE DESDE OTRA PC O CELULAR:**
@@ -82,3 +82,19 @@ flutter test
 ```
 
 Y la prueba real: celular en modo avión, crear reporte con foto, cerrar la app, abrirla, quitar modo avión.
+
+## M6. Alertas y vías en la app
+
+`GET /alertas` (sin token) en la pantalla "Albergues y alertas": oficial en rojo, simulacro con borde discontinuo y la
+palabra "Simulacro". Escuchar `alerta.emitida` y `via.estado` por `GET /ws?token=` cuando haya red.
+
+## M7. Una sola carpeta de la app
+
+Hoy hay dos proyectos Flutter: `apps/mobile` (el inicial, solo `main.dart`) y `mobile/` (el real). Dejar uno solo
+en `apps/mobile` (mover `mobile/` ahí y borrar el inicial) en un commit propio, y avisar antes de hacerlo.
+
+## M8. No editar el backend desde esta rama
+
+En `desarrollofranco` hay una copia anterior de `apps/api`. La versión vigente está en las ramas `backend` y
+`desarrollo-adrian`. Al integrar, conservar la de esas ramas; si necesitas un cambio en la API, pídelo al carril backend.
+
