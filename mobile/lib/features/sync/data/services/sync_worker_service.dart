@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import '../../../../core/config/app_config.dart';
 import '../../../../core/enums/app_enums.dart';
 import '../../../../core/error/failures.dart';
@@ -98,9 +99,11 @@ class SyncWorkerService {
             rutaArchivoLocal: reporte.rutaFotoLocal,
           );
 
-          final File archivoLocal = File(reporte.rutaFotoLocal);
-          if (await archivoLocal.exists()) {
-            await archivoLocal.delete();
+          if (!kIsWeb) {
+            final File archivoLocal = File(reporte.rutaFotoLocal);
+            if (await archivoLocal.exists()) {
+              await archivoLocal.delete();
+            }
           }
         }
 

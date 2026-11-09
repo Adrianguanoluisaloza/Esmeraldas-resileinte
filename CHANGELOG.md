@@ -32,6 +32,9 @@ Todos los cambios relevantes del proyecto se registran aquí. Se sigue una estru
 - Modo de ejecución local en memoria para `apps/api` con seed automático de cuentas demo (`@demo.esmeraldas-resiliente.ec`) y 6 eventos del escenario oficial "Jueves 06:00 AM". Integradación total local web↔API.
 - Esqueleto de la aplicación Flutter en `mobile/` con Clean Architecture, cola offline en `hive_ce`, flujo de sincronización en dos pasos (`POST /reportes` y `POST /reportes/:id/foto`) y directorio de albergues con respaldo sin internet.
 - Integración de `TAREAS_MOVIL_FRANCO.md` (M1–M5) en `mobile/`: `DioApiClient` real con interceptor JWT y mapeo de `Failure`s, login/registro y botón de Google OAuth con PKCE, mapa de Esmeraldas (`FlutterMap`) de fondo con respaldo vectorial offline, navegación inferior por rol (ciudadano, operador 911 y administrador), paleta de `docs/DISENO.md` sin emojis y búsqueda de albergue más cercano.
+- Corrección de mapa offline en Flutter (`MapaFondoEsmeraldas`): ahora mantiene marcadores de incidentes, albergues y pin de reporte visibles sobre el mapa vectorial sin conexión.
+- Admisión de reportes de emergencia offline en la API (`POST /reportes`) para ciudadanos sin sesión previa, permitiendo sincronización inmediata al recuperar cobertura.
+- Guía de conectividad y credenciales demo empaquetadas para Franco (`mobile/GUIA_RAPIDA_FRANCO.md`, `mobile/acceso_franco_demo.zip`).
 
 ### Changed
 
