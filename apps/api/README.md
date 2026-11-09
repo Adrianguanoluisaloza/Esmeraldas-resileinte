@@ -36,27 +36,33 @@ TEST_DATABASE_URL=postgres://usuario:clave@localhost:5432/resiliente npm run tes
 
 `npm test` corre en memoria. `test:db` corre la misma suite contra una base con `database/01` y `02` cargados.
 
-## Estado de endpoints
+## Endpoints
 
-| Endpoint | Estado |
-|---|---|
-| `GET /salud` | listo |
-| `POST /auth/login`, `POST /auth/registro` | listo (registro siempre crea ciudadano) |
-| `POST /reportes` (idempotente por UUID), `GET /reportes`, `GET /reportes/{id}`, `PATCH /reportes/{id}/estado` | listo |
-| `POST /reportes/{id}/foto` | listo (JPEG/PNG por bytes reales, 2 MB, miniatura con sharp si está) |
-| `GET /zonas`, `GET /vias` (GeoJSON) | listo |
-| `GET /puntos-servicio`, `GET /puntos-servicio/cercanos`, `PATCH .../ocupacion` | listo |
-| `GET /ws?token=` | listo (eventos filtrados por rol) |
-| `GET/POST /alertas`, `GET /estadisticas`, `GET /estadisticas/recurrencia`, `POST /reportes/{id}/clasificar` | **501**, ver `docs/orquestacion/TAREAS_BACKEND.md` |
+| Módulo del reto | Endpoint | Acceso |
+|---|---|---|
+| — | `GET /salud` | público |
+| — | `POST /auth/login`, `POST /auth/registro` | público (registro siempre crea ciudadano) |
+| 1 GIS | `GET /zonas`, `GET /vias` (GeoJSON) | público |
+| 1 GIS | `PATCH /vias/{id}/estado` | COE |
+| 2 Ciudadanía | `POST /reportes` (idempotente por UUID), `POST /reportes/{id}/foto` | sesión |
+| 2 Ciudadanía | `GET /reportes`, `GET /reportes/{id}` (con historial) | sesión (ciudadano solo lo suyo) |
+| 3 COE | `PATCH /reportes/{id}/estado` | COE |
+| 3 COE | `GET /alertas` (vigentes) | público |
+| 3 COE | `POST /alertas`, `PATCH /alertas/{id}/cerrar`, `GET /alertas?todas=true` | COE |
+| 3 COE | `GET /estadisticas` | COE |
+| 4 Evacuación | `GET /puntos-servicio`, `GET /puntos-servicio/cercanos?lat&lng&personas` | público |
+| 4 Evacuación | `PATCH /puntos-servicio/{id}/ocupacion` | COE |
+| 5 Asistencia | `GET /asistencia/pendientes`, `GET/POST /asistencia/entregas` | COE |
+| 6 Análisis | `GET /estadisticas/recurrencia` (sectores priorizados con reglas explicables) | COE |
+| — | `GET /ws?token=` (tiempo real filtrado por rol) | sesión |
+| fuera de alcance | `POST /reportes/{id}/clasificar` | responde 501 |
 
 ## Errores
 
 Siempre `{ "codigo": "...", "mensaje": "...", "errores": [] }`. Códigos: `VALIDACION` 400, `NO_AUTENTICADO` 401,
 `SIN_PERMISO` 403, `NO_ENCONTRADO` 404, `CONFLICTO` 409, `TRANSICION_INVALIDA` 422, `NO_IMPLEMENTADO` 501,
-`ERROR_INTERNO` 500 (con `id` de petición para buscar en el registro).
+`DEMASIADAS_PETICIONES` 429, `ERROR_INTERNO` 500 (con `id` de petición para buscar en el registro).
 
-## Seguridad aplicada
+## Seguridad
 
-Consultas parametrizadas, validación estricta con zod (campos extra rechazados), coordenadas limitadas a la
-provincia, scrypt para claves, JWT HS256 con expiración, CORS por lista, cabeceras seguras, límite de cuerpo,
-límite de intentos de login, registro sin cuerpo ni coordenadas, ciudadano solo ve lo suyo.
+Ver `docs/SEGURIDAD.md`.

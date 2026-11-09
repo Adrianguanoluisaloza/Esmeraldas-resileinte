@@ -1,7 +1,10 @@
 import pg from "pg";
 import type { TipoPuntoServicio } from "../../dominio/catalogos.js";
+import type { Alerta, Entrega, EstadoVia, HistorialEstado } from "../../dominio/operacion.js";
 import type {
   Cercania,
+  RepositorioAlertas,
+  RepositorioAsistencia,
   FiltroReportes,
   GeoJsonColeccion,
   RepositorioReportes,
@@ -133,6 +136,16 @@ export class ReportesPg implements RepositorioReportes {
     }
   }
 
+  async historial(id: string): Promise<HistorialEstado[]> {
+    const r = await this.db.query(
+      `SELECT h.id, h.estado_anterior, h.estado_nuevo, u.nombre AS operador_nombre, h.nota, h.fecha
+       FROM reportes_historial h LEFT JOIN usuarios u ON u.id = h.operador_id
+       WHERE h.reporte_id = $1 ORDER BY h.fecha`,
+      [id],
+    );
+    return r.rows.map((f) => ({ ...f, fecha: iso(f.fecha) }) as HistorialEstado);
+  }
+
   async guardarFoto(id: string, url: string, miniaturaUrl: string) {
     const r = await this.db.query(
       `UPDATE reportes SET foto_ruta = $2, foto_miniatura_ruta = $3 WHERE id = $1 RETURNING ${COLUMNAS_REPORTE}`,
@@ -202,11 +215,71 @@ export class TerritorioPg implements RepositorioTerritorio {
     return r.rows.map((f) => ({ ...filaPunto(f), distancia_m: Number(f.distancia_m) }));
   }
 
+  async actualizarVia(id: string, estado: EstadoVia) {
+    const r = await this.db.query(
+      `UPDATE vias SET estado = $2, actualizado_en = now() WHERE id = $1
+       RETURNING id, nombre, estado, origen, actualizado_en`,
+      [id, estado],
+    );
+    return r.rows[0] ? { ...r.rows[0], actualizado_en: iso(r.rows[0].actualizado_en) } : null;
+  }
+
   async actualizarOcupacion(id: string, ocupacion: number) {
     const r = await this.db.query(
       `UPDATE puntos_servicio SET ocupacion = $2, actualizado_en = now() WHERE id = $1 RETURNING ${COLUMNAS_PUNTO}`,
       [id, ocupacion],
     );
     return r.rows[0] ? filaPunto(r.rows[0]) : null;
+  }
+}
+
+const filaAlerta = (f: Record<string, unknown>) => ({ ...(f as unknown as Alerta), creado_en: iso(f.creado_en) });
+
+export class AlertasPg implements RepositorioAlertas {
+  constructor(private readonly db: pg.Pool) {}
+
+  async listar(soloVigentes: boolean) {
+    const r = await this.db.query(
+      `SELECT id, sector, mensaje, nivel, origen, creado_por, creado_en, vigente FROM alertas
+       WHERE (NOT $1 OR vigente) ORDER BY creado_en DESC LIMIT 200`,
+      [soloVigentes],
+    );
+    return r.rows.map(filaAlerta);
+  }
+
+  async crear(a: Alerta) {
+    await this.db.query(
+      `INSERT INTO alertas (id, sector, mensaje, nivel, origen, creado_por, creado_en, vigente)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
+      [a.id, a.sector, a.mensaje, a.nivel, a.origen, a.creado_por, a.creado_en, a.vigente],
+    );
+  }
+
+  async cerrar(id: string) {
+    const r = await this.db.query(
+      `UPDATE alertas SET vigente = false WHERE id = $1
+       RETURNING id, sector, mensaje, nivel, origen, creado_por, creado_en, vigente`,
+      [id],
+    );
+    return r.rows[0] ? filaAlerta(r.rows[0]) : null;
+  }
+}
+
+export class AsistenciaPg implements RepositorioAsistencia {
+  constructor(private readonly db: pg.Pool) {}
+
+  async registrar(e: Entrega) {
+    await this.db.query(
+      `INSERT INTO entregas (id, reporte_id, necesidad, cantidad, nota, entregado_por, entregado_en)
+       VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+      [e.id, e.reporte_id, e.necesidad, e.cantidad, e.nota, e.entregado_por, e.entregado_en],
+    );
+  }
+
+  async listar() {
+    const r = await this.db.query(
+      "SELECT id, reporte_id, necesidad, cantidad, nota, entregado_por, entregado_en FROM entregas ORDER BY entregado_en DESC LIMIT 5000",
+    );
+    return r.rows.map((f) => ({ ...f, entregado_en: iso(f.entregado_en) }) as Entrega);
   }
 }

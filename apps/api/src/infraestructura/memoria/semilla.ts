@@ -1,5 +1,6 @@
 import type { PuntoServicio } from "../../dominio/puntoServicio.js";
 import type { GeoJsonColeccion } from "../../dominio/puertos.js";
+import type { Alerta } from "../../dominio/operacion.js";
 import type { Reporte } from "../../dominio/reporte.js";
 
 /**
@@ -20,12 +21,12 @@ export const ZONAS = [
   { id: "a1000000-0000-4000-8000-000000000005", nombre_sector: "El Arenal", tipo_amenaza: "inundacion", nivel_riesgo: "medio", anillo: caja(-79.652, 0.967, -79.646, 0.9725) },
 ] as const;
 
-export const VIAS = [
+export const VIAS: Array<{ id: string; nombre: string; estado: "habilitada" | "parcial" | "bloqueada"; linea: number[][] }> = [
   { id: "a2000000-0000-4000-8000-000000000001", nombre: "Acceso Puente Tachina", estado: "bloqueada", linea: [[-79.645, 0.976], [-79.6385, 0.9824], [-79.632, 0.988]] },
   { id: "a2000000-0000-4000-8000-000000000002", nombre: "Vía Esmeraldas - Tabiazo", estado: "parcial", linea: [[-79.655, 0.945], [-79.645, 0.93], [-79.633, 0.912]] },
   { id: "a2000000-0000-4000-8000-000000000003", nombre: "Av. Jaime Roldós (eje sur)", estado: "habilitada", linea: [[-79.654, 0.97], [-79.66, 0.96], [-79.672, 0.952]] },
   { id: "a2000000-0000-4000-8000-000000000004", nombre: "Malecón - Av. Kennedy", estado: "habilitada", linea: [[-79.653, 0.964], [-79.649, 0.978], [-79.6455, 0.9902]] },
-] as const;
+];
 
 export function zonasGeoJson(): GeoJsonColeccion {
   return {
@@ -68,4 +69,17 @@ export const REPORTES: Reporte[] = [
   { ...base, id: "a4000000-0000-4000-8000-000000000004", tipo: "personas_atrapadas", descripcion: "Evento 4. Familias atrapadas en planta alta, piden evacuación.", gravedad: "critica", estado: "pendiente", latitud: 0.9548, longitud: -79.6695, precision_m: 5, sector: "Barrio 20 de Noviembre", capturado_en: "2026-11-12T11:04:00.000Z", recibido_en: "2026-11-12T11:06:00.000Z", verificado: false, personas_afectadas: 14, ninos: 6, adultos_mayores: 3, necesidades: ["rescate", "medicinas"] },
   { ...base, id: "a4000000-0000-4000-8000-000000000005", tipo: "otro", descripcion: "Evento 5. Albergue temporal UTLVTE cerca del límite de capacidad.", gravedad: "alta", estado: "en_proceso", latitud: 0.9515, longitud: -79.6732, precision_m: 4, sector: "Barrio 20 de Noviembre", capturado_en: "2026-11-12T11:08:00.000Z", recibido_en: "2026-11-12T11:08:00.000Z", verificado: true, personas_afectadas: 112, ninos: 40, adultos_mayores: 15, necesidades: ["alimentos", "agua"] },
   { ...base, id: "a4000000-0000-4000-8000-000000000006", tipo: "otro", descripcion: "Evento 6. Solicitud urgente de agua potable, alimentos y medicamentos.", gravedad: "alta", estado: "pendiente", latitud: 0.97, longitud: -79.649, precision_m: 10, sector: "El Arenal", capturado_en: "2026-11-12T11:10:00.000Z", recibido_en: "2026-11-12T11:11:00.000Z", verificado: false, personas_afectadas: 22, ninos: 8, adultos_mayores: 4, necesidades: ["agua", "alimentos", "medicinas"] },
+];
+
+export const ALERTAS: Alerta[] = [
+  {
+    id: "a5000000-0000-4000-8000-000000000001",
+    sector: "Ribera del río Teaone (Tabiazo)",
+    mensaje: "Simulacro: crecida del río. Dirigirse a zonas altas y seguir indicaciones de las autoridades.",
+    nivel: "critica",
+    origen: "simulada",
+    creado_por: null,
+    creado_en: "2026-11-12T11:15:00.000Z",
+    vigente: true,
+  },
 ];
