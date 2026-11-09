@@ -99,4 +99,10 @@ Este documento registra decisiones, avances, bloqueos y pendientes importantes. 
 - **Validación:** Comprobados endpoints `/salud`, `/auth/login` (generación de JWT con rol operador COE), `/reportes` (retorna los 6 eventos del escenario), `/zonas` y `/vias` (GeoJSON con 5 y 4 features respectivamente). Web sirviendo en puerto 4321 y API en puerto 3000.
 - **Pendientes:** Al llegar a casa, ejecutar `docker compose up -d --build` en la VM de Oracle con la llave SSH local para dejar la infraestructura en la nube activa 24/7.
 
+## 2026-11-09
+- **Área:** infraestructura | túnel | conectividad móvil
+- **Cambio:** Se expuso la API local mediante Cloudflare Tunnel (`cloudflared`) generando la URL pública HTTPS `https://seasonal-acceptable-crimes-remember.trycloudflare.com`. Se documentó en `docs/orquestacion/TAREAS_MOVIL_FRANCO.md` para que Franco pueda conectar la app móvil desde su propia computadora y celular mediante `--dart-define=API_BASE_URL=...`.
+- **Validación:** Comprobado `curl https://seasonal-acceptable-crimes-remember.trycloudflare.com/salud` respondiendo `{"estado":"ok"}` a través de la red global de Cloudflare.
+
+
 
