@@ -21,6 +21,9 @@ Todos los cambios relevantes del proyecto se registran aquí. Se sigue una estru
 - API TypeScript en `apps/api/` con autenticación, reportes, territorio, pendientes, tiempo real y pruebas de API/dominio.
 - Persistencia PostGIS con esquema y datos iniciales en `database/`, además de configuración de desarrollo local con `docker-compose.yml`.
 - Repositorios de memoria como respaldo de desarrollo y configuración del backend mediante variables de entorno, sin incluir secretos en Git.
+- Sincronización automática inmediata al crear reportes ciudadanos en `mobile/`, visualización de pines de incidentes interactivos en el mapa inicial (`MapaFondoEsmeraldas`) tanto online como en modo offline vectorial, e integración de la cola local de Hive con `OperacionesRepository`.
+- Flujo real de captura fotográfica y permisos nativos en `mobile/` (`PhotoCaptureService` con `image_picker`, `flutter_image_compress` y `path_provider`): selector de cámara o galería, manejo de permisos (`CAMERA`, `READ_MEDIA_IMAGES`, `NSCameraUsageDescription`), compresión a 1280 px (JPEG 75%) fuera de Hive y previsualización de miniatura con tamaño en KB.
+- Inicialización automática de esquema y semilla en PostgreSQL (`asegurarEsquemaPostgres` en `apps/api`) con compatibilidad para PostGIS nativo y PostgreSQL 18 estándar, y creación automática de cuentas demo web y móvil en `ALMACEN=postgres`.
 
 ### Planned
 

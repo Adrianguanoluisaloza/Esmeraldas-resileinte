@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:latlong2/latlong.dart';
 
 import '../../../../core/config/app_config.dart';
 import '../../../../core/enums/app_enums.dart';
 import '../../../../core/location/location_service.dart';
+import '../../../../core/services/photo_capture_service.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/mapa_fondo_esmeraldas.dart';
 import '../../../../data/models/punto_servicio_model.dart';
@@ -29,6 +31,7 @@ class CrearReportePage extends StatefulWidget {
     this.puntosServicio = const <PuntoServicioModel>[],
     this.reportes = const <ReporteColaModel>[],
     this.incidentesExtra = const <PinMapaIncidente>[],
+    this.photoCaptureService,
   });
 
   final CrearReporteOfflineUseCase crearReporteUseCase;
@@ -38,6 +41,7 @@ class CrearReportePage extends StatefulWidget {
   final List<PuntoServicioModel> puntosServicio;
   final List<ReporteColaModel> reportes;
   final List<PinMapaIncidente> incidentesExtra;
+  final PhotoCaptureService? photoCaptureService;
 
   @override
   State<CrearReportePage> createState() => _CrearReportePageState();
@@ -45,6 +49,7 @@ class CrearReportePage extends StatefulWidget {
 
 class _CrearReportePageState extends State<CrearReportePage> {
   final MapController _mapController = MapController();
+  late final PhotoCaptureService _photoService;
 
   _PasoReporte _paso = _PasoReporte.mapaInicial;
   TipoIncidente _tipoSeleccionado = TipoIncidente.inundacion;
@@ -54,7 +59,8 @@ class _CrearReportePageState extends State<CrearReportePage> {
   CoordenadaCapturada? _coordenada;
   LatLng? _puntoMarcadoEnMapa;
   bool _capturandoGps = false;
-  String _rutaFotoSimulada = '';
+  bool _capturandoFoto = false;
+  FotoCapturada? _fotoCapturada;
 
   int _personasAfectadas = 0;
   int _ninos = 0;
@@ -74,6 +80,7 @@ class _CrearReportePageState extends State<CrearReportePage> {
   @override
   void initState() {
     super.initState();
+    _photoService = widget.photoCaptureService ?? PhotoCaptureService();
     _obtenerUbicacionDispositivo(centrarMapa: false);
   }
 
@@ -128,6 +135,131 @@ class _CrearReportePageState extends State<CrearReportePage> {
     });
   }
 
+  Future<void> _capturarDesdeOrigen(ImageSource origen) async {
+    setState(() => _capturandoFoto = true);
+    try {
+      final FotoCapturada? foto = await _photoService.capturarYComprimir(
+        origen: origen,
+      );
+      if (!mounted || foto == null) return;
+      setState(() => _fotoCapturada = foto);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Foto comprimida lista (${foto.etiquetaTamano} · máx ${AppConfig.photoMaxDimensionPx} px).',
+          ),
+        ),
+      );
+    } on PermisoCamaraException catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          backgroundColor: AppTheme.colorSemaforoRojo,
+          content: Text(e.mensaje),
+        ),
+      );
+    } finally {
+      if (mounted) {
+        setState(() => _capturandoFoto = false);
+      }
+    }
+  }
+
+  void _mostrarSelectorFoto() {
+    showModalBottomSheet<void>(
+      context: context,
+      showDragHandle: true,
+      builder: (BuildContext ctx) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                const Text(
+                  'Evidencia fotográfica del incidente',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+                ),
+                const SizedBox(height: 4),
+                const Text(
+                  'El celular solicitará permiso de cámara y comprimirá la foto a 1280 px (JPEG 75%) fuera de Hive.',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: AppTheme.colorTextoSecundario,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  leading: const CircleAvatar(
+                    backgroundColor: AppTheme.colorSemaforoRojo,
+                    foregroundColor: Colors.white,
+                    child: Icon(Icons.photo_camera_outlined),
+                  ),
+                  title: const Text(
+                    'Tomar foto con la cámara',
+                    style: TextStyle(fontWeight: FontWeight.w600),
+                  ),
+                  subtitle: const Text(
+                    'Pide permiso de cámara del dispositivo y captura en el sitio',
+                    style: TextStyle(fontSize: 11.5),
+                  ),
+                  onTap: () {
+                    Navigator.of(ctx).pop();
+                    _capturarDesdeOrigen(ImageSource.camera);
+                  },
+                ),
+                ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  leading: const CircleAvatar(
+                    backgroundColor: AppTheme.colorPrimario,
+                    foregroundColor: Colors.white,
+                    child: Icon(Icons.photo_library_outlined),
+                  ),
+                  title: const Text(
+                    'Elegir desde la galería',
+                    style: TextStyle(fontWeight: FontWeight.w600),
+                  ),
+                  subtitle: const Text(
+                    'Selecciona una foto ya tomada en tu celular',
+                    style: TextStyle(fontSize: 11.5),
+                  ),
+                  onTap: () {
+                    Navigator.of(ctx).pop();
+                    _capturarDesdeOrigen(ImageSource.gallery);
+                  },
+                ),
+                if (_fotoCapturada != null) ...<Widget>[
+                  const Divider(),
+                  ListTile(
+                    contentPadding: EdgeInsets.zero,
+                    leading: const CircleAvatar(
+                      backgroundColor: AppTheme.colorCampo,
+                      foregroundColor: AppTheme.colorSemaforoRojo,
+                      child: Icon(Icons.delete_outline),
+                    ),
+                    title: const Text(
+                      'Quitar foto adjunta',
+                      style: TextStyle(
+                        fontWeight: FontWeight.w600,
+                        color: AppTheme.colorSemaforoRojo,
+                      ),
+                    ),
+                    onTap: () {
+                      Navigator.of(ctx).pop();
+                      setState(() => _fotoCapturada = null);
+                    },
+                  ),
+                ],
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   Future<void> _guardarReporteEnCola() async {
     // M3: latitud norte positiva en Esmeraldas (~0.9592)
     final CoordenadaCapturada coordenadaFinal = _puntoMarcadoEnMapa != null
@@ -151,7 +283,7 @@ class _CrearReportePageState extends State<CrearReportePage> {
         descripcion: _descripcionController.text,
         gravedad: _gravedadSeleccionada,
         coordenada: coordenadaFinal,
-        rutaFotoLocal: _rutaFotoSimulada,
+        rutaFotoLocal: _fotoCapturada?.rutaLocal ?? '',
         personasAfectadas: _personasAfectadas,
         ninos: _ninos,
         adultosMayores: _adultosMayores,
@@ -170,7 +302,7 @@ class _CrearReportePageState extends State<CrearReportePage> {
       _ninos = 0;
       _adultosMayores = 0;
       _necesidades.clear();
-      _rutaFotoSimulada = '';
+      _fotoCapturada = null;
       _puntoMarcadoEnMapa = null;
       _paso = _PasoReporte.mapaInicial;
     });
@@ -489,7 +621,7 @@ class _CrearReportePageState extends State<CrearReportePage> {
   }
 
   Widget _construirVistaFormulario() {
-    final bool tieneFoto = _rutaFotoSimulada.isNotEmpty;
+    final bool tieneFoto = _fotoCapturada != null;
     final LatLng coordMostrada = _coordenadaActiva;
 
     return ListView(
@@ -620,40 +752,62 @@ class _CrearReportePageState extends State<CrearReportePage> {
           child: Column(
             children: <Widget>[
               ListTile(
-                onTap: () {
-                  setState(() {
-                    _rutaFotoSimulada = tieneFoto
-                        ? ''
-                        : 'app_docs/evidencia_comprimida_1280px.jpg';
-                  });
-                },
-                leading: Container(
-                  width: 38,
-                  height: 38,
-                  decoration: BoxDecoration(
-                    color: tieneFoto
-                        ? AppTheme.colorSemaforoVerde
-                        : AppTheme.colorSemaforoRojo,
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Icon(
-                    tieneFoto ? Icons.check : Icons.camera_alt_outlined,
-                    color: Colors.white,
-                    size: 20,
-                  ),
-                ),
+                onTap: _capturandoFoto ? null : _mostrarSelectorFoto,
+                leading: _capturandoFoto
+                    ? const SizedBox(
+                        width: 38,
+                        height: 38,
+                        child: Padding(
+                          padding: EdgeInsets.all(8),
+                          child: CircularProgressIndicator(strokeWidth: 2.2),
+                        ),
+                      )
+                    : (tieneFoto && _fotoCapturada!.bytesEnMemoria != null)
+                    ? ClipRRect(
+                        borderRadius: BorderRadius.circular(8),
+                        child: Image.memory(
+                          _fotoCapturada!.bytesEnMemoria!,
+                          width: 38,
+                          height: 38,
+                          fit: BoxFit.cover,
+                        ),
+                      )
+                    : Container(
+                        width: 38,
+                        height: 38,
+                        decoration: BoxDecoration(
+                          color: tieneFoto
+                              ? AppTheme.colorSemaforoVerde
+                              : AppTheme.colorSemaforoRojo,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Icon(
+                          tieneFoto ? Icons.check : Icons.camera_alt_outlined,
+                          color: Colors.white,
+                          size: 20,
+                        ),
+                      ),
                 title: Text(
-                  tieneFoto
-                      ? 'Foto comprimida · 1280 px · ~310 KB'
+                  _capturandoFoto
+                      ? 'Abriendo cámara y comprimiendo foto...'
+                      : tieneFoto
+                      ? 'Foto comprimida · 1280 px · ${_fotoCapturada!.etiquetaTamano}'
                       : '¿Puedes tomar una foto del incidente?',
                   style: const TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
-                subtitle: const Text(
-                  'Se guarda en la carpeta de la app, fuera de Hive',
-                  style: TextStyle(fontSize: 11),
+                subtitle: Text(
+                  tieneFoto
+                      ? 'Toca para cambiar o quitar la evidencia fotográfica'
+                      : 'Pide permiso de cámara y guarda fuera de Hive',
+                  style: const TextStyle(fontSize: 11),
+                ),
+                trailing: Icon(
+                  tieneFoto ? Icons.edit_outlined : Icons.add_a_photo_outlined,
+                  size: 18,
+                  color: AppTheme.colorTextoSecundario,
                 ),
               ),
               const Divider(height: 1),

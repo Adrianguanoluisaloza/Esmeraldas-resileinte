@@ -7,6 +7,7 @@ import '../../data/models/punto_servicio_model.dart';
 import '../../features/auth/domain/repositories/auth_repository.dart';
 import '../config/app_config.dart';
 import '../error/failures.dart';
+import '../services/photo_capture_service.dart';
 
 /// Contrato del cliente HTTP de la aplicación (M1 y M5 de `TAREAS_MOVIL_FRANCO.md`).
 abstract interface class ApiClient {
@@ -302,6 +303,8 @@ class DioApiClient implements ApiClient {
     }
     try {
       MultipartFile archivo;
+      final Uint8List? bytesEnMemoria =
+          PhotoCaptureService.obtenerBytesEnMemoria(rutaArchivoLocal);
       bool existeArchivoFisico = false;
       if (!kIsWeb && rutaArchivoLocal.isNotEmpty) {
         try {
@@ -313,6 +316,11 @@ class DioApiClient implements ApiClient {
       if (existeArchivoFisico) {
         archivo = await MultipartFile.fromFile(
           rutaArchivoLocal,
+          filename: '$reporteId.jpg',
+        );
+      } else if (bytesEnMemoria != null) {
+        archivo = MultipartFile.fromBytes(
+          bytesEnMemoria,
           filename: '$reporteId.jpg',
         );
       } else {

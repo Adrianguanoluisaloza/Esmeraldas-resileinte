@@ -6,6 +6,7 @@ import '../../../../core/config/app_config.dart';
 import '../../../../core/enums/app_enums.dart';
 import '../../../../core/error/failures.dart';
 import '../../../../core/network/api_client.dart';
+import '../../../../core/services/photo_capture_service.dart';
 import '../../../../data/models/reporte_cola_model.dart';
 import '../../../../data/repositories/cola_reportes_repository.dart';
 
@@ -100,6 +101,7 @@ class SyncWorkerService {
             rutaArchivoLocal: reporte.rutaFotoLocal,
           );
 
+          PhotoCaptureService.limpiarBytesEnMemoria(reporte.rutaFotoLocal);
           if (!kIsWeb) {
             try {
               final File archivoLocal = File(reporte.rutaFotoLocal);
