@@ -164,16 +164,23 @@ class AppTheme {
 
 /// Insignia para diferenciar Dato simulado (borde discontinuo `#5B4BC4`) y Alerta oficial (`#1F4FB8`).
 class InsigniaOrigenDato extends StatelessWidget {
-  const InsigniaOrigenDato({super.key, required this.esOficial});
+  const InsigniaOrigenDato({
+    super.key,
+    required this.esOficial,
+    this.etiquetaPersonalizada,
+  });
 
   final bool esOficial;
+  final String? etiquetaPersonalizada;
 
   @override
   Widget build(BuildContext context) {
     final Color color = esOficial
         ? AppTheme.colorOrigenOficial
         : AppTheme.colorOrigenSimulado;
-    final String texto = esOficial ? 'Alerta oficial' : 'Dato simulado';
+    final String texto =
+        etiquetaPersonalizada ??
+        (esOficial ? 'Alerta oficial' : 'Dato simulado');
 
     return CustomPaint(
       painter: _BordeDiscontinuoPainter(color: color, discontinuo: !esOficial),

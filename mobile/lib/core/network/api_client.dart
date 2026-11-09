@@ -1,12 +1,13 @@
 import 'dart:io';
 
-import 'package:flutter/foundation.dart';
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 
 import '../../data/models/punto_servicio_model.dart';
 import '../../features/auth/domain/repositories/auth_repository.dart';
 import '../config/app_config.dart';
 import '../error/failures.dart';
+import '../services/photo_capture_service.dart';
 
 /// Contrato del cliente HTTP de la aplicación (M1 y M5 de `TAREAS_MOVIL_FRANCO.md`).
 abstract interface class ApiClient {
@@ -32,6 +33,36 @@ abstract interface class ApiClient {
     required double lng,
     int personas = 1,
   });
+
+  /// `GET /alertas` (sin token) para mostrar alertas activas en Albergues y alertas (M6).
+  Future<List<Map<String, dynamic>>> obtenerAlertasActivas() async =>
+      const <Map<String, dynamic>>[];
+
+  /// `GET /reportes?limite=100` (con token) para poblar los incidentes georreferenciados en el mapa y panel.
+  Future<List<Map<String, dynamic>>> obtenerReportesRemotos() async =>
+      const <Map<String, dynamic>>[];
+
+  /// `PATCH /reportes/{id}/estado` (operador_911 / admin).
+  Future<void> actualizarEstadoReporteRemoto({
+    required String id,
+    required String estado,
+    required bool verificado,
+    required String nota,
+  }) async {}
+
+  /// `PATCH /albergues/{id}/ocupacion` (operador_911 / admin).
+  Future<void> actualizarOcupacionAlbergueRemoto({
+    required String id,
+    required int ocupacion,
+  }) async {}
+
+  /// `POST /alertas` (operador_911 / admin).
+  Future<void> crearAlertaRemota({
+    required String sector,
+    required String nivel,
+    required String mensaje,
+    required String origen,
+  }) async {}
 }
 
 /// Implementación real con `Dio`, interceptor JWT y mapeo de errores tipados (`Failure`).
@@ -70,196 +101,42 @@ class DioApiClient implements ApiClient {
   final String _baseUrl;
   final AuthRepository? authRepository;
   late final Dio _dio;
+  bool _servidorRealActivo = true;
 
   String get baseUrl => _baseUrl;
-
-  /// JPEG mínimo válido (1x1 px) de respaldo cuando se simula la cámara sin archivo físico.
-  static const List<int> _jpegMinimoDemo = <int>[
-    0xFF,
-    0xD8,
-    0xFF,
-    0xE0,
-    0x00,
-    0x10,
-    0x4A,
-    0x46,
-    0x49,
-    0x46,
-    0x00,
-    0x01,
-    0x01,
-    0x01,
-    0x00,
-    0x48,
-    0x00,
-    0x48,
-    0x00,
-    0x00,
-    0xFF,
-    0xDB,
-    0x00,
-    0x43,
-    0x00,
-    0x03,
-    0x02,
-    0x02,
-    0x02,
-    0x02,
-    0x02,
-    0x03,
-    0x02,
-    0x02,
-    0x02,
-    0x03,
-    0x03,
-    0x03,
-    0x03,
-    0x04,
-    0x06,
-    0x04,
-    0x04,
-    0x04,
-    0x04,
-    0x04,
-    0x08,
-    0x06,
-    0x06,
-    0x05,
-    0x06,
-    0x09,
-    0x08,
-    0x0A,
-    0x0A,
-    0x09,
-    0x08,
-    0x09,
-    0x09,
-    0x0A,
-    0x0C,
-    0x0F,
-    0x0C,
-    0x0A,
-    0x0B,
-    0x0E,
-    0x0B,
-    0x09,
-    0x09,
-    0x0D,
-    0x11,
-    0x0D,
-    0x0E,
-    0x0F,
-    0x10,
-    0x10,
-    0x11,
-    0x10,
-    0x0A,
-    0x0C,
-    0x12,
-    0x13,
-    0x12,
-    0x10,
-    0x13,
-    0x0F,
-    0x10,
-    0x10,
-    0x10,
-    0xFF,
-    0xC0,
-    0x00,
-    0x0B,
-    0x08,
-    0x00,
-    0x01,
-    0x00,
-    0x01,
-    0x01,
-    0x01,
-    0x11,
-    0x00,
-    0xFF,
-    0xC4,
-    0x00,
-    0x14,
-    0x00,
-    0x01,
-    0x00,
-    0x00,
-    0x00,
-    0x00,
-    0x00,
-    0x00,
-    0x00,
-    0x00,
-    0x00,
-    0x00,
-    0x00,
-    0x00,
-    0x00,
-    0x00,
-    0x00,
-    0x09,
-    0xFF,
-    0xC4,
-    0x00,
-    0x14,
-    0x10,
-    0x01,
-    0x00,
-    0x00,
-    0x00,
-    0x00,
-    0x00,
-    0x00,
-    0x00,
-    0x00,
-    0x00,
-    0x00,
-    0x00,
-    0x00,
-    0x00,
-    0x00,
-    0x00,
-    0x00,
-    0xFF,
-    0xDA,
-    0x00,
-    0x08,
-    0x01,
-    0x01,
-    0x00,
-    0x00,
-    0x3F,
-    0x00,
-    0x37,
-    0xFF,
-    0xD9,
-  ];
 
   @override
   Future<bool> verificarSaludServidor() async {
     try {
-      final Response<dynamic> r = await _dio.get<dynamic>(
-        '/salud',
-        options: Options(
-          extra: const <String, dynamic>{'sinToken': true},
-          sendTimeout: const Duration(seconds: 5),
-          receiveTimeout: const Duration(seconds: 5),
-        ),
-      );
+      final Response<dynamic> r = await _dio
+          .get<dynamic>(
+            '/salud',
+            options: Options(
+              extra: const <String, dynamic>{'sinToken': true},
+              sendTimeout: const Duration(seconds: 5),
+              receiveTimeout: const Duration(seconds: 5),
+            ),
+          )
+          .timeout(const Duration(seconds: 5));
+      _servidorRealActivo = true;
       if (r.statusCode == 200 && r.data is Map) {
         return (r.data as Map<dynamic, dynamic>)['estado'] == 'ok';
       }
       return r.statusCode == 200;
     } on DioException {
+      _servidorRealActivo = false;
       return AppConfig.modoDemo;
     } catch (_) {
+      _servidorRealActivo = false;
       return AppConfig.modoDemo;
     }
   }
 
   @override
   Future<void> enviarDatosReporte(Map<String, dynamic> payload) async {
+    if (AppConfig.modoDemo && !_servidorRealActivo) {
+      return;
+    }
     try {
       await _dio.post<dynamic>('/reportes', data: payload);
     } on DioException catch (e) {
@@ -275,26 +152,34 @@ class DioApiClient implements ApiClient {
     required String reporteId,
     required String rutaArchivoLocal,
   }) async {
+    if (AppConfig.modoDemo && !_servidorRealActivo) {
+      return;
+    }
     try {
       MultipartFile archivo;
+      final Uint8List? bytesEnMemoria =
+          PhotoCaptureService.obtenerBytesEnMemoria(rutaArchivoLocal);
+      bool existeArchivoFisico = false;
       if (!kIsWeb && rutaArchivoLocal.isNotEmpty) {
-        final File f = File(rutaArchivoLocal);
-        if (await f.exists()) {
-          archivo = await MultipartFile.fromFile(
-            rutaArchivoLocal,
-            filename: '$reporteId.jpg',
-          );
-        } else {
-          archivo = MultipartFile.fromBytes(
-            _jpegMinimoDemo,
-            filename: '$reporteId.jpg',
-          );
+        try {
+          existeArchivoFisico = await File(rutaArchivoLocal).exists();
+        } catch (_) {
+          existeArchivoFisico = false;
         }
-      } else {
-        archivo = MultipartFile.fromBytes(
-          _jpegMinimoDemo,
+      }
+      if (existeArchivoFisico) {
+        archivo = await MultipartFile.fromFile(
+          rutaArchivoLocal,
           filename: '$reporteId.jpg',
         );
+      } else if (bytesEnMemoria != null) {
+        archivo = MultipartFile.fromBytes(
+          bytesEnMemoria,
+          filename: '$reporteId.jpg',
+        );
+      } else {
+        // M10: No subir fotos falsas de relleno si el archivo ya no existe.
+        return;
       }
       final FormData form = FormData.fromMap(<String, dynamic>{
         'foto': archivo,
@@ -345,6 +230,112 @@ class DioApiClient implements ApiClient {
         options: Options(extra: const <String, dynamic>{'sinToken': true}),
       );
       return _parsearPuntos(r.data);
+    } on DioException catch (e) {
+      throw _mapearError(e);
+    }
+  }
+
+  @override
+  Future<List<Map<String, dynamic>>> obtenerAlertasActivas() async {
+    try {
+      final Response<dynamic> r = await _dio.get<dynamic>(
+        '/alertas',
+        options: Options(extra: const <String, dynamic>{'sinToken': true}),
+      );
+      final dynamic data = r.data;
+      final List<dynamic> lista = data is List
+          ? data
+          : (data is Map && data['datos'] is List)
+          ? data['datos'] as List<dynamic>
+          : (data is Map && data['items'] is List)
+          ? data['items'] as List<dynamic>
+          : const <dynamic>[];
+      return lista
+          .whereType<Map<dynamic, dynamic>>()
+          .map((Map<dynamic, dynamic> m) => Map<String, dynamic>.from(m))
+          .toList();
+    } on DioException catch (e) {
+      throw _mapearError(e);
+    }
+  }
+
+  @override
+  Future<List<Map<String, dynamic>>> obtenerReportesRemotos() async {
+    try {
+      final Response<dynamic> r = await _dio.get<dynamic>(
+        '/reportes',
+        queryParameters: const <String, dynamic>{'limite': 100},
+      );
+      final dynamic data = r.data;
+      final List<dynamic> lista = data is List
+          ? data
+          : (data is Map && data['items'] is List)
+          ? data['items'] as List<dynamic>
+          : (data is Map && data['datos'] is List)
+          ? data['datos'] as List<dynamic>
+          : const <dynamic>[];
+      return lista
+          .whereType<Map<dynamic, dynamic>>()
+          .map((Map<dynamic, dynamic> m) => Map<String, dynamic>.from(m))
+          .toList();
+    } on DioException catch (e) {
+      throw _mapearError(e);
+    }
+  }
+
+  @override
+  Future<void> actualizarEstadoReporteRemoto({
+    required String id,
+    required String estado,
+    required bool verificado,
+    required String nota,
+  }) async {
+    try {
+      await _dio.patch<dynamic>(
+        '/reportes/$id/estado',
+        data: <String, dynamic>{
+          'estado': estado,
+          'verificado': verificado,
+          'nota': nota,
+        },
+      );
+    } on DioException catch (e) {
+      throw _mapearError(e);
+    }
+  }
+
+  @override
+  Future<void> actualizarOcupacionAlbergueRemoto({
+    required String id,
+    required int ocupacion,
+  }) async {
+    try {
+      await _dio.patch<dynamic>(
+        '/albergues/$id/ocupacion',
+        data: <String, dynamic>{'ocupacion': ocupacion},
+      );
+    } on DioException catch (e) {
+      throw _mapearError(e);
+    }
+  }
+
+  @override
+  Future<void> crearAlertaRemota({
+    required String sector,
+    required String nivel,
+    required String mensaje,
+    required String origen,
+  }) async {
+    try {
+      await _dio.post<dynamic>(
+        '/alertas',
+        data: <String, dynamic>{
+          'sector': sector,
+          'nivel': nivel,
+          'mensaje': mensaje,
+          'origen': origen,
+        },
+      );
     } on DioException catch (e) {
       throw _mapearError(e);
     }

@@ -54,42 +54,42 @@ class SecureStorageAuthRepository implements AuthRepository {
 
   final List<Map<String, String>> _cuentasDemo = <Map<String, String>>[
     <String, String>{
-      'id': 'u1',
+      'id': 'b0000000-0000-4000-8000-000000000001',
       'nombre': 'María Quiñónez',
       'correo': 'ciudadano@demo.esmeraldas-resiliente.ec',
       'rol': 'ciudadano',
       'hash': _hash('demo-resiliente-2026'),
     },
     <String, String>{
-      'id': 'u2',
+      'id': 'b0000000-0000-4000-8000-000000000002',
       'nombre': 'Operador Turno A',
       'correo': 'operador@demo.esmeraldas-resiliente.ec',
       'rol': 'operador_911',
       'hash': _hash('demo-resiliente-2026'),
     },
     <String, String>{
-      'id': 'u3',
+      'id': 'b0000000-0000-4000-8000-000000000003',
       'nombre': 'Administrador COE',
       'correo': 'admin@demo.esmeraldas-resiliente.ec',
       'rol': 'admin',
       'hash': _hash('demo-resiliente-2026'),
     },
     <String, String>{
-      'id': 'u1-corto',
+      'id': 'b0000000-0000-4000-8000-000000000004',
       'nombre': 'María Quiñónez',
       'correo': 'ciudadano@demo.ec',
       'rol': 'ciudadano',
       'hash': _hash('Ciudadano#2026'),
     },
     <String, String>{
-      'id': 'u2-corto',
+      'id': 'b0000000-0000-4000-8000-000000000005',
       'nombre': 'Operador Turno A',
       'correo': 'operador@911.ec',
       'rol': 'operador_911',
       'hash': _hash('Operador#2026'),
     },
     <String, String>{
-      'id': 'u3-corto',
+      'id': 'b0000000-0000-4000-8000-000000000006',
       'nombre': 'Administrador COE',
       'correo': 'admin@resiliente.ec',
       'rol': 'admin',
@@ -211,25 +211,59 @@ class SecureStorageAuthRepository implements AuthRepository {
 
   @override
   Future<UsuarioSesion> iniciarSesionConGoogle() async {
-    if (AppConfig.modoDemo && !_google.configurado) {
-      await Future<void>.delayed(const Duration(milliseconds: 500));
-      final Map<String, String> u = <String, String>{
-        'id': 'g-demo',
-        'nombre': 'Usuario Google (demo)',
-        'correo': 'usuario.google@gmail.com',
+    String? idToken;
+    try {
+      idToken = await _google.obtenerIdToken();
+    } on AuthException catch (e) {
+      if (e.mensaje.contains('cancelado')) rethrow;
+      if (!AppConfig.modoDemo) rethrow;
+    }
+
+    if (idToken != null) {
+      try {
+        final Response<dynamic> r = await _dio.post<dynamic>(
+          '/auth/google',
+          data: <String, String>{'id_token': idToken},
+        );
+        return await _desdeRespuesta(r.data as Map<String, dynamic>, 'google');
+      } on DioException {
+        if (!AppConfig.modoDemo) {
+          throw const AuthException('No se pudo validar tu cuenta de Google.');
+        }
+        final Map<String, String> u = _extraerUsuarioDeIdToken(idToken);
+        return _guardar(_tokenDemo(u['id']!, 'ciudadano'), u, 'google');
+      }
+    }
+
+    // Respaldo en modo demo (ej. Chrome o sin SHA-1 registrado aún en Firebase)
+    final Map<String, String> u = <String, String>{
+      'id': 'g-644267053650',
+      'nombre': 'Cuenta Google (esmeralsrelesiente)',
+      'correo': 'ciudadano.google@esmeraldas-resiliente.ec',
+      'rol': 'ciudadano',
+    };
+    return _guardar(_tokenDemo(u['id']!, 'ciudadano'), u, 'google');
+  }
+
+  Map<String, String> _extraerUsuarioDeIdToken(String idToken) {
+    try {
+      final String payload = base64Url.normalize(idToken.split('.')[1]);
+      final Map<String, dynamic> claims = jsonDecode(
+        utf8.decode(base64Url.decode(payload)),
+      ) as Map<String, dynamic>;
+      return <String, String>{
+        'id': 'g-${claims['sub'] ?? 'google'}',
+        'nombre': '${claims['name'] ?? claims['email'] ?? 'Usuario Google'}',
+        'correo': '${claims['email'] ?? 'usuario@gmail.com'}',
         'rol': 'ciudadano',
       };
-      return _guardar(_tokenDemo(u['id']!, 'ciudadano'), u, 'google');
-    }
-    final String idToken = await _google.obtenerIdToken();
-    try {
-      final Response<dynamic> r = await _dio.post<dynamic>(
-        '/auth/google',
-        data: <String, String>{'id_token': idToken},
-      );
-      return await _desdeRespuesta(r.data as Map<String, dynamic>, 'google');
-    } on DioException {
-      throw const AuthException('No se pudo validar tu cuenta de Google.');
+    } catch (_) {
+      return <String, String>{
+        'id': 'g-google',
+        'nombre': 'Usuario Google',
+        'correo': 'usuario@gmail.com',
+        'rol': 'ciudadano',
+      };
     }
   }
 
