@@ -1,0 +1,35 @@
+---
+/** Mapa de iconos del menú lateral. Solo Lucide (sin emojis). Para un icono nuevo: agregarlo aquí y en IconoNav. */
+import {
+  Bell,
+  BarChart3,
+  ClipboardList,
+  FilePlus2,
+  Inbox,
+  LayoutDashboard,
+  Map,
+  MapPinned,
+  Tent,
+} from 'lucide-react';
+import type { IconoNav } from '../../config/navegacion';
+
+interface Props {
+  nombre: IconoNav;
+}
+
+const ICONOS = {
+  resumen: LayoutDashboard,
+  mapa: Map,
+  reportes: ClipboardList,
+  albergues: Tent,
+  alertas: Bell,
+  estadisticas: BarChart3,
+  reportar: FilePlus2,
+  'mis-reportes': Inbox,
+  zonas: MapPinned,
+} as const;
+
+const Icono = ICONOS[Astro.props.nombre];
+---
+
+<Icono size={18} strokeWidth={2} aria-hidden="true" />

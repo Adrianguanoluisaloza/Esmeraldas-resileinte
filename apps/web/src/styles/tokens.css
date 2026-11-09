@@ -1,0 +1,169 @@
+/* ==========================================================================
+   TOKENS DE ESMERALDAS RESILIENTE
+   Única fuente de colores, espacios y radios de la web. Mismos valores base que la app de Franco
+   (mobile/lib/core/theme/app_theme.dart): primario #0B6E4F y semáforo #2E7D32 / #EF6C00 / #C62828.
+   Reglas: colores sólidos (sin degradados ni transparencias decorativas), nada de hex sueltos en
+   componentes: siempre var(--er-*). El modo oscuro solo redefine tokens, nunca reglas.
+   ========================================================================== */
+
+:root {
+  color-scheme: light;
+
+  /* Superficies */
+  --er-bg: #f5f7f5;
+  --er-surface: #ffffff;
+  --er-surface-2: #eef2ef;
+  --er-surface-3: #e3e9e5;
+  --er-border: #dce3de;
+  --er-border-strong: #b9c5bd;
+
+  /* Texto */
+  --er-text: #13201a;
+  --er-text-2: #36463e;
+  --er-muted: #5f6f67;
+
+  /* Marca (verde de la app móvil) */
+  --er-primary: #0b6e4f;
+  --er-primary-hover: #085a40;
+  --er-primary-soft: #e1f0ea;
+  --er-primary-text: #0a5c42;
+  --er-on-primary: #ffffff;
+
+  /* Semáforo (cupos, estados) */
+  --er-ok: #2e7d32;
+  --er-ok-soft: #e7f3e8;
+  --er-warn: #ef6c00;
+  --er-warn-text: #a84b00;
+  --er-warn-soft: #fff0e2;
+  --er-danger: #c62828;
+  --er-danger-soft: #fcebeb;
+
+  /* Gravedad del incidente */
+  --er-grav-baja: #546e7a;
+  --er-grav-media: #b26a00;
+  --er-grav-alta: #ef6c00;
+  --er-grav-critica: #c62828;
+
+  /* Origen del dato (exigencia del reto: diferenciar en la interfaz) */
+  --er-origen-ciudadano: #0b6e4f;
+  --er-origen-simulado: #5b4bc4;
+  --er-origen-simulado-soft: #eeebfb;
+  --er-origen-oficial: #1f4fb8;
+  --er-origen-oficial-soft: #e8eefb;
+
+  /* Acción de emergencia (solo "Reportar emergencia" / "Enviar reporte", igual que el prototipo de Franco) */
+  --er-emergencia: #c62828;
+  --er-emergencia-hover: #a91f1f;
+
+  /* Enfoque visible para teclado */
+  --er-focus: #0b6e4f;
+
+  /* Tipografía */
+  --er-font: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --er-font-mono: ui-monospace, "SFMono-Regular", "JetBrains Mono", Menlo, Consolas, monospace;
+  --er-fs-xs: 12px;
+  --er-fs-sm: 13px;
+  --er-fs-md: 15px;
+  --er-fs-lg: 18px;
+  --er-fs-xl: 24px;
+  --er-fs-2xl: 32px;
+
+  /* Espacios (escala de 4) */
+  --er-s1: 4px;
+  --er-s2: 8px;
+  --er-s3: 12px;
+  --er-s4: 16px;
+  --er-s5: 20px;
+  --er-s6: 24px;
+  --er-s8: 32px;
+  --er-s10: 40px;
+
+  /* Radios y sombras (sombras sólidas y cortas, sin brillos) */
+  --er-r-sm: 8px;
+  --er-r-md: 12px;
+  --er-r-lg: 16px;
+  --er-r-full: 999px;
+  --er-sombra-1: 0 1px 2px #13201a0f;
+  --er-sombra-2: 0 2px 8px #13201a14;
+
+  /* Estructura del panel */
+  --er-sidebar-w: 248px;
+  --er-topbar-h: 56px;
+}
+
+/* Oscuro: por defecto sigue al sistema; data-theme fija la elección de la persona. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --er-bg: #0e1412;
+    --er-surface: #151d1a;
+    --er-surface-2: #1b2521;
+    --er-surface-3: #23302b;
+    --er-border: #2a3832;
+    --er-border-strong: #3c4d45;
+    --er-text: #e5eee9;
+    --er-text-2: #c3d0c9;
+    --er-muted: #92a39a;
+    --er-primary: #34b085;
+    --er-primary-hover: #49c497;
+    --er-primary-soft: #143329;
+    --er-primary-text: #6fd3ad;
+    --er-on-primary: #04241a;
+    --er-ok: #57b45c;
+    --er-ok-soft: #16301a;
+    --er-warn: #ff9a3d;
+    --er-warn-text: #ffb571;
+    --er-warn-soft: #3a2611;
+    --er-danger: #ef6b6b;
+    --er-danger-soft: #3a1717;
+    --er-grav-baja: #90a4ae;
+    --er-grav-media: #e0a23a;
+    --er-grav-alta: #ff9a3d;
+    --er-grav-critica: #ef6b6b;
+    --er-origen-ciudadano: #34b085;
+    --er-origen-simulado: #a99cf2;
+    --er-origen-simulado-soft: #241f42;
+    --er-origen-oficial: #7ea4f5;
+    --er-origen-oficial-soft: #17264a;
+    --er-focus: #6fd3ad;
+    --er-sombra-1: 0 1px 2px #00000040;
+    --er-sombra-2: 0 2px 8px #00000059;
+  }
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --er-bg: #0e1412;
+  --er-surface: #151d1a;
+  --er-surface-2: #1b2521;
+  --er-surface-3: #23302b;
+  --er-border: #2a3832;
+  --er-border-strong: #3c4d45;
+  --er-text: #e5eee9;
+  --er-text-2: #c3d0c9;
+  --er-muted: #92a39a;
+  --er-primary: #34b085;
+  --er-primary-hover: #49c497;
+  --er-primary-soft: #143329;
+  --er-primary-text: #6fd3ad;
+  --er-on-primary: #04241a;
+  --er-ok: #57b45c;
+  --er-ok-soft: #16301a;
+  --er-warn: #ff9a3d;
+  --er-warn-text: #ffb571;
+  --er-warn-soft: #3a2611;
+  --er-danger: #ef6b6b;
+  --er-danger-soft: #3a1717;
+  --er-grav-baja: #90a4ae;
+  --er-grav-media: #e0a23a;
+  --er-grav-alta: #ff9a3d;
+  --er-grav-critica: #ef6b6b;
+  --er-origen-ciudadano: #34b085;
+  --er-origen-simulado: #a99cf2;
+  --er-origen-simulado-soft: #241f42;
+  --er-origen-oficial: #7ea4f5;
+  --er-origen-oficial-soft: #17264a;
+  --er-focus: #6fd3ad;
+  --er-sombra-1: 0 1px 2px #00000040;
+  --er-sombra-2: 0 2px 8px #00000059;
+}
