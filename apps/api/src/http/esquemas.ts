@@ -69,3 +69,21 @@ export const CercanosEntrada = z.object({
 export const OcupacionEntrada = z.object({ ocupacion: entero(100_000) }).strict();
 
 export const IdRuta = z.object({ id: z.uuid() });
+
+export const AlertaEntrada = z.object({
+  sector: z.string().trim().min(2).max(120),
+  mensaje: z.string().trim().min(5).max(500),
+  nivel: z.enum(GRAVEDADES),
+  origen: z.enum(["oficial", "simulada"]).default("oficial"),
+}).strict();
+
+export const ViaEstadoEntrada = z.object({ estado: z.enum(["habilitada", "parcial", "bloqueada"]) }).strict();
+
+export const EntregaEntrada = z.object({
+  reporte_id: z.uuid(),
+  necesidad: z.enum(NECESIDADES),
+  cantidad: z.number().int().min(1).max(100_000),
+  nota: z.string().trim().max(500).optional(),
+}).strict();
+
+export const AlertasFiltro = z.object({ todas: booleanoTexto.default(false) });

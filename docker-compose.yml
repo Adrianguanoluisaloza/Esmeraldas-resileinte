@@ -1,33 +1,41 @@
-# Entorno completo del backend: PostgreSQL + PostGIS y la API.
-# Local:   cp .env.example .env  (y completa los valores)  ->  docker compose up -d --build
-# Oracle:  mismo archivo en la VM; Cloudflare (o Caddy) delante para HTTPS. Ver docs/DESPLIEGUE.md.
-# La web (apps/web) NO va aquí: se publica en Cloudflare Pages.
+# Entorno completo del backend: PostgreSQL + PostGIS y la API Hono.
+# 100% aislado: red propia, contenedores con prefijo 'esmeraldas-' y volumenes exclusivos.
+# No toca ni interfiere con ningun otro proyecto o contenedor existente en la maquina.
+
+name: esmeraldas-resiliente
 
 services:
   db:
+    container_name: esmeraldas-db
     image: postgis/postgis:16-3.4-alpine
     restart: unless-stopped
+    networks:
+      - esmeraldas-net
     environment:
       POSTGRES_DB: ${POSTGRES_DB:-resiliente}
       POSTGRES_USER: ${POSTGRES_USER:-resiliente}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Define POSTGRES_PASSWORD en .env}
+      # Clave del usuario restringido que usa la API (lo crea 03_rol_aplicacion.sh).
+      APP_DB_PASSWORD: ${APP_DB_PASSWORD:?Define APP_DB_PASSWORD en .env}
     volumes:
       - datos_db:/var/lib/postgresql/data
       # Solo se ejecutan la primera vez (base vacía). Para recargar: docker compose down -v
       - ./database/01_schema_postgis.sql:/docker-entrypoint-initdb.d/01_schema_postgis.sql:ro
       - ./database/02_seed_escenario_06am.sql:/docker-entrypoint-initdb.d/02_seed_escenario_06am.sql:ro
+      - ./database/03_rol_aplicacion.sh:/docker-entrypoint-initdb.d/03_rol_aplicacion.sh:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
       interval: 10s
       timeout: 5s
       retries: 5
-    # Sin puerto publicado: la base solo es visible para la API dentro de la red de Docker.
-    # Para revisarla desde la PC con DBeaver, descomenta la línea siguiente (solo en local).
-    # ports: ["127.0.0.1:5432:5432"]
+    # Sin puerto público expuesto: la base solo es visible para nuestra API dentro de esmeraldas-net.
 
   api:
+    container_name: esmeraldas-api
     build: ./apps/api
     restart: unless-stopped
+    networks:
+      - esmeraldas-net
     depends_on:
       db:
         condition: service_healthy
@@ -35,14 +43,34 @@ services:
       APP_ENV: ${APP_ENV:-production}
       PORT: 3000
       ALMACEN: postgres
-      DATABASE_URL: postgres://${POSTGRES_USER:-resiliente}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-resiliente}
+      # La API entra con el usuario de permisos mínimos, nunca con el dueño de la base.
+      DATABASE_URL: postgres://resiliente_app:${APP_DB_PASSWORD}@db:5432/${POSTGRES_DB:-resiliente}
       JWT_SECRET: ${JWT_SECRET:?Define JWT_SECRET en .env}
-      CORS_ORIGENES: ${CORS_ORIGENES:-http://localhost:4321}
+      CORS_ORIGENES: ${CORS_ORIGENES:-http://localhost:4321,https://esmeraldas-resiliente.eliasadrianlozadaguanoluisa.workers.dev}
+      # Detrás de Cloudflare Tunnel: usar CF-Connecting-IP para el límite de peticiones.
+      CONFIAR_EN_PROXY: ${CONFIAR_EN_PROXY:-true}
+    # Contenedor endurecido: sin privilegios extra y sistema de archivos de solo lectura (fotos en volumen).
+    read_only: true
+    tmpfs:
+      - /tmp
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
     volumes:
       - fotos:/datos/fotos
     ports:
-      - "${API_PUERTO:-3000}:3000"
+      # Solo escucha en la propia máquina: el acceso público entra por Cloudflare Tunnel.
+      # Para probar desde otro equipo de la red local: API_ESCUCHA=0.0.0.0 en .env.
+      - "${API_ESCUCHA:-127.0.0.1}:${API_PUERTO:-3000}:3000"
+
+networks:
+  esmeraldas-net:
+    name: esmeraldas-net
+    driver: bridge
 
 volumes:
   datos_db:
+    name: esmeraldas_datos_db
   fotos:
+    name: esmeraldas_fotos

@@ -54,12 +54,18 @@ export class CasosReportes {
     return r;
   }
 
-  async cambiarEstado(actor: Actor, id: string, estado: EstadoReporte, nota: string | null, verificado: boolean): Promise<Reporte> {
+  /** Detalle con el historial de atención (quién cambió el estado, cuándo y con qué nota). */
+  async detalleConHistorial(actor: Actor, id: string) {
+    const r = await this.detalle(actor, id);
+    return { ...r, historial: await this.reportes.historial(id) };
+  }
+
+  async cambiarEstado(actor: Actor & { nombre?: string }, id: string, estado: EstadoReporte, nota: string | null, verificado: boolean): Promise<Reporte> {
     if (!esPersonalCoe(actor.rol)) throw new ErrorDominio("SIN_PERMISO", "Requiere rol operador_911 o admin");
     const actual = await this.reportes.buscar(id);
     if (!actual) throw new ErrorDominio("NO_ENCONTRADO", "Reporte no encontrado");
     validarTransicion(actual.estado, estado);
-    const r = await this.reportes.actualizarEstado(id, { estado, verificado }, nota, actor.id);
+    const r = await this.reportes.actualizarEstado(id, { estado, verificado }, nota, { id: actor.id, nombre: actor.nombre ?? "" });
     if (!r) throw new ErrorDominio("NO_ENCONTRADO", "Reporte no encontrado");
     this.eventos.publicar({ tipo: "reporte.estado", datos: r });
     return r;
