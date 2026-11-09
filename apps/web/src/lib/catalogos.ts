@@ -101,7 +101,12 @@ export const horaLocal = (iso: string) => formatoHora.format(new Date(iso));
 export const fechaHoraLocal = (iso: string) => formatoFecha.format(new Date(iso));
 
 /** Título visible de un reporte: el de la demo si existe; si no, tipo y sector. */
-export function tituloReporte(r: Pick<ReporteMapa, 'titulo' | 'tipo' | 'sector'>): string {
+export function tituloReporte(r: Pick<ReporteMapa, 'titulo' | 'tipo' | 'sector'> & { descripcion?: string }): string {
   if (r.titulo) return r.titulo;
+  // "Otro" no describe nada: se usa la primera frase de la descripción.
+  if (r.tipo === 'otro' && r.descripcion) {
+    const frase = r.descripcion.split(/[.!?]/)[0]!.trim();
+    return frase.length > 64 ? `${frase.slice(0, 61)}...` : frase;
+  }
   return r.sector ? `${ETIQUETA_TIPO[r.tipo]} en ${r.sector}` : ETIQUETA_TIPO[r.tipo];
 }

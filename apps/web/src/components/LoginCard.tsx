@@ -1,315 +1,118 @@
-import React, { useState, useEffect } from 'react';
+import { useEffect, useState, type FormEvent } from 'react';
+import { Eye, EyeOff } from 'lucide-react';
 import { ErrorApi, login as loginApi, registro as registroApi } from '../lib/api';
 import { inicioSegunRol } from '../config/navegacion';
-import {
-  ArrowRight,
-  Eye,
-  EyeOff,
-  LockKeyhole,
-  Mail,
-  ShieldCheck,
-  UserRound,
-  UsersRound,
-  Zap,
-} from 'lucide-react';
-import {
-  type RolUsuario,
-  type UsuarioSesion,
-  USUARIOS_DEMO,
-  obtenerSesionActual,
-  guardarSesion,
-  cerrarSesion,
-} from '../lib/auth';
+import { USUARIOS_DEMO, guardarSesion, obtenerSesionActual, type RolUsuario } from '../lib/auth';
+import { Aviso, Boton } from './ui/Basicos';
 
-interface Props {
-  redirectUrl?: string;
-}
+const DEMOS: Array<[RolUsuario, string]> = [
+  ['operador_911', 'Operador'],
+  ['admin', 'Admin'],
+  ['ciudadano', 'Ciudadano'],
+];
 
-export const LoginCard: React.FC<Props> = ({ redirectUrl = '/' }) => {
-  const [esRegistro, setEsRegistro] = useState(false);
+/** Ingreso y registro. El rol lo decide el servidor; las cuentas demo solo rellenan el formulario. */
+export function LoginCard() {
+  const [registro, setRegistro] = useState(false);
   const [nombre, setNombre] = useState('');
-  const [correo, setCorreo] = useState(USUARIOS_DEMO.operador_911.correo);
-  const [password, setPassword] = useState(USUARIOS_DEMO.operador_911.pass);
-  const [rolSeleccionado, setRolSeleccionado] = useState<RolUsuario>('operador_911');
-  const [mostrarPassword, setMostrarPassword] = useState(false);
+  const [correo, setCorreo] = useState('');
+  const [password, setPassword] = useState('');
+  const [verClave, setVerClave] = useState(false);
+  const [demo, setDemo] = useState<RolUsuario | null>(null);
   const [cargando, setCargando] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [sesionActiva, setSesionActiva] = useState<UsuarioSesion | null>(null);
 
   useEffect(() => {
     const sesion = obtenerSesionActual();
-    if (sesion) {
-      setSesionActiva(sesion);
-    }
+    if (sesion) window.location.replace(inicioSegunRol(sesion.rol));
   }, []);
 
-  const seleccionarDemo = (rol: RolUsuario) => {
-    const demo = USUARIOS_DEMO[rol];
-    setRolSeleccionado(rol);
-    setCorreo(demo.correo);
-    setPassword(demo.pass);
-    setNombre(demo.usuario.nombre);
+  function usarDemo(rol: RolUsuario) {
+    setDemo(rol);
+    setRegistro(false);
+    setCorreo(USUARIOS_DEMO[rol].correo);
+    setPassword(USUARIOS_DEMO[rol].pass);
     setError(null);
-  };
+  }
 
-  const manejarEnvio = async (e: React.FormEvent) => {
+  async function enviar(e: FormEvent) {
     e.preventDefault();
-    setError(null);
     setCargando(true);
-
+    setError(null);
     try {
       let respuesta;
       try {
-        // API real (POST /auth/login o /auth/registro). El rol lo decide el servidor, nunca el formulario.
-        respuesta = esRegistro ? await registroApi(nombre, correo, password) : await loginApi(correo, password);
-      } catch (e) {
-        // Solo si el servidor no responde se usa la sesión de demostración local (modo sin backend).
-        if (!(e instanceof ErrorApi) || e.codigo !== 'SIN_CONEXION') throw e;
-        const demo = USUARIOS_DEMO[rolSeleccionado];
-        if (esRegistro || demo.correo !== correo || demo.pass !== password) throw e;
-        respuesta = { token: `demo-sin-servidor-${Date.now()}`, usuario: demo.usuario };
+        respuesta = registro ? await registroApi(nombre, correo, password) : await loginApi(correo, password);
+      } catch (err) {
+        // Sin servidor, solo las cuentas demo entran en modo local con datos simulados.
+        const cuenta = demo ? USUARIOS_DEMO[demo] : null;
+        if (!(err instanceof ErrorApi) || err.codigo !== 'SIN_CONEXION' || registro || !cuenta || cuenta.correo !== correo || cuenta.pass !== password) throw err;
+        respuesta = { token: `demo-sin-servidor-${Date.now()}`, usuario: cuenta.usuario };
       }
-
       guardarSesion(respuesta);
-      setSesionActiva(respuesta.usuario);
-
-      // Vuelve a la página que pidió el login, o al inicio según el rol.
       const volver = new URLSearchParams(window.location.search).get('volver');
-      const destino = volver && volver.startsWith('/') && !volver.startsWith('//') ? volver : inicioSegunRol(respuesta.usuario.rol);
-      window.location.href = redirectUrl !== '/' ? redirectUrl : destino;
+      window.location.href = volver && volver.startsWith('/panel') ? volver : inicioSegunRol(respuesta.usuario.rol);
     } catch (err) {
-      setError(err instanceof ErrorApi ? err.message : 'Error al autenticar. Verifica tus datos.');
+      setError(err instanceof ErrorApi ? (err.codigo === 'NO_AUTENTICADO' ? 'Correo o contraseña incorrectos.' : err.message) : 'No se pudo ingresar.');
     } finally {
       setCargando(false);
     }
-  };
-
-  const manejarCerrarSesion = () => {
-    cerrarSesion();
-    setSesionActiva(null);
-  };
-
-  if (sesionActiva) {
-    return (
-      <div className="login-card-container">
-        <div className="login-card sesion-activa-card">
-          <div className="sesion-avatar">
-            {sesionActiva.rol === 'operador_911' ? (
-              <ShieldCheck aria-hidden="true" />
-            ) : sesionActiva.rol === 'admin' ? (
-              <Zap aria-hidden="true" />
-            ) : (
-              <UserRound aria-hidden="true" />
-            )}
-          </div>
-          <h2 className="login-titulo">Sesión Iniciada</h2>
-          <p className="login-subtitulo">
-            Bienvenido, <strong>{sesionActiva.nombre}</strong>
-          </p>
-
-          <div className="sesion-detalles">
-            <div className="sesion-fila">
-              <span>Correo:</span>
-              <strong>{sesionActiva.correo}</strong>
-            </div>
-            <div className="sesion-fila">
-              <span>Rol asignado:</span>
-              <span className={`badge-rol-pill rol-${sesionActiva.rol}`}>
-                {sesionActiva.rol.toUpperCase()}
-              </span>
-            </div>
-          </div>
-
-          <div className="sesion-acciones">
-            <a href="/" className="btn-ir-panel">
-              Ir al Centro de Mando 911 <ArrowRight aria-hidden="true" />
-            </a>
-            <button onClick={manejarCerrarSesion} className="btn-cerrar-sesion">
-              Cerrar Sesión
-            </button>
-          </div>
-        </div>
-      </div>
-    );
   }
 
   return (
-    <div className="login-card-container">
-      {/* Esfera decorativa de fondo sutil tipo SaaS */}
-      <div className="glow-sphere"></div>
+    <div className="st-acceso">
+      <h1 className="st-acceso__titulo">{registro ? 'Crear cuenta' : 'Ingresar'}</h1>
 
-      <div className="login-card">
-        {/* Cabecera del Formulario */}
-        <div className="login-header">
-          <div className="logo-badge">
-            <span className="logo-dot"></span>
-            ESMERALDAS RESILIENTE
-          </div>
-          <h1 className="login-titulo">
-            {esRegistro ? 'Crear Cuenta de Operador' : 'Centro de Operaciones 911'}
-          </h1>
-          <p className="login-subtitulo">
-            {esRegistro
-              ? 'Regístrate para colaborar en la gestión de emergencias'
-              : 'Acceso seguro al panel de mando y gestión territorial'}
-          </p>
-        </div>
+      {error && <Aviso tipo="peligro">{error}</Aviso>}
 
-        {/* Selector de Acceso Rápido para Demostración */}
-        <div className="demo-roles-seccion">
-          <span className="demo-label">Acceso rápido para la demo:</span>
-          <div className="demo-pills">
-            <button
-              type="button"
-              onClick={() => seleccionarDemo('operador_911')}
-              className={`demo-pill ${rolSeleccionado === 'operador_911' ? 'demo-pill-activo' : ''}`}
-            >
-              <ShieldCheck aria-hidden="true" /> Operador 911
+      <form className="pn-form" onSubmit={enviar}>
+        {registro && (
+          <label className="er-campo">
+            <span className="er-etiqueta">Nombre</span>
+            <input className="er-entrada" required minLength={2} maxLength={120} autoComplete="name" value={nombre} onChange={(e) => setNombre(e.target.value)} />
+          </label>
+        )}
+        <label className="er-campo">
+          <span className="er-etiqueta">Correo</span>
+          <input className="er-entrada" type="email" required autoComplete="email" value={correo} onChange={(e) => { setCorreo(e.target.value); setDemo(null); }} />
+        </label>
+        <label className="er-campo">
+          <span className="er-etiqueta">Contraseña</span>
+          <span className="st-clave">
+            <input
+              className="er-entrada"
+              type={verClave ? 'text' : 'password'}
+              required
+              minLength={registro ? 8 : 1}
+              autoComplete={registro ? 'new-password' : 'current-password'}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+            <button type="button" className="er-btn er-btn--fantasma er-btn--icono st-clave__ver" onClick={() => setVerClave((v) => !v)}>
+              {verClave ? <EyeOff aria-hidden="true" /> : <Eye aria-hidden="true" />}
+              <span className="er-sr">{verClave ? 'Ocultar contraseña' : 'Mostrar contraseña'}</span>
             </button>
-            <button
-              type="button"
-              onClick={() => seleccionarDemo('admin')}
-              className={`demo-pill ${rolSeleccionado === 'admin' ? 'demo-pill-activo' : ''}`}
-            >
-              <Zap aria-hidden="true" /> Admin
-            </button>
-            <button
-              type="button"
-              onClick={() => seleccionarDemo('ciudadano')}
-              className={`demo-pill ${rolSeleccionado === 'ciudadano' ? 'demo-pill-activo' : ''}`}
-            >
-              <UsersRound aria-hidden="true" /> Ciudadano
-            </button>
+          </span>
+        </label>
+        <Boton type="submit" variante="primario" tamano="lg" bloque disabled={cargando}>
+          {cargando ? 'Ingresando...' : registro ? 'Crear cuenta' : 'Ingresar'}
+        </Boton>
+      </form>
+
+      <button type="button" className="st-cambiar" onClick={() => { setRegistro((r) => !r); setError(null); }}>
+        {registro ? 'Ya tengo cuenta' : 'Crear cuenta ciudadana'}
+      </button>
+
+      {!registro && (
+        <div className="st-demo">
+          <span className="er-rotulo">Demo</span>
+          <div className="er-segmentos" role="group" aria-label="Cuentas de demostración">
+            {DEMOS.map(([rol, texto]) => (
+              <button key={rol} type="button" className="er-segmento" aria-pressed={demo === rol} onClick={() => usarDemo(rol)}>{texto}</button>
+            ))}
           </div>
         </div>
-
-        {/* Pestañas Iniciar Sesión / Registro */}
-        <div className="auth-tabs">
-          <button
-            type="button"
-            className={`auth-tab ${!esRegistro ? 'auth-tab-activo' : ''}`}
-            onClick={() => {
-              setEsRegistro(false);
-              setError(null);
-            }}
-          >
-            Iniciar Sesión
-          </button>
-          <button
-            type="button"
-            className={`auth-tab ${esRegistro ? 'auth-tab-activo' : ''}`}
-            onClick={() => {
-              setEsRegistro(true);
-              setError(null);
-            }}
-          >
-            Registrarse
-          </button>
-        </div>
-
-        {error && <div className="login-error-alert">{error}</div>}
-
-        {/* Formulario de Entrada */}
-        <form onSubmit={manejarEnvio} className="login-form">
-          {esRegistro && (
-            <div className="form-group">
-              <label className="form-label">Nombre Completo</label>
-              <div className="input-wrapper">
-                <span className="input-icon"><UserRound aria-hidden="true" /></span>
-                <input
-                  type="text"
-                  required
-                  placeholder="Tu nombre completo"
-                  value={nombre}
-                  onChange={(e) => setNombre(e.target.value)}
-                  className="form-input"
-                />
-              </div>
-            </div>
-          )}
-
-          <div className="form-group">
-            <label className="form-label">Correo Institucional / Personal</label>
-            <div className="input-wrapper">
-              <span className="input-icon"><Mail aria-hidden="true" /></span>
-              <input
-                type="email"
-                required
-                placeholder="tu.correo@ejemplo.com"
-                value={correo}
-                onChange={(e) => setCorreo(e.target.value)}
-                className="form-input"
-              />
-            </div>
-          </div>
-
-          <div className="form-group">
-            <div className="form-label-row">
-              <label className="form-label">Contraseña</label>
-              {!esRegistro && (
-                <span className="form-hint">Escenario 06:00 listo</span>
-              )}
-            </div>
-            <div className="input-wrapper">
-              <span className="input-icon"><LockKeyhole aria-hidden="true" /></span>
-              <input
-                type={mostrarPassword ? 'text' : 'password'}
-                required
-                placeholder="••••••••"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="form-input"
-              />
-              <button
-                type="button"
-                onClick={() => setMostrarPassword(!mostrarPassword)}
-                className="toggle-password-btn"
-                title={mostrarPassword ? 'Ocultar' : 'Mostrar'}
-              >
-                {mostrarPassword ? <EyeOff aria-hidden="true" /> : <Eye aria-hidden="true" />}
-              </button>
-            </div>
-          </div>
-
-          {esRegistro && (
-            <div className="form-group">
-              <label className="form-label">Rol de Usuario</label>
-              <select
-                value={rolSeleccionado}
-                onChange={(e) => setRolSeleccionado(e.target.value as RolUsuario)}
-                className="form-input form-select"
-              >
-                <option value="ciudadano">Ciudadano (Reportes y consulta)</option>
-                <option value="operador_911">Operador 911 (Despacho y verificación)</option>
-                <option value="admin">Administrador (Control total)</option>
-              </select>
-            </div>
-          )}
-
-          <button type="submit" disabled={cargando} className="btn-submit-auth">
-            {cargando ? (
-              <span className="btn-loading">
-                <span className="mini-spinner"></span> Conectando...
-              </span>
-            ) : esRegistro ? (
-              'Crear Cuenta y Entrar →'
-            ) : (
-              'Ingresar al Panel de Mando →'
-            )}
-          </button>
-        </form>
-
-        {/* Pie de seguridad */}
-        <div className="login-footer">
-          <div className="seguridad-item">
-            <ShieldCheck aria-hidden="true" /> Cifrado seguro de extremo a extremo
-          </div>
-          <div className="seguridad-item">
-            <Zap aria-hidden="true" /> Protocolo offline-first resiliente
-          </div>
-        </div>
-      </div>
+      )}
     </div>
   );
-};
-
+}

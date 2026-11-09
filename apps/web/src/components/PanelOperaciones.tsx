@@ -69,6 +69,8 @@ export function PanelOperaciones() {
         if (evento.tipo === 'reporte.creado' || evento.tipo === 'reporte.estado') {
           const r = evento.datos as ReporteMapa;
           setReportes((prev) => [r, ...prev.filter((x) => x.id !== r.id)]);
+        } else if (evento.tipo === 'via.estado') {
+          api.viasGeoJson().then(setVias).catch(() => {});
         } else if (evento.tipo === 'punto.ocupacion') {
           const p = evento.datos as PuntoServicioMapa;
           setPuntos((prev) => prev.map((x) => (x.id === p.id ? { ...p, estado_cupo: semaforoCupo(p.capacidad, p.ocupacion) } : x)));

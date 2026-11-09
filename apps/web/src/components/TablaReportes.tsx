@@ -3,6 +3,7 @@ import type { EstadoReporte, Gravedad, ReporteMapa } from '../types/mapa';
 import * as api from '../lib/api';
 import { ETIQUETA_TIPO, fechaHoraLocal, tituloReporte } from '../lib/catalogos';
 import { Aviso, AvisoRespaldo, Cargando, EstadoVacio } from './ui/Basicos';
+import { DetalleReporte } from './DetalleReporte';
 import { InsigniaEstado, InsigniaGravedad, InsigniaOrigen } from './ui/Insignias';
 
 /**
@@ -15,6 +16,7 @@ export function TablaReportes({ modo = 'coe' }: { modo?: 'coe' | 'ciudadano' }) 
   const [error, setError] = useState<string | null>(null);
   const [gravedad, setGravedad] = useState<Gravedad | ''>('');
   const [estado, setEstado] = useState<EstadoReporte | ''>('');
+  const [abierto, setAbierto] = useState<string | null>(null);
 
   useEffect(() => {
     setItems(null);
@@ -60,9 +62,10 @@ export function TablaReportes({ modo = 'coe' }: { modo?: 'coe' | 'ciudadano' }) 
 
       {items?.length === 0 && (
         <EstadoVacio
-          titulo={modo === 'ciudadano' ? 'Aún no tienes reportes' : 'Sin reportes con esos filtros'}
-          texto={modo === 'ciudadano' ? 'Los reportes que envíes desde la app aparecerán aquí con su estado de atención.' : undefined}
-        />
+          titulo={modo === 'ciudadano' ? 'Aún no tienes reportes' : 'Sin resultados'}
+        >
+          {modo === 'ciudadano' && <a className="er-btn er-btn--emergencia" href="/panel/reportar">Nuevo reporte</a>}
+        </EstadoVacio>
       )}
 
       {items && items.length > 0 && (
@@ -82,7 +85,7 @@ export function TablaReportes({ modo = 'coe' }: { modo?: 'coe' | 'ciudadano' }) 
               {items.map((r) => (
                 <tr key={r.id}>
                   <td>
-                    <strong>{tituloReporte(r)}</strong>
+                    <button className="pn-enlace-fila" onClick={() => !respaldo && setAbierto(r.id)}>{tituloReporte(r)}</button>
                     <div className="pn-sub">{ETIQUETA_TIPO[r.tipo]}{r.sector ? ` · ${r.sector}` : ''}</div>
                   </td>
                   <td><InsigniaGravedad valor={r.gravedad} /></td>
@@ -95,6 +98,15 @@ export function TablaReportes({ modo = 'coe' }: { modo?: 'coe' | 'ciudadano' }) 
             </tbody>
           </table>
         </div>
+      )}
+
+      {abierto && (
+        <DetalleReporte
+          id={abierto}
+          puedeGestionar={modo === 'coe'}
+          alCerrar={() => setAbierto(null)}
+          alCambiar={(r) => setItems((l) => l?.map((x) => (x.id === r.id ? { ...x, ...r } : x)) ?? null)}
+        />
       )}
     </div>
   );
