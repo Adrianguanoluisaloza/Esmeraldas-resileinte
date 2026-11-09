@@ -3,36 +3,38 @@ import 'package:flutter/foundation.dart';
 /// Configuración por entorno para la aplicación móvil Esmeraldas Resiliente.
 /// No almacena secretos ni claves privadas en el código fuente.
 class AppConfig {
-  const AppConfig._();
+  AppConfig._();
 
-  static const String _apiBaseUrlEnv = String.fromEnvironment('API_BASE_URL');
+  static const String _envApiBaseUrl = String.fromEnvironment(
+    'API_BASE_URL',
+    defaultValue:
+        'https://seasonal-acceptable-crimes-remember.trycloudflare.com',
+  );
 
-  /// URL base del backend.
-  /// Si se pasa --dart-define=API_BASE_URL=... la usa con prioridad.
-  /// En web usa localhost:3000. En celular físico/emulador se conecta al
-  /// túnel público Cloudflare activo del backend para sincronización inmediata.
+  /// URL base del backend configurada mediante `--dart-define=API_BASE_URL=...`.
+  /// Por defecto conecta al backend público en vivo del proyecto.
   static String get apiBaseUrl {
-    if (_apiBaseUrlEnv.isNotEmpty) return _apiBaseUrlEnv;
-    if (kIsWeb) return 'http://localhost:3000';
-    return 'https://seasonal-acceptable-crimes-remember.trycloudflare.com';
+    if (_envApiBaseUrl.isNotEmpty) return _envApiBaseUrl;
+    return kIsWeb ? 'http://localhost:3000' : 'http://10.0.2.2:3000';
   }
 
-  /// Modo demostración: cuando es false usa la API real.
+  /// Modo demostración: usa cuentas y datos simulados en el dispositivo
+  /// mientras el backend no está listo. `--dart-define=MODO_DEMO=false` para usar la API.
   static const bool modoDemo = bool.fromEnvironment(
     'MODO_DEMO',
-    defaultValue: false,
+    defaultValue: true,
   );
 
-  /// OAuth de Google (cliente de tipo Android/iOS; nunca se incluye client secret).
+  /// OAuth de Google (cliente configurado en `google-services.json`, proyecto `esmeralsrelesiente`).
   static const String googleClientId = String.fromEnvironment(
     'GOOGLE_CLIENT_ID',
+    defaultValue: '644267053650-hdva73c46tut51k2tjrgk23ul4n4r5ve.apps.googleusercontent.com',
   );
 
-  /// Debe coincidir con `appAuthRedirectScheme` en `android/app/build.gradle.kts`
-  /// (para Google: el client ID invertido, ej. `com.googleusercontent.apps.XXXX:/oauthredirect`).
+  /// Esquema inverso del `client_id` de Google (`appAuthRedirectScheme` en `android/app/build.gradle.kts`).
   static const String googleRedirectUri = String.fromEnvironment(
     'GOOGLE_REDIRECT_URI',
-    defaultValue: 'ec.esmeraldas.resiliente.mobile:/oauthredirect',
+    defaultValue: 'com.googleusercontent.apps.644267053650-hdva73c46tut51k2tjrgk23ul4n4r5ve:/oauthredirect',
   );
 
   /// Seguridad de sesión.

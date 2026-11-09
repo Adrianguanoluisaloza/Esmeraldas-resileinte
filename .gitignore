@@ -46,6 +46,8 @@ pnpm-debug.log*
 .env.*.local
 *.pem
 *.key
+**/google-services.json
+**/GoogleService-Info.plist
 
 # Editor and OS
 .DS_Store

@@ -154,3 +154,45 @@ Este documento registra decisiones, avances, bloqueos y pendientes importantes. 
 - **Validación:** 28 pruebas pasando en apps/api (`npm run ci`), compilación limpia de 12 páginas en Astro y build web de Flutter.
 - **Pendientes:** Merge del PR hacia `desarrollo-adrian`.
 
+## 2026-11-09
+- **Área:** mobile
+- **Cambio:** Se implementaron las tareas M1–M5 de `docs/orquestacion/TAREAS_MOVIL_FRANCO.md` en `mobile/`: `DioApiClient` con interceptor Bearer y mapeo de errores (`400/409` a `error`, `401` a re-login sin borrar la cola), login/registro con validación y botón de Google (`flutter_appauth` PKCE), `MapaFondoEsmeraldas` centrado en Esmeraldas (`0.9592, -79.6539`) con respaldo vectorial offline, barra de navegación por rol (ciudadano, operador 911 y admin), paleta de `docs/DISENO.md` sin emojis e insignia de origen con borde discontinuo, y directorio de albergues con semáforo textual y consulta `/puntos-servicio/cercanos`.
+- **Validación:** `dart format --set-exit-if-changed lib test`, `flutter analyze` (0 issues) y `flutter test` (100% pass).
+- **Pendientes:** Probar el APK generado en dispositivo físico Android en modo avión.
+- **Área:** arquitectura | documentación | git
+- **Cambio:** Se actualizó la estructura documentada para reflejar `apps/web`, `apps/mobile`, `backend`, `frontend`, `mobile` y `contrato`.
+- **Decisión:** `backend`, `desarrollo-adrian` y `desarrollofranco` funcionan como espacios de trabajo por rama; el código ejecutable permanece en `apps/` hasta su revisión.
+- **Validación:** Revisados `AGENTS.md` y `estructura-esmeraldas-resiliente.md` contra el árbol actual del repositorio.
+- **Pendientes:** Completar la implementación de cada módulo y mantener los contratos OpenAPI sincronizados antes de integrar a `main`.
+
+## 2026-11-09
+- **Área:** web | diseño | orquestación
+- **Cambio:** Sistema de diseño con la paleta de la app de Franco (verde `#0B6E4F` y semáforo), claro y oscuro. Componentes reutilizables y `PanelLayout` con barra lateral por rol: COE (mapa operativo, reportes, alertas, estadísticas) y las 4 pantallas ciudadanas del prototipo móvil. Cliente API único con respaldo a datos simulados. Mapa con capas de zonas y vías desde PostGIS. Login contra la API real.
+- **Decisión:** Rojo solo para emergencia y peligro. Origen del dato con color y texto propios (simulado con borde discontinuo). Cuentas demo con dominio propio, no `.gob.ec`. Se corrigió un riesgo de XSS en los popups del mapa y el YAML inválido del contrato. `wrangler.jsonc` usa `/` para que funcione fuera de Windows.
+- **Validación:** `astro build` (11 páginas) y typecheck sin errores. Recorrido con Playwright contra la API con PostGIS: login operador, despachar unidad (cambio guardado), tabla, albergues, modo oscuro, ciudadano en móvil y bloqueo del ciudadano en pantallas del COE.
+- **Pendientes:** Portada y login todavía con su CSS antiguo (tarea W1). Tareas W1 a W5 para Gemini y M1 a M5 para Franco en `docs/orquestacion/`.
+
+## 2026-11-09
+- **Área:** mobile | seguridad | infraestructura
+- **Cambio:** Se instalaron Android SDK (`cmdline-tools`, `platform-tools`, `platforms;android-36`, `build-tools;36.0.0`, NDK `28.2.13676358`, CMake `3.22.1`) en `C:\src\android-sdk` y OpenJDK 21 (`21.0.13 LTS`) en `C:\src\jdk21`, generando `mobile/build/app/outputs/flutter-apk/app-release.apk`. Se ajustó el inicio del ciudadano (`CrearReportePage`) al flujo en 3 pasos sobre el mapa de Esmeraldas (mapa despejado y seleccionable con botón flotante lateral de GPS y botón inferior "Reportar emergencia" -> confirmación de ubicación -> formulario). Se integró `google-services.json` en `mobile/android/app/google-services.json`, se configuraron `googleClientId` y `appAuthRedirectScheme`, y se añadió `**/google-services.json` a `.gitignore`.
+- **Decisión:** Se fijó OpenJDK 21 para las compilaciones de Android porque el JDK 26 preinstalado en el equipo rompe `JdkImageTransform` de Android Gradle Plugin.
+- **Validación:** `dart format --set-exit-if-changed lib test`, `flutter analyze` (0 issues), `flutter test` (pass) y `flutter build apk --release` exitoso (`53.8 MB`).
+- **Pendientes:** Registrar la huella SHA-1 del equipo en Firebase Console si se requiere el selector nativo de cliente Android tipo 1 y continuar con los ajustes de las vistas de operador 911 y administrador.
+
+## 2026-11-09
+- **Área:** mobile | backend | base de datos
+- **Cambio:** Se corrigió la sincronización automática de la cola en `HomeShellPage` al guardar un reporte y al iniciar la app, se agregaron los pines interactivos de reportes en el mapa inicial del ciudadano (`CrearReportePage` y `MapaFondoEsmeraldas` tanto en `FlutterMap` como en el mapa vectorial offline) y se unió la cola local de Hive con `OperacionesRepository`. Se implementó `PhotoCaptureService` para pedir permisos nativos de cámara/galería en Android e iOS, comprimir las fotos a máximo 1280 px (calidad 75%) y guardarlas en la carpeta de documentos de la app fuera de Hive. Se integró `origin/backend` (`650a94b`) conservando la versión oficial de `apps/api` y `database/` según M8.
+- **Decisión:** Conservar `apps/api` y `database/` de la rama `backend` según M8 de `TAREAS_MOVIL_FRANCO.md` y sincronizar los reportes ciudadanos en dos pasos al guardar.
+- **Validación:** `dart format --set-exit-if-changed lib test`, `flutter analyze` (0 issues) y `flutter test` (100% pass).
+- **Pendientes:** Probar el flujo de cámara y sincronización en dispositivo físico Android conectado al backend.
+
+## 2026-11-09 — Integración de M6, M10 y M11 con `origin/backend`
+- **Responsable:** Franco (carril móvil)
+- **Resumen:** Se alineó el cliente móvil (`mobile/`) con los contratos actualizados de `origin/backend` (`TAREAS_MOVIL_FRANCO.md` tareas M6, M10 y M11) y se verificó la conexión de extremo a extremo contra PostgreSQL 18 (`localhost:5433`) y `apps/api` (`localhost:3000`).
+- **Decisiones:**
+  - **M10 (No subir fotos falsas):** Se eliminó `_jpegMinimoDemo` de `DioApiClient` y se actualizó `SyncWorkerService._procesarReportePorPasos` para omitir la subida de foto y marcar el reporte como `enviado` sin foto si no existe archivo real en disco ni en memoria.
+  - **M11 (Reporte de emergencia sin cuenta):** Se retiró el auto-login silencioso del interceptor de `DioApiClient` para que los reportes creados en modo emergencia sin cuenta se envíen sin cabecera `Authorization` (aceptados por `sesionOpcional` en `POST /reportes` y `POST /reportes/:id/foto`). Si una sesión autenticada vence (`401`), `HomeShellPage` solicita iniciar sesión nuevamente sin borrar la cola de Hive, y `MisReportesPage` informa que el historial personal solo lista reportes enviados con cuenta.
+  - **M6 (Alertas en la app):** Se agregó `obtenerAlertasActivas()` (`GET /alertas` sin token) en `DioApiClient` y su visualización en `DirectorioAlberguesPage` diferenciando alertas oficiales en rojo y simulacros con insignia `Simulacro`.
+  - **Incidentes y puntos georreferenciados en el mapa (`OperacionesRepository`):** Se implementó `sincronizarDesdeBackend` en `OperacionesRepository` y su invocación desde `HomeShellPage` para descargar `GET /reportes?limite=100`, `GET /puntos-servicio` y `GET /alertas` del backend público en vivo (`https://seasonal-acceptable-crimes-remember.trycloudflare.com`), pintando todos los incidentes y albergues georreferenciados en `MapaFondoEsmeraldas` y sincronizando las acciones de operador (`PATCH /reportes/:id/estado`, `PATCH /albergues/:id/ocupacion`, `POST /alertas`). Además, se alineó la semilla local con los 6 incidentes y 5 puntos de servicio oficiales de `database/02_seed_escenario_06am.sql`.
+- **Archivos tocados:** `mobile/lib/core/config/app_config.dart`, `mobile/lib/core/network/api_client.dart`, `mobile/lib/data/repositories/operaciones_repository.dart`, `mobile/lib/data/repositories/cola_reportes_repository.dart`, `mobile/lib/features/sync/data/services/sync_worker_service.dart`, `mobile/lib/core/routing/app_router.dart`, `mobile/lib/features/mis_reportes/presentation/pages/mis_reportes_page.dart`, `mobile/lib/features/mis_reportes/presentation/pages/directorio_albergues_page.dart`, `mobile/lib/core/theme/app_theme.dart`, `CHANGELOG.md`, `bitacora.md`.
+- **Pendientes:** Probar en dispositivo físico durante la demostración.

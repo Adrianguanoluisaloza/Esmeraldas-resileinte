@@ -21,6 +21,7 @@ import '../enums/app_enums.dart';
 import '../location/location_service.dart';
 import '../network/api_client.dart';
 import '../theme/app_theme.dart';
+import '../widgets/mapa_fondo_esmeraldas.dart';
 
 /// Shell principal de navegación de Esmeraldas Resiliente.
 class HomeShellPage extends StatefulWidget {
@@ -64,8 +65,15 @@ class _HomeShellPageState extends State<HomeShellPage> {
   @override
   void initState() {
     super.initState();
-    _ops = widget.operacionesRepository ?? OperacionesRepository();
-    _recargarDatosLocales();
+    _ops =
+        widget.operacionesRepository ??
+        OperacionesRepository(apiClient: widget.apiClient);
+    _ops.apiClient ??= widget.apiClient;
+    _ops.addListener(_onOperacionesActualizadas);
+    widget.syncWorkerService.onNoAutenticado = () {
+      unawaited(_manejarSesionVencida401());
+    };
+    _inicializarDatosYSincronizar();
     _restaurarSesion();
     _relojSesion = Timer.periodic(
       const Duration(seconds: 15),
@@ -73,8 +81,39 @@ class _HomeShellPageState extends State<HomeShellPage> {
     );
   }
 
+  void _onOperacionesActualizadas() {
+    if (mounted) {
+      setState(() {});
+    }
+  }
+
+  Future<void> _manejarSesionVencida401() async {
+    await widget.authRepository.cerrarSesion();
+    if (!mounted) return;
+    setState(() {
+      _sesion = null;
+      _modoEmergenciaSinCuenta = false;
+      _indiceActual = 0;
+    });
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text(
+          'Tu sesión venció. Inicia sesión nuevamente; tu cola de reportes sigue intacta.',
+        ),
+      ),
+    );
+  }
+
+  Future<void> _inicializarDatosYSincronizar() async {
+    await _recargarDatosLocales();
+    if (!_modoOfflineSimulado && _cantidadPendientes > 0) {
+      await _ejecutarSincronizacion();
+    }
+  }
+
   @override
   void dispose() {
+    _ops.removeListener(_onOperacionesActualizadas);
     _relojSesion?.cancel();
     super.dispose();
   }
@@ -83,6 +122,9 @@ class _HomeShellPageState extends State<HomeShellPage> {
     final UsuarioSesion? s = await widget.authRepository.obtenerSesionActual();
     if (mounted && s != null) {
       setState(() => _sesion = s);
+      if (!_modoOfflineSimulado) {
+        unawaited(_sincronizarDatosBackend());
+      }
     }
   }
 
@@ -112,11 +154,32 @@ class _HomeShellPageState extends State<HomeShellPage> {
         .obtenerTodosLosReportes();
     final List<PuntoServicioModel> listaPuntos = await widget.colaRepository
         .obtenerDirectorioPuntosServicio();
+    _ops.sincronizarDesdeColaLocal(
+      listaReportes,
+      usuarioIdActual: _sesion?.id ?? 'u1',
+    );
     if (!mounted) return;
     setState(() {
       _reportes = listaReportes;
       _puntos = listaPuntos;
     });
+    if (!_modoOfflineSimulado && widget.apiClient != null) {
+      unawaited(_sincronizarDatosBackend());
+    }
+  }
+
+  Future<void> _sincronizarDatosBackend() async {
+    final ApiClient? cliente = widget.apiClient;
+    if (cliente == null || _modoOfflineSimulado) return;
+    await _ops.sincronizarDesdeBackend(cliente);
+    if (_ops.puntos.isNotEmpty) {
+      await widget.colaRepository.guardarDirectorioPuntosServicio(_ops.puntos);
+      if (mounted) {
+        setState(() {
+          _puntos = List<PuntoServicioModel>.from(_ops.puntos);
+        });
+      }
+    }
   }
 
   Future<void> _ejecutarSincronizacion() async {
@@ -164,9 +227,16 @@ class _HomeShellPageState extends State<HomeShellPage> {
           _ops.auditar(s, 'LOGIN OK', '${s.rol.valor} (${s.proveedor})');
           setState(() {
             _sesion = s;
+            _modoEmergenciaSinCuenta = false;
             _ultimaActividad = DateTime.now();
             _indiceActual = 0;
           });
+          if (!_modoOfflineSimulado) {
+            unawaited(_sincronizarDatosBackend());
+            if (_cantidadPendientes > 0) {
+              unawaited(_ejecutarSincronizacion());
+            }
+          }
         },
         onContinuarSinCuenta: () {
           setState(() {
@@ -284,6 +354,21 @@ class _HomeShellPageState extends State<HomeShellPage> {
   ) {
     switch (s.rol) {
       case RolUsuario.ciudadano:
+        final Set<String> idsCola = _reportes.map((r) => r.id).toSet();
+        final List<PinMapaIncidente> incidentesSector = _ops.reportes
+            .where(
+              (op) =>
+                  op.estado != EstadoReporte.atendido &&
+                  !idsCola.contains(op.id),
+            )
+            .map(
+              (op) => PinMapaIncidente(
+                punto: op.punto,
+                gravedad: op.gravedad,
+                etiqueta: '${op.tipo.etiqueta} (${op.sector})',
+              ),
+            )
+            .toList();
         return (
           <Widget>[
             CrearReportePage(
@@ -291,14 +376,43 @@ class _HomeShellPageState extends State<HomeShellPage> {
               locationService: widget.locationService,
               tieneConexionReal: !_modoOfflineSimulado,
               puntosServicio: _puntos,
+              reportes: _reportes,
+              incidentesExtra: incidentesSector,
               onReporteGuardado: () async {
                 await _recargarDatosLocales();
-                setState(() => _indiceActual = 1);
+                if (!_modoOfflineSimulado) {
+                  await _ejecutarSincronizacion();
+                }
+                if (!mounted) return;
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(
+                      _modoOfflineSimulado
+                          ? 'Sin señal: reporte en cola local y marcado en el mapa.'
+                          : 'Reporte sincronizado y publicado en el mapa de Esmeraldas.',
+                    ),
+                    action: SnackBarAction(
+                      label: 'Mis reportes',
+                      onPressed: () {
+                        if (mounted) {
+                          setState(() => _indiceActual = 1);
+                        }
+                      },
+                    ),
+                  ),
+                );
               },
             ),
             MisReportesPage(
               reportes: _reportes,
               onSincronizarManual: _ejecutarSincronizacion,
+              sinCuenta: _sesion == null,
+              onIniciarSesion: () {
+                setState(() {
+                  _modoEmergenciaSinCuenta = false;
+                  _indiceActual = 0;
+                });
+              },
             ),
             DirectorioAlberguesPage(
               puntos: _puntos,

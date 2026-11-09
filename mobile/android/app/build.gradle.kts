@@ -27,7 +27,8 @@ android {
         // flag during build.
         versionCode = flutter.versionCode
         versionName = flutter.versionName
-        manifestPlaceholders["appAuthRedirectScheme"] = "ec.esmeraldas.resiliente.mobile"
+        manifestPlaceholders["appAuthRedirectScheme"] =
+            "com.googleusercontent.apps.644267053650-hdva73c46tut51k2tjrgk23ul4n4r5ve"
     }
 
     buildTypes {
