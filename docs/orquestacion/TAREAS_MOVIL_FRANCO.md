@@ -93,3 +93,8 @@ palabra "Simulacro". Escuchar `alerta.emitida` y `via.estado` por `GET /ws?token
 Hoy hay dos proyectos Flutter: `apps/mobile` (el inicial, solo `main.dart`) y `mobile/` (el real). Dejar uno solo
 en `apps/mobile` (mover `mobile/` ahí y borrar el inicial) en un commit propio, y avisar antes de hacerlo.
 
+## M8. No editar el backend desde esta rama
+
+En `desarrollofranco` hay una copia anterior de `apps/api`. La versión vigente está en las ramas `backend` y
+`desarrollo-adrian`. Al integrar, conservar la de esas ramas; si necesitas un cambio en la API, pídelo al carril backend.
+
