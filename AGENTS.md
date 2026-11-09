@@ -34,7 +34,7 @@ Construir una plataforma escalable con una aplicación móvil en Flutter y una p
 - **Página web:** Astro.
 - **Componentes interactivos:** React dentro de Astro, únicamente donde aporten estado o interacción real.
 - **Infraestructura web:** Cloudflare Pages para el despliegue web; Cloudflare Workers solo para lógica de servidor o integraciones que lo necesiten.
-- **Backend:** Hono + TypeScript en Node 22 (`apps/api`), Clean Architecture, validación con zod, JWT, WebSocket.
+- **Backend:** Hono + TypeScript en Node 22 (`apps/api`), Clean Architecture, validación con zod, JWT, WebSocket. Soporta doble modo: PostgreSQL 16 + PostGIS para producción/Docker, y modo memoria (`ALMACEN=memoria`) para desarrollo y demos inmediatas.
 - **Base de datos:** PostgreSQL 16 + PostGIS (`database/`), con `docker-compose.yml` en la raíz.
 - **Servidor:** VM de Oracle Cloud con Docker; HTTPS con Cloudflare Tunnel. Detalle en `docs/DESPLIEGUE.md`.
 - **Distribución de la aplicación:** automatizar builds firmadas para Android e iOS mediante CI/CD y publicar en Google Play y App Store Connect según los entornos configurados.
