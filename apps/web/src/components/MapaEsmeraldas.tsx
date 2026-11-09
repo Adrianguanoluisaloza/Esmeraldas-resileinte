@@ -33,6 +33,8 @@ interface Props {
   mostrarCentrosSalud?: boolean;
   mostrarZonas?: boolean;
   mostrarVias?: boolean;
+  /** Si viene, tocar el mapa entrega la coordenada (marcar ubicación sin GPS). */
+  alTocarMapa?: (latitud: number, longitud: number) => void;
 }
 
 // Caja amplia: ciudad y parroquias cercanas (Tachina, Tabiazo, Vuelta Larga).
@@ -42,13 +44,13 @@ const CENTRO: L.LatLngExpression = [0.9592, -79.6539];
 const TESELAS = (import.meta.env.PUBLIC_MAP_TILE_URL as string | undefined) ?? 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
 
 function iconoReporte(r: ReporteMapa, seleccionado: boolean): L.DivIcon {
-  const tam = seleccionado ? 30 : 24;
+  const tam = seleccionado ? 20 : 14;
   const clases = ['mk-reporte', `mk-reporte--${r.gravedad}`, seleccionado && 'mk-reporte--sel', r.origen === 'simulado' && 'mk-reporte--sim']
     .filter(Boolean)
     .join(' ');
   return L.divIcon({
     className: 'mk-contenedor',
-    html: `<span class="${clases}" style="--mk-color:${COLOR_GRAVEDAD[r.gravedad]};width:${tam}px;height:${tam}px" aria-hidden="true">!</span>`,
+    html: `<span class="${clases}" style="--mk-color:${COLOR_GRAVEDAD[r.gravedad]};width:${tam}px;height:${tam}px" aria-hidden="true"></span>`,
     iconSize: [tam, tam],
     iconAnchor: [tam / 2, tam / 2],
   });
@@ -101,7 +103,10 @@ export function MapaEsmeraldas({
   mostrarCentrosSalud = true,
   mostrarZonas = true,
   mostrarVias = true,
+  alTocarMapa,
 }: Props) {
+  const tocarRef = useRef(alTocarMapa);
+  tocarRef.current = alTocarMapa;
   const contenedor = useRef<HTMLDivElement>(null);
   const mapa = useRef<L.Map | null>(null);
   const capas = useRef<{ reportes: L.LayerGroup; puntos: L.LayerGroup; zonas: L.LayerGroup; vias: L.LayerGroup } | null>(null);
@@ -122,6 +127,7 @@ export function MapaEsmeraldas({
       puntos: L.layerGroup().addTo(m),
       reportes: L.layerGroup().addTo(m),
     };
+    m.on('click', (e: L.LeafletMouseEvent) => tocarRef.current?.(e.latlng.lat, e.latlng.lng));
     mapa.current = m;
     return () => {
       m.remove();

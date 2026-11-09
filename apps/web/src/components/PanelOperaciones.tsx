@@ -2,9 +2,9 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { MapPin, Users } from 'lucide-react';
 import type { EstadoReporte, Gravedad, PuntoServicioMapa, ReporteMapa } from '../types/mapa';
 import * as api from '../lib/api';
-import { ETIQUETA_NECESIDAD, ETIQUETA_TIPO, PESO_GRAVEDAD, horaLocal, semaforoCupo, tituloReporte } from '../lib/catalogos';
+import { COLOR_GRAVEDAD, ETIQUETA_ESTADO, ETIQUETA_NECESIDAD, ETIQUETA_TIPO, PESO_GRAVEDAD, horaLocal, semaforoCupo, tituloReporte } from '../lib/catalogos';
 import { MapaEsmeraldas } from './MapaEsmeraldas';
-import { Aviso, AvisoRespaldo, Boton, Cargando, Indicador } from './ui/Basicos';
+import { Aviso, AvisoRespaldo, Boton, Cargando } from './ui/Basicos';
 import { InsigniaEstado, InsigniaGravedad, InsigniaOrigen } from './ui/Insignias';
 
 /**
@@ -90,19 +90,6 @@ export function PanelOperaciones() {
     [reportes, gravedad, estado],
   );
 
-  const metricas = useMemo(() => {
-    const abiertos = reportes.filter((r) => r.estado === 'pendiente' || r.estado === 'en_proceso');
-    return {
-      abiertos: abiertos.length,
-      pendientes: reportes.filter((r) => r.estado === 'pendiente').length,
-      criticos: abiertos.filter((r) => r.gravedad === 'critica').length,
-      personas: abiertos.reduce((s, r) => s + r.personas_afectadas, 0),
-      vulnerables: abiertos.reduce((s, r) => s + r.ninos + r.adultos_mayores, 0),
-      albergues: puntos.filter((p) => p.tipo === 'albergue' && p.estado_cupo !== 'rojo').length,
-      viasCortadas: (vias?.features ?? []).filter((f) => f.properties?.estado === 'bloqueada').length,
-    };
-  }, [reportes, puntos, vias]);
-
   const seleccionado = reportes.find((r) => r.id === seleccionadoId) ?? null;
 
   async function cambiarEstado(r: ReporteMapa, nuevo: EstadoReporte) {
@@ -126,12 +113,6 @@ export function PanelOperaciones() {
       {respaldo && <AvisoRespaldo />}
       {error && <Aviso tipo="peligro" titulo="Algo falló">{error}</Aviso>}
 
-      <section className="er-indicadores" aria-label="Indicadores del escenario">
-        <Indicador etiqueta="Incidentes abiertos" valor={metricas.abiertos} detalle={`${metricas.pendientes} sin atender`} tono="primario" />
-        <Indicador etiqueta="Críticos" valor={metricas.criticos} detalle="Prioridad de rescate" tono="peligro" />
-        <Indicador etiqueta="Personas afectadas" valor={metricas.personas} detalle={`${metricas.vulnerables} niños y adultos mayores`} tono="aviso" />
-        <Indicador etiqueta="Albergues con cupo" valor={metricas.albergues} detalle={metricas.viasCortadas === 1 ? '1 vía bloqueada' : `${metricas.viasCortadas} vías bloqueadas`} tono="ok" />
-      </section>
 
       <section className="op-filtros" aria-label="Filtros y capas">
         <div className="er-segmentos" role="group" aria-label="Gravedad">
@@ -167,24 +148,19 @@ export function PanelOperaciones() {
         <section className="er-tarjeta op-lista" aria-label="Incidentes">
           <div className="er-tarjeta__cabecera">
             <h2 className="er-tarjeta__titulo">Incidentes</h2>
-            <span className="er-insignia er-num">{filtrados.length}</span>
+            <span className="pn-sub er-num">{filtrados.length}</span>
           </div>
           <ul className="op-lista__items">
             {filtrados.map((r) => (
               <li key={r.id}>
                 <button className="op-item" aria-current={r.id === seleccionadoId} onClick={() => setSeleccionadoId(r.id)}>
-                  <span className="op-item__fila">
-                    <InsigniaGravedad valor={r.gravedad} />
-                    <span className="op-item__hora er-num">{horaLocal(r.recibido_en)}</span>
-                  </span>
-                  <strong className="op-item__titulo">{tituloReporte(r)}</strong>
-                  <span className="op-item__fila">
-                    <InsigniaEstado valor={r.estado} />
-                    {r.personas_afectadas > 0 && (
-                      <span className="op-item__personas er-num">
-                        <Users size={14} aria-hidden="true" /> {r.personas_afectadas}
-                      </span>
-                    )}
+                  <span className="op-item__punto" style={{ background: COLOR_GRAVEDAD[r.gravedad] }} aria-hidden="true" />
+                  <span className="op-item__cuerpo">
+                    <strong className="op-item__titulo">{tituloReporte(r)}</strong>
+                    <span className="op-item__meta er-num">
+                      {ETIQUETA_ESTADO[r.estado]} · {horaLocal(r.recibido_en)}
+                      {r.personas_afectadas > 0 && <> · <Users size={12} aria-hidden="true" /> {r.personas_afectadas}</>}
+                    </span>
                   </span>
                 </button>
               </li>
@@ -255,10 +231,10 @@ export function PanelOperaciones() {
                   <span className="er-rotulo">Estado</span>
                   <InsigniaEstado valor={seleccionado.estado} />
                 </div>
-                <Boton variante="primario" bloque disabled={guardando || seleccionado.estado === 'en_proceso'} onClick={() => cambiarEstado(seleccionado, 'en_proceso')}>
+                <Boton variante="primario" tamano="sm" bloque disabled={guardando || seleccionado.estado === 'en_proceso'} onClick={() => cambiarEstado(seleccionado, 'en_proceso')}>
                   Despachar unidad
                 </Boton>
-                <Boton variante="secundario" bloque disabled={guardando || seleccionado.estado === 'atendido'} onClick={() => cambiarEstado(seleccionado, 'atendido')}>
+                <Boton variante="secundario" tamano="sm" bloque disabled={guardando || seleccionado.estado === 'atendido'} onClick={() => cambiarEstado(seleccionado, 'atendido')}>
                   Marcar atendido
                 </Boton>
               </div>

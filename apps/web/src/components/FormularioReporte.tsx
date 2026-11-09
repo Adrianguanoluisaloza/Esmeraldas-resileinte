@@ -4,6 +4,8 @@ import type { Gravedad, Necesidad, TipoIncidente } from '../types/mapa';
 import * as api from '../lib/api';
 import { ETIQUETA_GRAVEDAD, ETIQUETA_NECESIDAD, ETIQUETA_TIPO } from '../lib/catalogos';
 import { Aviso, Boton } from './ui/Basicos';
+import { MapaEsmeraldas } from './MapaEsmeraldas';
+import type { ReporteMapa } from '../types/mapa';
 
 const TIPOS: Array<[TipoIncidente, typeof Waves]> = [
   ['inundacion', Waves],
@@ -13,6 +15,13 @@ const TIPOS: Array<[TipoIncidente, typeof Waves]> = [
   ['dano_vivienda', Home],
   ['otro', CircleHelp],
 ];
+
+/** Punto temporal para dibujar en el mapa dónde quedará el reporte. */
+const marcador = (u: { latitud: number; longitud: number }): ReporteMapa => ({
+  id: 'nuevo', tipo: 'otro', descripcion: 'Ubicación del reporte', gravedad: 'alta', estado: 'pendiente',
+  latitud: u.latitud, longitud: u.longitud, capturado_en: new Date().toISOString(), recibido_en: new Date().toISOString(),
+  verificado: false, personas_afectadas: 0, ninos: 0, adultos_mayores: 0, necesidades: [], sector: null,
+});
 
 interface Ubicacion {
   latitud: number;
@@ -45,7 +54,7 @@ export function FormularioReporte() {
       },
       () => {
         setBuscandoGps(false);
-        setError('No se pudo obtener la ubicación. Revisa el permiso del navegador.');
+        setError('Sin GPS. Toca el mapa para marcar el lugar.');
       },
       { enableHighAccuracy: true, timeout: 20000, maximumAge: 30000 },
     );
@@ -65,7 +74,7 @@ export function FormularioReporte() {
         descripcion: descripcion.trim() || ETIQUETA_TIPO[tipo],
         latitud: ubicacion.latitud,
         longitud: ubicacion.longitud,
-        precision_m: Math.round(ubicacion.precision),
+        precision_m: ubicacion.precision ? Math.round(ubicacion.precision) : null,
         capturado_en: new Date().toISOString(),
         personas_afectadas: familia.personas,
         ninos: familia.ninos,
@@ -132,9 +141,19 @@ export function FormularioReporte() {
           <input className="er-sr" type="file" accept="image/jpeg,image/png" capture="environment" onChange={(e) => setFoto(e.target.files?.[0] ?? null)} />
         </label>
       </div>
-      {ubicacion && (
-        <p className="pn-sub er-num">{ubicacion.latitud.toFixed(5)}, {ubicacion.longitud.toFixed(5)} · ±{Math.round(ubicacion.precision)} m</p>
-      )}
+      <div className="er-tarjeta op-mapa-tarjeta pn-mapa-marcar">
+        <MapaEsmeraldas
+          reportes={ubicacion ? [marcador(ubicacion)] : []}
+          puntosServicio={[]}
+          onSeleccionarReporte={() => {}}
+          alTocarMapa={(latitud, longitud) => setUbicacion({ latitud, longitud, precision: 0 })}
+        />
+      </div>
+      <p className="pn-sub er-num">
+        {ubicacion
+          ? `${ubicacion.latitud.toFixed(5)}, ${ubicacion.longitud.toFixed(5)}${ubicacion.precision ? ` · ±${Math.round(ubicacion.precision)} m` : ' · marcado en el mapa'}`
+          : 'Usa tu ubicación o toca el mapa'}
+      </p>
 
       <label className="er-campo">
         <span className="er-etiqueta">Descripción</span>

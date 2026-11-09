@@ -10,17 +10,22 @@
   color-scheme: light;
 
   /* Superficies */
-  --er-bg: #f5f7f5;
+  --er-bg: #fafafa;
   --er-surface: #ffffff;
-  --er-surface-2: #eef2ef;
-  --er-surface-3: #e3e9e5;
-  --er-border: #dce3de;
-  --er-border-strong: #b9c5bd;
+  --er-surface-2: #f4f4f5;
+  --er-surface-3: #e8e8ea;
+  --er-border: #e8e8e8;
+  --er-border-strong: #d4d4d4;
 
   /* Texto */
-  --er-text: #13201a;
-  --er-text-2: #36463e;
-  --er-muted: #5f6f67;
+  --er-text: #171717;
+  --er-text-2: #3f3f46;
+  --er-muted: #71717a;
+
+  /* Acción principal neutra (estilo Vercel): negro en claro, blanco en oscuro */
+  --er-accion: #171717;
+  --er-accion-hover: #3f3f46;
+  --er-on-accion: #ffffff;
 
   /* Marca (verde de la app móvil) */
   --er-primary: #0b6e4f;
@@ -59,14 +64,14 @@
   --er-focus: #0b6e4f;
 
   /* Tipografía */
-  --er-font: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  --er-font-mono: ui-monospace, "SFMono-Regular", "JetBrains Mono", Menlo, Consolas, monospace;
-  --er-fs-xs: 12px;
+  --er-font: "Geist", "Inter", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --er-font-mono: "Geist Mono", ui-monospace, "SFMono-Regular", "JetBrains Mono", Menlo, Consolas, monospace;
+  --er-fs-xs: 11.5px;
   --er-fs-sm: 13px;
-  --er-fs-md: 15px;
-  --er-fs-lg: 18px;
-  --er-fs-xl: 24px;
-  --er-fs-2xl: 32px;
+  --er-fs-md: 14px;
+  --er-fs-lg: 16px;
+  --er-fs-xl: 22px;
+  --er-fs-2xl: 26px;
 
   /* Espacios (escala de 4) */
   --er-s1: 4px;
@@ -79,31 +84,34 @@
   --er-s10: 40px;
 
   /* Radios y sombras (sombras sólidas y cortas, sin brillos) */
-  --er-r-sm: 8px;
-  --er-r-md: 12px;
-  --er-r-lg: 16px;
+  --er-r-sm: 6px;
+  --er-r-md: 8px;
+  --er-r-lg: 12px;
   --er-r-full: 999px;
-  --er-sombra-1: 0 1px 2px #13201a0f;
+  --er-sombra-1: 0 1px 2px #0000000a;
   --er-sombra-2: 0 2px 8px #13201a14;
 
   /* Estructura del panel */
-  --er-sidebar-w: 248px;
-  --er-topbar-h: 56px;
+  --er-sidebar-w: 224px;
+  --er-topbar-h: 52px;
 }
 
 /* Oscuro: por defecto sigue al sistema; data-theme fija la elección de la persona. */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
     color-scheme: dark;
-    --er-bg: #0e1412;
-    --er-surface: #151d1a;
-    --er-surface-2: #1b2521;
-    --er-surface-3: #23302b;
-    --er-border: #2a3832;
-    --er-border-strong: #3c4d45;
-    --er-text: #e5eee9;
-    --er-text-2: #c3d0c9;
-    --er-muted: #92a39a;
+    --er-bg: #0a0a0a;
+    --er-surface: #111111;
+    --er-surface-2: #1a1a1a;
+    --er-surface-3: #262626;
+    --er-border: #262626;
+    --er-border-strong: #3f3f3f;
+    --er-text: #ededed;
+    --er-text-2: #c7c7c7;
+    --er-muted: #a1a1a1;
+    --er-accion: #ededed;
+    --er-accion-hover: #d4d4d4;
+    --er-on-accion: #0a0a0a;
     --er-primary: #34b085;
     --er-primary-hover: #49c497;
     --er-primary-soft: #143329;
@@ -133,15 +141,18 @@
 
 :root[data-theme="dark"] {
   color-scheme: dark;
-  --er-bg: #0e1412;
-  --er-surface: #151d1a;
-  --er-surface-2: #1b2521;
-  --er-surface-3: #23302b;
-  --er-border: #2a3832;
-  --er-border-strong: #3c4d45;
-  --er-text: #e5eee9;
-  --er-text-2: #c3d0c9;
-  --er-muted: #92a39a;
+  --er-bg: #0a0a0a;
+  --er-surface: #111111;
+  --er-surface-2: #1a1a1a;
+  --er-surface-3: #262626;
+  --er-border: #262626;
+  --er-border-strong: #3f3f3f;
+  --er-text: #ededed;
+  --er-text-2: #c7c7c7;
+  --er-muted: #a1a1a1;
+  --er-accion: #ededed;
+  --er-accion-hover: #d4d4d4;
+  --er-on-accion: #0a0a0a;
   --er-primary: #34b085;
   --er-primary-hover: #49c497;
   --er-primary-soft: #143329;
