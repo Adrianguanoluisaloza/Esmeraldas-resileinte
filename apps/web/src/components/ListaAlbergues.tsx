@@ -7,7 +7,7 @@ import { ETIQUETA_PUNTO, semaforoCupo } from '../lib/catalogos';
 import { Aviso, AvisoRespaldo, BarraCapacidad, Boton, Cargando } from './ui/Basicos';
 import { InsigniaCupo } from './ui/Insignias';
 
-type Cercano = PuntoServicioMapa & { distancia_m?: number };
+type Cercano = PuntoServicioMapa & { distancia_m?: number; paso_bloqueado?: boolean };
 
 /**
  * Albergues y centros de salud con semáforo de cupo (pregunta 6 del escenario).
@@ -99,6 +99,7 @@ export function ListaAlbergues() {
               <InsigniaCupo valor={p.estado_cupo} />
             </div>
             <strong>{p.nombre}</strong>
+            {p.paso_bloqueado && <span className="er-insignia er-insignia--estado-pendiente" style={{ justifySelf: 'start' }}>El camino cruza una vía bloqueada</span>}
             {p.direccion && <span className="pn-sub">{p.direccion}</span>}
             <BarraCapacidad ocupacion={p.ocupacion} capacidad={p.capacidad} estado={p.estado_cupo} />
             <div className="op-item__fila pn-sub er-num">

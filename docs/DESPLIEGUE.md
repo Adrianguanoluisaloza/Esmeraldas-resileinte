@@ -65,9 +65,20 @@ Celular (emulador Android) contra la PC: `--dart-define=API_BASE_URL=http://10.0
 
 ## 3. Cloudflare (web)
 
-1. `PUBLIC_API_URL=https://api.<dominio>` como variable de build.
-2. Desde la raíz: `cd apps/web && npm run build`, luego `npx wrangler deploy` (usa `wrangler.jsonc`).
-3. Nunca publicar sin orden de Adrian. Primero a una rama de prueba.
+La URL de la API queda **fija dentro de la web al compilar**. Si se publica sin `PUBLIC_API_URL`, la web apunta a
+`localhost:3000` y en internet no funciona ningún rol. Por eso:
+
+```bash
+cd apps/web && PUBLIC_API_URL=https://api.<dominio> npm run build
+```
+
+```bash
+cd ../.. && npx wrangler deploy
+```
+
+En el `.env` de la API, `CORS_ORIGENES` debe incluir la URL exacta de la web publicada. Si cambia la URL de la API
+(por ejemplo un túnel rápido nuevo), hay que volver a compilar y publicar la web. Un túnel con nombre fijo evita eso.
+Nunca publicar sin orden de Adrian. Primero a una rama de prueba.
 
 ## 4. Variables
 

@@ -142,3 +142,10 @@ Este documento registra decisiones, avances, bloqueos y pendientes importantes. 
 - **Validación:** 28 pruebas en memoria y 24 contra PostGIS con el usuario restringido.
 - **Pendientes:** Franco: M9 (URL fuera del código), M10 (no subir foto de relleno), M11 (flujo sin cuenta). Poner la URL del túnel en `CORS_ORIGENES` si la web la usa.
 
+## 2026-11-09
+- **Área:** web | backend | base de datos
+- **Cambio:** Interfaz compacta (Geist, tamaños menores, acción principal neutra). Mapa operativo sin contadores, filtros en una línea y todo dentro de la pantalla. Login solo con servidor. Marcar ubicación en el mapa. Inventario con descuento transaccional y ruta de evacuación que detecta vías bloqueadas.
+- **Decisión:** La web publicada en workers.dev era una versión anterior y apuntaba a `localhost`: por eso ningún rol funcionaba en internet. Se documenta compilar con `PUBLIC_API_URL` y poner la URL de la web en `CORS_ORIGENES`.
+- **Validación:** 30 pruebas en memoria y 26 contra PostGIS con usuario restringido. Recorrido completo en navegador contra PostGIS (operador y ciudadano) sin errores de consola ni del servidor.
+- **Pendientes:** Publicar la web con la URL fija de la API; túnel con nombre propio.
+
