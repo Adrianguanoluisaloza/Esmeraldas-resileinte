@@ -3,8 +3,8 @@
 ## Leer primero (en este orden, solo lo que tu tarea pida)
 
 1. Este archivo.
-2. `docs/orquestacion/README.md`: quién hace qué y cómo se pasa una tarea a una IA.
-3. Tu carril: `docs/orquestacion/TAREAS_WEB_GEMINI.md`, `TAREAS_MOVIL_FRANCO.md` o `TAREAS_BACKEND.md`.
+2. `docs/orquestacion/README.md`: quién hace qué y cómo se toma una tarea.
+3. Tu carril: `docs/orquestacion/TAREAS_WEB.md`, `TAREAS_MOVIL_FRANCO.md` o `TAREAS_BACKEND.md`.
 4. Diseño: `docs/DISENO.md`. Despliegue: `docs/DESPLIEGUE.md`. Contrato: `contrato/openapi.yaml`.
 
 Reto oficial: https://educaysoft.org/Hackathon/reto.html (rúbrica: funcionalidad 25, innovación 15,
@@ -62,7 +62,7 @@ docs/
   OPENSTREETMAP.md        # Teselas, atribución y OAuth
   DISENO.md               # Sistema de diseño y piezas reutilizables
   DESPLIEGUE.md           # Oracle Cloud + Cloudflare
-  orquestacion/           # Tareas por carril para cada IA
+  orquestacion/           # Tareas por carril (web, móvil, backend)
 bitacora.md
 CHANGELOG.md
 AGENTS.md
