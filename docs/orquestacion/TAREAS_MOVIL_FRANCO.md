@@ -98,3 +98,21 @@ en `apps/mobile` (mover `mobile/` ahí y borrar el inicial) en un commit propio,
 En `desarrollofranco` hay una copia anterior de `apps/api`. La versión vigente está en las ramas `backend` y
 `desarrollo-adrian`. Al integrar, conservar la de esas ramas; si necesitas un cambio en la API, pídelo al carril backend.
 
+## M9. URL de la API fuera del código
+
+`AppConfig.apiBaseUrl` tiene escrita la URL de un túnel rápido (`*.trycloudflare.com`). Esa URL cambia cada vez que
+se reinicia el túnel y la app deja de conectar. Volver al valor por defecto (`10.0.2.2:3000` en emulador) y pasar la
+URL real siempre con `--dart-define=API_BASE_URL=...`. Para la demo, el backend tendrá un túnel con nombre fijo.
+
+## M10. No subir fotos falsas
+
+Si el archivo de la foto ya no existe, `subirFotoReporte` sube un JPEG mínimo de relleno. Eso deja en el COE una
+"foto" que no es real. Si no hay archivo: saltar el paso 2 y marcar el reporte como `enviado` sin foto.
+
+## M11. Reporte de emergencia sin cuenta
+
+- Sin sesión: `POST /reportes` **sin** cabecera `Authorization`. Queda anónimo y solo el COE lo ve.
+- Foto de ese reporte: `POST /reportes/{id}/foto` sin token, una sola vez y dentro de 2 horas.
+- Con sesión vencida la API responde `401`: no reenviar en silencio como anónimo. Pedir login y conservar la cola.
+- "Mis reportes" solo muestra los enviados con cuenta.
+
