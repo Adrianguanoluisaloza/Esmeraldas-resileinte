@@ -5,7 +5,7 @@
 1. Este archivo.
 2. `docs/orquestacion/README.md`: quién hace qué y cómo se toma una tarea.
 3. Tu carril: `docs/orquestacion/TAREAS_WEB.md`, `TAREAS_MOVIL_FRANCO.md` o `TAREAS_BACKEND.md`.
-4. Diseño: `docs/DISENO.md`. Despliegue: `docs/DESPLIEGUE.md`. Contrato: `contrato/openapi.yaml`.
+4. Diseño: `docs/DISENO.md`. Despliegue: `docs/DESPLIEGUE.md`. Seguridad: `docs/SEGURIDAD.md`. Contrato: `contrato/openapi.yaml`.
 
 Reto oficial: https://educaysoft.org/Hackathon/reto.html (rúbrica: funcionalidad 25, innovación 15,
 arquitectura 15, mapas 15, IA 10, usabilidad 10, impacto 10). Escenario de prueba: "Jueves 06:00 AM".
@@ -46,19 +46,20 @@ Cuando se incorporen fuentes al repositorio, mantener una separación similar a 
 ```text
 apps/
   api/                    # Backend Hono + PostGIS (dominio, aplicacion, infraestructura, http)
-  mobile/                 # Proyecto Flutter
   web/                    # Proyecto Astro
-database/                 # 01_schema_postgis.sql, 02_seed_escenario_06am.sql
+  mobile/                 # Proyecto Flutter inicial (se unifica con mobile/, ver tareas móvil)
+mobile/                   # App Flutter de Franco
+database/                 # 01 esquema, 02 semilla del escenario, 03 usuario de la API
 docker-compose.yml        # PostGIS + API (Oracle Cloud y local)
-backend/                  # Espacio de trabajo de servicios y API
-frontend/                 # Espacio de trabajo de la rama web
-mobile/                   # Espacio de trabajo de la rama móvil de Franco
 contrato/                 # Contratos compartidos, incluido OpenAPI
 packages/
   design-system/          # Tokens y componentes compartidos cuando sea viable
   contracts/              # Contratos, modelos serializables y esquemas compartidos
 infra/                    # Configuración de Cloudflare y CI/CD
 docs/
+  arquitectura/           # Estructura y decisiones (mapas, Hive, PostGIS)
+  movil/                  # Indicaciones de la app Flutter
+  SEGURIDAD.md            # Hoja de seguridad
   OPENSTREETMAP.md        # Teselas, atribución y OAuth
   DISENO.md               # Sistema de diseño y piezas reutilizables
   DESPLIEGUE.md           # Oracle Cloud + Cloudflare
@@ -67,8 +68,6 @@ bitacora.md
 CHANGELOG.md
 AGENTS.md
 ```
-
-Las carpetas `backend/`, `frontend/` y `mobile/` son espacios de trabajo por rama. No sustituyen `apps/web` ni `apps/mobile`; cualquier integración debe revisarse antes de mover código ejecutable.
 
 La estructura puede evolucionar, pero cada módulo debe tener una responsabilidad clara y dependencias dirigidas hacia adentro, nunca hacia detalles de infraestructura.
 

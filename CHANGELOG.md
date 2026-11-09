@@ -6,6 +6,10 @@ Todos los cambios relevantes del proyecto se registran aquí. Se sigue una estru
 
 ### Added
 
+- Alertas por sector, estado de vías, estadísticas del COE, sectores priorizados y asistencia humanitaria (pendientes y entregas) en API y web.
+- Detalle de reporte con historial de atención, formulario web de nuevo reporte y ajuste de ocupación de albergues.
+- Usuario de base de datos con permisos mínimos, auditoría de solo inserción y hoja de seguridad (`docs/SEGURIDAD.md`).
+
 - API `apps/api` (Hono + TypeScript) con PostgreSQL + PostGIS: autenticación JWT, reportes idempotentes, fotos, zonas y vías en GeoJSON, albergues cercanos por distancia real y WebSocket para el COE.
 - Esquema y semilla del escenario Jueves 06:00 en `database/` y `docker-compose.yml` para local y Oracle Cloud.
 - Sistema de diseño web (`src/styles/tokens.css`, `ui.css`) con la paleta de la app móvil, modo oscuro y componentes reutilizables.
@@ -30,6 +34,10 @@ Todos los cambios relevantes del proyecto se registran aquí. Se sigue una estru
 - Integración de `TAREAS_MOVIL_FRANCO.md` (M1–M5) en `mobile/`: `DioApiClient` real con interceptor JWT y mapeo de `Failure`s, login/registro y botón de Google OAuth con PKCE, mapa de Esmeraldas (`FlutterMap`) de fondo con respaldo vectorial offline, navegación inferior por rol (ciudadano, operador 911 y administrador), paleta de `docs/DISENO.md` sin emojis y búsqueda de albergue más cercano.
 
 ### Changed
+
+- Portada y acceso rehechos con el sistema de diseño; menú sin marcas "Pronto"; sin subtítulos ni textos de relleno.
+- Repositorio ordenado: documentos en `docs/arquitectura` y `docs/movil`; se quitan `backend/` y `frontend/` vacíos.
+- La clasificación automática queda fuera de alcance (`/reportes/{id}/clasificar` responde 501).
 
 - `/mapa` redirige a `/panel`. El login usa la API real y redirige según el rol.
 - Contrato OpenAPI: YAML corregido; se agregan origen del dato, `/vias`, `/puntos-servicio/cercanos`, WebSocket y formato de error.
