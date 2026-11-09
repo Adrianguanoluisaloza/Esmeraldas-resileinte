@@ -22,16 +22,22 @@ Cuando se incorporen fuentes al repositorio, mantener una separación similar a 
 apps/
   mobile/                 # Proyecto Flutter
   web/                    # Proyecto Astro
+backend/                  # Espacio de trabajo de servicios y API
+frontend/                 # Espacio de trabajo de la rama web
+mobile/                   # Espacio de trabajo de la rama móvil de Franco
+contrato/                 # Contratos compartidos, incluido OpenAPI
 packages/
   design-system/          # Tokens y componentes compartidos cuando sea viable
   contracts/              # Contratos, modelos serializables y esquemas compartidos
 infra/                    # Configuración de Cloudflare y CI/CD
 docs/
-  adr/                    # Decisiones arquitectónicas
+  OPENSTREETMAP.md        # Teselas, atribución y OAuth
 bitacora.md
 CHANGELOG.md
 AGENTS.md
 ```
+
+Las carpetas `backend/`, `frontend/` y `mobile/` son espacios de trabajo por rama. No sustituyen `apps/web` ni `apps/mobile`; cualquier integración debe revisarse antes de mover código ejecutable.
 
 La estructura puede evolucionar, pero cada módulo debe tener una responsabilidad clara y dependencias dirigidas hacia adentro, nunca hacia detalles de infraestructura.
 
@@ -103,6 +109,10 @@ Antes de integrar cambios:
 ## Git y cambios
 
 - Ramas y commits pequeños, descriptivos y enfocados.
+- `main` es la rama protegida de integración.
+- `backend` contiene el trabajo de API y servidor.
+- `desarrollo-adrian` contiene el trabajo frontend y Cloudflare Pages.
+- `desarrollofranco` contiene el trabajo de la aplicación Flutter.
 - No mezclar refactors amplios con cambios funcionales.
 - Actualizar `bitacora.md` con avances, decisiones y bloqueos relevantes.
 - Actualizar `CHANGELOG.md` cuando un cambio sea visible para usuarios o afecte contratos.

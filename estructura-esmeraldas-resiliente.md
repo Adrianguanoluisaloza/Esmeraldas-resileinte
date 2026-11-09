@@ -83,58 +83,31 @@ esmeraldas-resiliente/
     ├── modelo-datos.md         # diagrama ER (Mermaid)
     ├── manual-usuario.md
     └── guion-demo.md           # escenario jueves 06:00 paso a paso
-```
-
+    ├── AGENTS.md                   # reglas de arquitectura y colaboración
+    ├── bitacora.md                 # registro de cambios y pendientes
+    ├── CHANGELOG.md                # cambios visibles y contratos
 **Total estimado:** 90-110 archivos y 8.000-9.500 líneas (±30%), sin código autogenerado.
+    ├── contrato/
+    │   └── openapi.yaml            # fuente de verdad de la API
 
-## 4. Listas únicas (enums)
-
-- **rol:** `ciudadano`, `operador_911`, `admin`
-- **tipo de incidente:** `inundacion`, `deslizamiento`, `via_bloqueada`, `personas_atrapadas`, `dano_vivienda`, `otro`
-- **estado:** `pendiente`, `en_proceso`, `atendido`, `descartado`
-- **gravedad:** `baja`, `media`, `alta`, `critica`
-- **tipo de punto de servicio:** `albergue`, `centro_salud`
-- **necesidades:** `agua`, `alimentos`, `medicinas`, `rescate`
-
-## 5. Modelo de datos (7 tablas)
-
-| Tabla | Campos principales |
-|---|---|
-| `usuarios` | id, nombre, correo, password_hash, rol, creado_en |
-| `reportes` | id (UUID creado en el celular), usuario_id, tipo, descripcion, gravedad, estado, ubicacion (PostGIS punto), precision_m, capturado_en, recibido_en, verificado, personas_afectadas, ninos, adultos_mayores, necesidades, ia_tipo_sugerido, ia_gravedad_sugerida, ia_explicacion, ia_confianza |
-| `fotos` | id, reporte_id, ruta, ruta_miniatura, tamano, subida_en |
-| `zonas_riesgo` | id, nombre, nivel, geometria (PostGIS polígono), fuente |
-| `puntos_servicio` | id, nombre, tipo (albergue o centro_salud), ubicacion (PostGIS punto), telefono, capacidad, ocupacion, activo |
+    ├── backend/                    # espacio de trabajo de la rama backend
+    │   └── README.md
 | `historial_estados` | id, reporte_id, estado_anterior, estado_nuevo, operador_id, fecha, nota |
-| `alertas` | id, zona_id o sector, mensaje, nivel, creado_por, creado_en, origen (simulada u oficial) |
-
-Reglas: fechas en UTC, coordenadas siempre (lat, lng), todo reporte ciudadano nace con `verificado = false`, y todo dato simulado se marca como tal.
-
-## 6. API (resumen)
-
-- **Auth:** `POST /auth/registro`, `POST /auth/login`
-- **Reportes:** `POST /reportes` (datos livianos, idempotente por UUID), `GET /reportes` (filtros), `GET /reportes/:id`, `PATCH /reportes/:id/estado` (solo 911)
-- **Fotos:** `POST /reportes/:id/foto`
+    ├── frontend/                   # espacio de trabajo de la rama desarrollo-adrian
+    │   └── README.md
 - **Zonas:** `GET /zonas`
-- **Puntos de servicio:** `GET /puntos-servicio`, `PATCH /puntos-servicio/:id/ocupacion`
-- **Alertas:** `GET /alertas`, `POST /alertas` (solo 911)
-- **Estadísticas:** `GET /estadisticas` (contadores, familias afectadas, necesidades pendientes), `GET /estadisticas/recurrencia` (eventos repetidos por sector)
-- **Usuarios:** `GET/POST /usuarios` (solo admin)
-- **IA:** `POST /reportes/:id/clasificar` (sugerencia, no oficial)
-
-## 7. Permisos por rol
-
-| Acción | Ciudadano | Operador 911 | Admin |
-|---|---|---|---|
+    ├── mobile/                     # espacio de trabajo de la rama desarrollofranco
+    │   └── README.md
+    │
+    ├── apps/
+    │   ├── web/                    # aplicación Astro + React + Leaflet
+    │   └── mobile/                 # aplicación Flutter + flutter_map
 | Crear reporte y foto | Sí | Sí | Sí |
-| Ver sus reportes | Sí | Todos | Todos |
-| Cambiar estado / verificar | No | Sí | Sí |
-| Puntos de servicio y zonas | Ver | Ver y editar | Todo |
-| Crear alertas | No | Sí | Sí |
-| Crear usuarios | No | No | Sí |
+    └── docs/                       # documentación técnica
+        └── OPENSTREETMAP.md        # teselas, atribución y OAuth
 
 ## 8. Flujo offline (el corazón de la demo)
-
+    Las carpetas `backend/`, `frontend/` y `mobile/` son espacios de trabajo por rama. El código ejecutable actual permanece en `apps/` hasta que una integración sea revisada.
 1. Sin conexión, el ciudadano toma la foto. La app la comprime (lado largo ~1280 px, calidad 70-80%), la guarda como archivo en la carpeta de la app y escribe en Hive: ID único, ruta de la foto, GPS, precisión, hora **del momento de captura** y estado *pendiente*. La foto no se guarda dentro de Hive.
 2. Vuelve la conexión (datos móviles o wifi). La app no se fía solo de "hay wifi": intenta enviar y reintenta con espera si falla.
 3. **Paso 1:** envía los datos livianos. En el mapa aparece el pin con el **esqueleto** de foto.
@@ -173,21 +146,22 @@ Reglas: fechas en UTC, coordenadas siempre (lat, lng), todo reporte ciudadano na
 ## 11. Ramas y revisión
 
 - `main`: protegida, nadie escribe directo.
-- `backend`: solo Adrián.
-- `web/adrian`: Adrián.
-- `mobile/franco`: Franco, con Pull Request a `main` que revisa Adrián.
+- `backend`: backend y contratos de servidor.
+- `desarrollo-adrian`: frontend Astro/React y despliegue web.
+- `desarrollofranco`: aplicación móvil Flutter.
+- Cada rama recibe cambios mediante Pull Request a `main` después de revisión.
 - El contrato `contrato/openapi.yaml` se cambia **antes** que el código.
-- Cada tarea termina con una línea en `BITACORA.md` (fecha, quién, qué cambió, qué falta) y con cómo verificarla.
+- Cada tarea termina con una línea en `bitacora.md` (fecha, quién, qué cambió, qué falta) y con cómo verificarla.
 
 ## 12. Entregables del reto vs. dónde están
 
 | Entregable | Dónde |
 |---|---|
-| Prototipo funcional | `web/` + `mobile/` |
+| Prototipo funcional | `apps/web/` + `apps/mobile/` |
 | Arquitectura de software | `docs/arquitectura.md` |
 | Modelo de datos (ER) | `docs/modelo-datos.md` |
 | Base de datos con registros de prueba | `backend/src/db/seed.sql` |
-| Componente geográfico | `web/` (mapa) + PostGIS |
+| Componente geográfico | `apps/web/` + `apps/mobile/` + PostGIS |
 | Servicios de integración | `backend/` + `contrato/openapi.yaml` |
 | Documentación técnica y manual | `README.md` + `docs/manual-usuario.md` |
 | Presentación demostrativa | `docs/guion-demo.md` |
