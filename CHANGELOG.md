@@ -13,6 +13,7 @@ Todos los cambios relevantes del proyecto se registran aquí. Se sigue una estru
 - Dependencias de mapas y ubicación para web y Flutter.
 - Proyecto Flutter inicial en `apps/mobile`.
 - Guía de teselas, atribución y conexión OAuth 2.0 de OpenStreetMap en `docs/OPENSTREETMAP.md`.
+- Plantillas de variables de entorno para desarrollo, Cloudflare y distribución móvil.
 
 ### Planned
 

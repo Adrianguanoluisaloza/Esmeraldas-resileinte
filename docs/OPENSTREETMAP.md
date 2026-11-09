@@ -78,6 +78,16 @@ OSM_REDIRECT_URI
 SESSION_SECRET
 ```
 
+La plantilla completa está en `.env.example`. Para desarrollo local, copiarla a `.env` y completar los valores:
+
+```bash
+Copy-Item .env.example .env
+```
+
+El archivo `.env` está excluido por Git. No guardar secretos reales en `.env.example`, en el código, en el navegador ni en el APK. Para Cloudflare, usar `wrangler secret put OSM_CLIENT_SECRET` y `wrangler secret put SESSION_SECRET` en los entornos desplegados.
+
+Las variables con prefijo `PUBLIC_` pueden llegar al cliente. Las variables sin ese prefijo deben permanecer en el Worker o en CI.
+
 Para desarrollo web, una URI típica es:
 
 ```text
@@ -124,3 +134,4 @@ Configurar los permisos de ubicación en las plataformas antes de usar `geolocat
 - [ ] `state` y PKCE validados en cada callback.
 - [ ] Scopes limitados al mínimo necesario.
 - [ ] Pruebas de login cancelado, callback inválido, token expirado y pérdida de red.
+- [ ] `.env` local completado y comprobado con `git status --ignored`.
