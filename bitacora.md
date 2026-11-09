@@ -117,5 +117,16 @@ Este documento registra decisiones, avances, bloqueos y pendientes importantes. 
 - **Cambio:** Se expuso la API local mediante Cloudflare Tunnel (`cloudflared`) generando la URL pública HTTPS `https://seasonal-acceptable-crimes-remember.trycloudflare.com`. Se documentó en `docs/orquestacion/TAREAS_MOVIL_FRANCO.md` para que Franco pueda conectar la app móvil desde su propia computadora y celular mediante `--dart-define=API_BASE_URL=...`.
 - **Validación:** Comprobado `curl https://seasonal-acceptable-crimes-remember.trycloudflare.com/salud` respondiendo `{"estado":"ok"}` a través de la red global de Cloudflare.
 
+## 2026-11-09
+- **Área:** backend | base de datos | seguridad
+- **Cambio:** Alertas, vías, estadísticas, priorización por sector, historial y asistencia humanitaria (módulo 5). La API usa el usuario `resiliente_app` sin DELETE ni DDL; historial y entregas son de solo inserción. Límite de peticiones por IP, CORS estricto, contenedor endurecido y escuchando solo en local.
+- **Decisión:** Sin clasificación automática; la priorización usa reglas visibles (gravedad, personas, vulnerables, rescate, recurrencia).
+- **Validación:** 25 pruebas en memoria y 21 contra PostGIS con el usuario restringido. Comprobado que ese usuario no puede borrar, eliminar tablas ni reescribir el historial.
+- **Pendientes:** Probar `docker compose up` en la VM de Oracle (la imagen no se construyó en esta sesión).
 
+## 2026-11-09
+- **Área:** web | repositorio
+- **Cambio:** Pantallas reales para alertas y vías, asistencia, estadísticas, detalle con historial, nuevo reporte y ocupación de albergues. Portada y acceso nuevos. Menú sin "Pronto" y sin textos de relleno. Documentos movidos a `docs/` y README nuevo.
+- **Validación:** Build de 12 páginas y typecheck sin errores. Recorrido completo en navegador (operador y ciudadano en celular) sin errores de consola.
+- **Pendientes:** Tareas W1 a W4 y M1 a M7 en `docs/orquestacion/`.
 

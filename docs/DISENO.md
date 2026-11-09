@@ -38,6 +38,7 @@ cada uno tiene su color y su texto, y el simulado además lleva borde discontinu
 7. **Un botón rojo de emergencia por pantalla**, como máximo.
 8. **Todo dato que viene de la API y va a HTML armado a mano pasa por `escaparHtml`** (`src/lib/escapar.ts`).
 9. Revisar cada pantalla en **claro, oscuro y 375 px** de ancho antes de darla por terminada.
+10. **No sobreexplicar:** sin subtítulos de relleno ni párrafos que describen la pantalla. Títulos cortos y la acción.
 
 ## 3. Piezas reutilizables
 
@@ -52,7 +53,8 @@ cada uno tiene su color y su texto, y el simulado además lleva borde discontinu
 | KPI | `<Indicador etiqueta valor detalle tono>` | `ui/Basicos.tsx` |
 | Cupo de albergue | `<BarraCapacidad>` | `ui/Basicos.tsx` |
 | Cargando / vacío | `<Cargando>`, `<EstadoVacio>` | `ui/Basicos.tsx` |
-| Pantalla cuyo endpoint da 501 | `<PaginaPendiente titulo texto endpoint>` | `components/panel/PaginaPendiente.astro` |
+| Cajón lateral de detalle | patrón de `DetalleReporte.tsx` (`pn-cajon`, Escape cierra) | `components/DetalleReporte.tsx` |
+| Página pública | `BaseLayout` + `CabeceraSitio` + clases `st-*` | `components/sitio/`, `styles/sitio.css` |
 | Tabla | `er-tabla-contenedor` + `er-tabla` | `styles/ui.css` |
 | Campo de formulario | `er-campo`, `er-etiqueta`, `er-entrada`, `er-select` | `styles/ui.css` |
 
@@ -73,6 +75,7 @@ src/styles/
   ui.css           componentes er-*
   panel.css        estructura del panel (pn-*)
   operaciones.css  mapa operativo y marcadores (op-*, mk-*)
+  sitio.css        portada y acceso (st-*)
 ```
 
 ## 6. Crítica del estado anterior (para no repetir)
@@ -85,4 +88,4 @@ src/styles/
 - Insignias "EN VIVO 06:00 UTC" y flechas "→" en botones: decoración sin dato. El escenario es hora de Ecuador (UTC-5).
 - Prototipo móvil (`fire-shield.html`): la coordenada aparece como `-0.9682`. Esmeraldas está en el hemisferio norte,
   la latitud es **+0.9682**. El backend rechaza latitudes fuera de la provincia (responde 400).
-- `index.astro` y `login.astro` todavía tienen su CSS propio con el azul antiguo: tarea W1 en `docs/orquestacion/`.
+- Subtítulos, etiquetas "Prototipo", marcas "Pronto" y párrafos que explican la pantalla: fuera. La interfaz se entiende sola.
