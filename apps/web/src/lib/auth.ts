@@ -13,37 +13,41 @@ export interface RespuestaAuth {
   usuario: UsuarioSesion;
 }
 
+// Cuentas de demostración. Deben coincidir con apps/api/src/demo.ts y con DEMO_PASSWORD del backend.
+// Son públicas a propósito (demo del hackathon); en producción se crean con otra clave.
+export const CLAVE_DEMO = 'demo-resiliente-2026';
+
 // Usuarios de demostración para el escenario de emergencias
 export const USUARIOS_DEMO: Record<RolUsuario, { correo: string; pass: string; usuario: UsuarioSesion }> = {
   operador_911: {
-    correo: 'operador@coe911.gob.ec',
-    pass: 'operador2026',
+    correo: 'operador@demo.esmeraldas-resiliente.ec',
+    pass: CLAVE_DEMO,
     usuario: {
       id: 'usr-911-01',
-      nombre: 'Capitán Carlos Mendoza',
-      correo: 'operador@coe911.gob.ec',
+      nombre: 'Operador COE demo',
+      correo: 'operador@demo.esmeraldas-resiliente.ec',
       rol: 'operador_911',
       creado_en: '2026-11-01T08:00:00Z',
     },
   },
   admin: {
-    correo: 'admin@resiliente.gob.ec',
-    pass: 'admin2026',
+    correo: 'admin@demo.esmeraldas-resiliente.ec',
+    pass: CLAVE_DEMO,
     usuario: {
       id: 'usr-adm-01',
-      nombre: 'Ing. Adrián Guanoluisa',
-      correo: 'admin@resiliente.gob.ec',
+      nombre: 'Administrador demo',
+      correo: 'admin@demo.esmeraldas-resiliente.ec',
       rol: 'admin',
       creado_en: '2026-11-01T08:00:00Z',
     },
   },
   ciudadano: {
-    correo: 'ciudadano@esmeraldas.ec',
-    pass: 'ciudadano2026',
+    correo: 'ciudadano@demo.esmeraldas-resiliente.ec',
+    pass: CLAVE_DEMO,
     usuario: {
       id: 'usr-ciu-01',
-      nombre: 'María Estupiñán',
-      correo: 'ciudadano@esmeraldas.ec',
+      nombre: 'Ciudadano demo',
+      correo: 'ciudadano@demo.esmeraldas-resiliente.ec',
       rol: 'ciudadano',
       creado_en: '2026-11-09T05:30:00Z',
     },

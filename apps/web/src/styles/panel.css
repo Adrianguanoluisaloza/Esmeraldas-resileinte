@@ -1,0 +1,93 @@
+/* Estructura del panel autenticado (PanelLayout.astro). Prefijo pn-. Solo tokens, nada de hex. */
+
+.pn { display: grid; grid-template-columns: var(--er-sidebar-w) minmax(0, 1fr); min-height: 100dvh; }
+
+/* Barra lateral ------------------------------------------------------------------------------------ */
+.pn-lateral {
+  position: sticky; top: 0; height: 100dvh; display: flex; flex-direction: column; gap: var(--er-s4);
+  padding: var(--er-s4) var(--er-s3); background: var(--er-surface); border-right: 1px solid var(--er-border);
+  overflow-y: auto; z-index: 1100;
+}
+
+.pn-marca { display: flex; align-items: center; gap: var(--er-s3); padding: var(--er-s2); color: var(--er-text); text-decoration: none; }
+.pn-marca__logo {
+  width: 32px; height: 32px; flex-shrink: 0; border-radius: var(--er-r-sm); background: var(--er-primary);
+  /* Escudo simple con recorte: marca sólida sin imagen externa. */
+  clip-path: polygon(50% 0, 100% 18%, 100% 55%, 50% 100%, 0 55%, 0 18%);
+}
+.pn-marca__texto { display: grid; line-height: 1.2; }
+.pn-marca__texto strong { font-size: 14px; font-weight: 800; letter-spacing: .01em; }
+.pn-marca__texto span { font-size: var(--er-fs-xs); color: var(--er-muted); }
+
+.pn-nav { display: grid; gap: var(--er-s4); }
+.pn-grupo ul { list-style: none; padding: 0; display: grid; gap: 2px; }
+.pn-grupo__titulo { padding: 0 var(--er-s2) var(--er-s1); font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: .06em; color: var(--er-muted); }
+
+.pn-enlace {
+  position: relative; display: flex; align-items: center; gap: var(--er-s3); min-height: 40px; padding: 8px 10px;
+  border-radius: var(--er-r-sm); color: var(--er-text-2); font-size: 14px; font-weight: 600; text-decoration: none;
+}
+.pn-enlace svg { flex-shrink: 0; color: var(--er-muted); }
+.pn-enlace:hover { background: var(--er-surface-2); color: var(--er-text); }
+.pn-enlace[aria-current="page"] { background: var(--er-primary-soft); color: var(--er-primary-text); font-weight: 800; }
+.pn-enlace[aria-current="page"] svg { color: var(--er-primary-text); }
+.pn-enlace[aria-current="page"]::before {
+  content: ""; position: absolute; left: -12px; top: 8px; bottom: 8px; width: 3px; border-radius: 0 3px 3px 0; background: var(--er-primary);
+}
+.pn-pronto {
+  margin-left: auto; padding: 0 6px; border-radius: var(--er-r-full); border: 1px solid var(--er-border);
+  font-size: 10px; font-weight: 700; color: var(--er-muted); line-height: 1.7;
+}
+
+.pn-lateral__pie { margin-top: auto; display: grid; gap: var(--er-s2); }
+.pn-osm { padding: 0 var(--er-s2); font-size: 11px; color: var(--er-muted); }
+
+/* Zona principal ------------------------------------------------------------------------------------- */
+.pn-principal { display: flex; flex-direction: column; min-width: 0; }
+
+.pn-superior {
+  position: sticky; top: 0; z-index: 1000; display: flex; align-items: center; gap: var(--er-s3);
+  min-height: var(--er-topbar-h); padding: 0 var(--er-s6); background: var(--er-surface); border-bottom: 1px solid var(--er-border);
+}
+.pn-titulo { font-size: var(--er-fs-lg); font-weight: 800; }
+.pn-sesion { margin-left: auto; display: flex; align-items: center; gap: var(--er-s3); }
+.pn-sesion__nombre { font-size: var(--er-fs-sm); font-weight: 700; }
+.pn-sesion__expira { font-size: var(--er-fs-xs); color: var(--er-muted); }
+.pn-abrir { display: none; }
+
+.pn-contenido { flex: 1; display: grid; align-content: start; gap: var(--er-s5); padding: var(--er-s6); }
+.pn-contenido--completo { padding: var(--er-s4); }
+
+/* Encabezado de página reutilizable dentro del contenido. */
+.pn-encabezado { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: var(--er-s3); }
+.pn-encabezado p { max-width: 70ch; color: var(--er-text-2); font-size: var(--er-fs-sm); }
+
+.pn-velo { position: fixed; inset: 0; z-index: 1050; background: #0e141299; }
+
+/* Responsive ------------------------------------------------------------------------------------------- */
+@media (max-width: 1100px) {
+  .pn-prototipo, .pn-sesion__expira { display: none; }
+}
+
+@media (max-width: 900px) {
+  .pn { grid-template-columns: minmax(0, 1fr); }
+  .pn-lateral {
+    position: fixed; inset: 0 auto 0 0; width: min(86vw, 300px); transform: translateX(-100%);
+    transition: transform .2s ease; box-shadow: var(--er-sombra-2);
+  }
+  .pn-lateral--abierto { transform: none; }
+  .pn-abrir { display: inline-flex; }
+  .pn-superior { padding: 0 var(--er-s3); }
+  .pn-sesion__nombre { display: none; }
+  .pn-contenido { padding: var(--er-s4); }
+}
+
+/* Piezas comunes de las pantallas del panel ------------------------------------------------------------ */
+.pn-bloque { display: grid; gap: var(--er-s4); }
+.pn-barra-filtros { display: flex; flex-wrap: wrap; align-items: end; gap: var(--er-s3); }
+.pn-barra-filtros .er-campo { min-width: 160px; }
+.pn-sub { font-size: var(--er-fs-xs); color: var(--er-muted); }
+.pn-centrado { text-align: center; }
+.pn-rejilla-tarjetas { list-style: none; padding: 0; display: grid; gap: var(--er-s3); grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); }
+.pn-punto { display: grid; gap: var(--er-s2); }
+.pn-mapa-ciudadano { min-height: 52dvh; }

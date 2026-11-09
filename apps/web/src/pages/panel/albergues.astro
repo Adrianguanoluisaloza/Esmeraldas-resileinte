@@ -1,0 +1,19 @@
+---
+import PanelLayout from '../../layouts/PanelLayout.astro';
+import PaginaPendiente from '../../components/panel/PaginaPendiente.astro';
+import { ListaAlbergues } from '../../components/ListaAlbergues';
+import '../../styles/operaciones.css';
+---
+
+<PanelLayout titulo="Albergues y alertas">
+  <div class="pn-encabezado">
+    <p>Cupo de albergues y centros de salud con semáforo: verde con cupo, ámbar casi lleno, rojo lleno.</p>
+  </div>
+  <ListaAlbergues client:only="react" />
+  <h2 class="er-rotulo">Alertas por sector</h2>
+  <PaginaPendiente
+    titulo="Alertas por sector, pronto"
+    texto="Aquí aparecerán las alertas emitidas por el COE, marcadas como oficiales o simuladas."
+    endpoint="GET /alertas"
+  />
+</PanelLayout>

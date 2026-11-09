@@ -16,10 +16,15 @@ export type EstadoCupo = 'verde' | 'ambar' | 'rojo';
 
 export type Necesidad = 'agua' | 'alimentos' | 'medicinas' | 'rescate';
 
+export type OrigenDato = 'ciudadano' | 'simulado' | 'oficial';
+
 export interface ReporteMapa {
   id: string;
   tipo: TipoIncidente;
-  titulo: string;
+  /** Solo en datos locales de demo; la API no lo envía. Usar tituloReporte() para mostrar. */
+  titulo?: string;
+  /** ciudadano | simulado | oficial. Debe verse diferenciado en la interfaz. */
+  origen?: OrigenDato;
   descripcion: string;
   gravedad: Gravedad;
   estado: EstadoReporte;
@@ -34,8 +39,8 @@ export interface ReporteMapa {
   ninos: number;
   adultos_mayores: number;
   necesidades: Necesidad[];
-  foto_url?: string;
-  sector: string;
+  foto_url?: string | null;
+  sector: string | null;
 }
 
 export interface PuntoServicioMapa {
@@ -46,6 +51,7 @@ export interface PuntoServicioMapa {
   longitud: number;
   telefono: string;
   capacidad: number;
+  cupos_libres?: number;
   ocupacion: number;
   estado_cupo: EstadoCupo;
   activo: boolean;
