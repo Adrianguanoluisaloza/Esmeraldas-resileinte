@@ -444,16 +444,32 @@ class OperacionesRepository extends ChangeNotifier {
         ocupacion: 22,
       ),
     ]);
-    alertas.add(
+    alertas.addAll(<AlertaSector>[
       AlertaSector(
         sector: 'Ribera del río Teaone (Tabiazo)',
         nivel: GravedadIncidente.critica,
         mensaje: 'Simulacro: crecida del río. Dirigirse a zonas altas y seguir indicaciones de las autoridades.',
         creadaPor: 'operador@demo.esmeraldas-resiliente.ec',
+        oficial: false,
+        hora: DateTime.now(),
+      ),
+      AlertaSector(
+        sector: 'Isla Piedad',
+        nivel: GravedadIncidente.alta,
+        mensaje: 'Desbordamiento inminente por marea alta. Evacuar familias vulnerables al Albergue Cancha Techada.',
+        creadaPor: 'operador@demo.esmeraldas-resiliente.ec',
         oficial: true,
         hora: DateTime.now(),
       ),
-    );
+      AlertaSector(
+        sector: 'Vía Esmeraldas - Atacames',
+        nivel: GravedadIncidente.media,
+        mensaje: 'Paso vehicular restringido a un solo carril por árbol caído. Maquinaria en camino.',
+        creadaPor: 'operador@demo.esmeraldas-resiliente.ec',
+        oficial: true,
+        hora: DateTime.now(),
+      ),
+    ]);
     usuarios.addAll(<UsuarioGestion>[
       UsuarioGestion(
         id: 'usr-911-01',

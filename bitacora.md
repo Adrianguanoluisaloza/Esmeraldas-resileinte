@@ -142,3 +142,9 @@ Este documento registra decisiones, avances, bloqueos y pendientes importantes. 
 - **Validación:** 28 pruebas en memoria y 24 contra PostGIS con el usuario restringido.
 - **Pendientes:** Franco: M9 (URL fuera del código), M10 (no subir foto de relleno), M11 (flujo sin cuenta). Poner la URL del túnel en `CORS_ORIGENES` si la web la usa.
 
+## 2026-11-09
+- **Área:** mobile | web | backend
+- **Cambio:** Se habilitó el reporte de emergencia sin señal GPS tanto en la web (`FormularioReporte.tsx`) como en la app móvil (`CrearReportePage.dart`), permitiendo seleccionar directamente el sector de Esmeraldas y marcando `ubicacion_aproximada: true`. Se actualizaron las alertas del escenario con los 3 eventos vigentes oficiales y simulados en la semilla y en la base de datos SQL.
+- **Validación:** 28 pruebas pasando en apps/api (`npm run ci`), compilación limpia de 12 páginas en Astro y build web de Flutter.
+- **Pendientes:** Merge del PR hacia `desarrollo-adrian`.
+
