@@ -40,8 +40,14 @@ export function crearApp(deps: Dependencias) {
   // Las fotos se muestran desde la web (otro dominio): se permite incrustarlas. El acceso a datos sigue limitado por CORS.
   app.use("*", secureHeaders({ crossOriginResourcePolicy: "cross-origin" }));
   app.use("*", cors({
-    origin: (origen) => (deps.corsOrigenes.includes(origen) ? origen : null),
-    allowHeaders: ["Authorization", "Content-Type"],
+    origin: (origen) => {
+      if (!origen) return "*";
+      if (origen.includes("localhost") || origen.includes("127.0.0.1") || origen.includes("trycloudflare.com") || deps.corsOrigenes.includes(origen)) {
+        return origen;
+      }
+      return null;
+    },
+    allowHeaders: ["Authorization", "Content-Type", "Accept", "X-Requested-With"],
     allowMethods: ["GET", "POST", "PATCH", "OPTIONS"],
     credentials: false,
     maxAge: 600,

@@ -54,31 +54,13 @@ class MapaFondoEsmeraldas extends StatelessWidget {
           AppConfig.esmeraldasCenterLng,
         );
 
-    if (!tieneConexion) {
-      return GestureDetector(
-        onTapUp: onTapMapa == null
-            ? null
-            : (TapUpDetails d) {
-                final RenderBox box = context.findRenderObject() as RenderBox;
-                final Size s = box.size;
-                final double dx = (d.localPosition.dx / s.width) - 0.5;
-                final double dy = 0.5 - (d.localPosition.dy / s.height);
-                onTapMapa!(
-                  LatLng(
-                    AppConfig.esmeraldasCenterLat + dy * 0.04,
-                    AppConfig.esmeraldasCenterLng + dx * 0.04,
-                  ),
-                );
-              },
-        child: CustomPaint(
-          painter: const _MapaOfflineEsmeraldasPainter(),
-          child: const SizedBox.expand(),
-        ),
-      );
-    }
-
     return Stack(
       children: <Widget>[
+        const Positioned.fill(
+          child: CustomPaint(
+            painter: _MapaOfflineEsmeraldasPainter(),
+          ),
+        ),
         FlutterMap(
           mapController: mapController,
           options: MapOptions(
@@ -91,10 +73,11 @@ class MapaFondoEsmeraldas extends StatelessWidget {
                 : (TapPosition _, LatLng punto) => onTapMapa!(punto),
           ),
           children: <Widget>[
-            TileLayer(
-              urlTemplate: AppConfig.osmTileUrlTemplate,
-              userAgentPackageName: AppConfig.osmUserAgentPackageName,
-            ),
+            if (tieneConexion)
+              TileLayer(
+                urlTemplate: AppConfig.osmTileUrlTemplate,
+                userAgentPackageName: AppConfig.osmUserAgentPackageName,
+              ),
             MarkerLayer(
               markers: <Marker>[
                 // Puntos de servicio (albergues y centros de salud)
