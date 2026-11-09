@@ -70,7 +70,11 @@ INSERT INTO reportes (id, usuario_id, origen, tipo, descripcion, gravedad, estad
   ST_SetSRID(ST_MakePoint(-79.6490, 0.9700), 4326), 10, 'El Arenal',
   '2026-11-12T11:10:00Z', '2026-11-12T11:11:00Z', false, 22, 8, 4, ARRAY['agua', 'alimentos', 'medicinas']);
 
--- Alerta del escenario (simulada: el sistema no reemplaza los canales oficiales) -------------------
-INSERT INTO alertas (id, sector, mensaje, nivel, origen) VALUES
+-- Alerta del escenario (simulada y oficial: el sistema no reemplaza los canales oficiales) -------------------
+INSERT INTO alertas (id, sector, mensaje, nivel, origen, vigente) VALUES
 ('a5000000-0000-4000-8000-000000000001', 'Ribera del río Teaone (Tabiazo)',
-  'Simulacro: crecida del río. Dirigirse a zonas altas y seguir indicaciones de las autoridades.', 'critica', 'simulada');
+  'Simulacro: crecida del río. Dirigirse a zonas altas y seguir indicaciones de las autoridades.', 'critica', 'simulada', true),
+('a5000000-0000-4000-8000-000000000002', 'Isla Piedad',
+  'Desbordamiento inminente por marea alta. Evacuar familias vulnerables al Albergue Cancha Techada.', 'alta', 'oficial', true),
+('a5000000-0000-4000-8000-000000000003', 'Vía Esmeraldas - Atacames',
+  'Paso vehicular restringido a un solo carril por árbol caído. Maquinaria en camino.', 'media', 'oficial', true);

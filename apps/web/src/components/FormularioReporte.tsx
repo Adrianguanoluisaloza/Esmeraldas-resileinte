@@ -14,10 +14,24 @@ const TIPOS: Array<[TipoIncidente, typeof Waves]> = [
   ['otro', CircleHelp],
 ];
 
+const SECTORES_ESMERALDAS: Record<string, { latitud: number; longitud: number }> = {
+  'Las Palmas (Norte)': { latitud: 0.985, longitud: -79.654 },
+  'Centro de Esmeraldas': { latitud: 0.965, longitud: -79.654 },
+  'Barrio 50 Casas': { latitud: 0.945, longitud: -79.668 },
+  'Isla Piedad': { latitud: 0.9765, longitud: -79.6582 },
+  'El Arenal': { latitud: 0.970, longitud: -79.649 },
+  'Barrio 20 de Noviembre': { latitud: 0.9548, longitud: -79.6695 },
+  'Tachina / Aeropuerto': { latitud: 0.9824, longitud: -79.6385 },
+  'San Rafael': { latitud: 0.9428, longitud: -79.6812 },
+  'Ribera Río Teaone (Tabiazo)': { latitud: 0.912, longitud: -79.632 },
+};
+
 interface Ubicacion {
   latitud: number;
   longitud: number;
   precision: number;
+  esAproximada?: boolean;
+  nombreSector?: string;
 }
 
 /** Nuevo reporte desde el navegador. Mismos pasos que la app móvil: tipo, foto, ubicación y familia. */
@@ -34,18 +48,31 @@ export function FormularioReporte() {
   const [enviando, setEnviando] = useState(false);
   const [listo, setListo] = useState(false);
 
+  function seleccionarSector(nombre: string) {
+    if (!nombre || !SECTORES_ESMERALDAS[nombre]) return;
+    const s = SECTORES_ESMERALDAS[nombre];
+    setUbicacion({
+      latitud: s.latitud,
+      longitud: s.longitud,
+      precision: 100,
+      esAproximada: true,
+      nombreSector: nombre,
+    });
+    setError(null);
+  }
+
   function obtenerUbicacion() {
-    if (!('geolocation' in navigator)) return setError('Este navegador no permite obtener la ubicación.');
+    if (!('geolocation' in navigator)) return setError('Este navegador no permite obtener la ubicación. Puedes elegir tu sector abajo.');
     setBuscandoGps(true);
     setError(null);
     navigator.geolocation.getCurrentPosition(
       ({ coords }) => {
-        setUbicacion({ latitud: coords.latitude, longitud: coords.longitude, precision: coords.accuracy });
+        setUbicacion({ latitud: coords.latitude, longitud: coords.longitude, precision: coords.accuracy, esAproximada: false });
         setBuscandoGps(false);
       },
       () => {
         setBuscandoGps(false);
-        setError('No se pudo obtener la ubicación. Revisa el permiso del navegador.');
+        setError('No se pudo obtener la señal GPS. Elige tu sector en el menú de abajo.');
       },
       { enableHighAccuracy: true, timeout: 20000, maximumAge: 30000 },
     );
@@ -66,6 +93,7 @@ export function FormularioReporte() {
         latitud: ubicacion.latitud,
         longitud: ubicacion.longitud,
         precision_m: Math.round(ubicacion.precision),
+        ubicacion_aproximada: ubicacion.esAproximada ?? false,
         capturado_en: new Date().toISOString(),
         personas_afectadas: familia.personas,
         ninos: familia.ninos,
@@ -125,15 +153,36 @@ export function FormularioReporte() {
 
       <div className="pn-form__fila">
         <Boton onClick={obtenerUbicacion} disabled={buscandoGps}>
-          <LocateFixed aria-hidden="true" /> {buscandoGps ? 'Buscando...' : ubicacion ? 'Actualizar ubicación' : 'Usar mi ubicación'}
+          <LocateFixed aria-hidden="true" /> {buscandoGps ? 'Buscando GPS...' : ubicacion?.esAproximada ? 'GPS disponible' : ubicacion ? 'Ubicación GPS fijada' : 'Obtener mi GPS'}
         </Boton>
         <label className="er-btn er-btn--secundario">
           <Camera aria-hidden="true" /> {foto ? foto.name : 'Foto'}
           <input className="er-sr" type="file" accept="image/jpeg,image/png" capture="environment" onChange={(e) => setFoto(e.target.files?.[0] ?? null)} />
         </label>
       </div>
+
+      <label className="er-campo">
+        <span className="er-etiqueta">¿Sin señal GPS? Elige el sector aproximado:</span>
+        <select
+          className="er-entrada"
+          value={ubicacion?.nombreSector ?? ''}
+          onChange={(e) => seleccionarSector(e.target.value)}
+        >
+          <option value="">-- Seleccionar sector de Esmeraldas --</option>
+          {Object.keys(SECTORES_ESMERALDAS).map((nom) => (
+            <option key={nom} value={nom}>
+              {nom}
+            </option>
+          ))}
+        </select>
+      </label>
+
       {ubicacion && (
-        <p className="pn-sub er-num">{ubicacion.latitud.toFixed(5)}, {ubicacion.longitud.toFixed(5)} · ±{Math.round(ubicacion.precision)} m</p>
+        <p className="pn-sub er-num">
+          {ubicacion.nombreSector ? `Sector aproximado: ${ubicacion.nombreSector} · ` : ''}
+          {ubicacion.latitud.toFixed(5)}, {ubicacion.longitud.toFixed(5)} · ±{Math.round(ubicacion.precision)} m
+          {ubicacion.esAproximada ? ' (Ubicación aproximada)' : ''}
+        </p>
       )}
 
       <label className="er-campo">

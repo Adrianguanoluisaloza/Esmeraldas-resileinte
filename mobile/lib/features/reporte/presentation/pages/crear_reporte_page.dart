@@ -229,6 +229,66 @@ class _CrearReportePageState extends State<CrearReportePage> {
     );
   }
 
+  static const Map<String, LatLng> _sectoresEsmeraldas = <String, LatLng>{
+    'Las Palmas': LatLng(0.9850, -79.6540),
+    'Centro': LatLng(0.9650, -79.6540),
+    'Barrio 50 Casas': LatLng(0.9450, -79.6680),
+    'Isla Piedad': LatLng(0.9765, -79.6582),
+    'El Arenal': LatLng(0.9700, -79.6490),
+    'Barrio 20 de Noviembre': LatLng(0.9548, -79.6695),
+    'Tachina / Aeropuerto': LatLng(0.9824, -79.6385),
+    'San Rafael': LatLng(0.9428, -79.6812),
+    'Ribera del río Teaone (Tabiazo)': LatLng(0.9120, -79.6320),
+  };
+
+  void _mostrarSelectorSectores() {
+    showModalBottomSheet<void>(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (BuildContext ctx) {
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              const Padding(
+                padding: EdgeInsets.fromLTRB(16, 16, 16, 8),
+                child: Text(
+                  'Elige tu sector (Reporte sin GPS)',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+                ),
+              ),
+              const Divider(height: 1),
+              Flexible(
+                child: ListView(
+                  shrinkWrap: true,
+                  children: _sectoresEsmeraldas.entries.map((MapEntry<String, LatLng> e) {
+                    return ListTile(
+                      leading: const Icon(Icons.location_on_outlined),
+                      title: Text(e.key),
+                      onTap: () {
+                        Navigator.of(ctx).pop();
+                        setState(() {
+                          _puntoMarcadoEnMapa = e.value;
+                          _paso = _PasoReporte.confirmarUbicacion;
+                        });
+                        try {
+                          _mapController.move(e.value, AppConfig.defaultZoom);
+                        } catch (_) {}
+                      },
+                    );
+                  }).toList(),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   Widget _construirVistaMapaInicial() {
     return Align(
       alignment: Alignment.bottomCenter,
@@ -253,6 +313,13 @@ class _CrearReportePageState extends State<CrearReportePage> {
               label: const Text('Reportar emergencia'),
             ),
             const SizedBox(height: 8),
+            ActionChip(
+              backgroundColor: Colors.white,
+              avatar: const Icon(Icons.location_city, size: 14, color: AppTheme.colorPrimario),
+              label: const Text('¿Sin señal GPS? Toca aquí para elegir tu sector', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600)),
+              onPressed: _mostrarSelectorSectores,
+            ),
+            const SizedBox(height: 6),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
               decoration: BoxDecoration(
@@ -366,6 +433,13 @@ class _CrearReportePageState extends State<CrearReportePage> {
               ),
             ),
             const SizedBox(height: 8),
+            ActionChip(
+              backgroundColor: Colors.white,
+              avatar: const Icon(Icons.location_city, size: 14, color: AppTheme.colorPrimario),
+              label: const Text('¿Sin señal GPS? Toca aquí para elegir tu sector', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600)),
+              onPressed: _mostrarSelectorSectores,
+            ),
+            const SizedBox(height: 6),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
               decoration: BoxDecoration(
