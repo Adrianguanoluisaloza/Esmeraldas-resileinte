@@ -58,14 +58,14 @@ function crearIconoReporte(gravedad: string, isSelected: boolean): L.DivIcon {
 function crearIconoServicio(tipo: 'albergue' | 'centro_salud', estadoCupo: 'verde' | 'ambar' | 'rojo'): L.DivIcon {
   const isAlbergue = tipo === 'albergue';
   const colorCupo = estadoCupo === 'verde' ? '#16a34a' : estadoCupo === 'ambar' ? '#d97706' : '#dc2626';
-  const iconoSvg = isAlbergue ? '⛺' : '🏥';
+  const iconoTexto = isAlbergue ? 'Albergue' : 'Salud';
 
   return L.divIcon({
     className: 'custom-service-marker',
     html: `
       <div style="display: flex; flex-direction: column; align-items: center; cursor: pointer;">
         <div style="background-color: #0f172a; border: 2px solid ${colorCupo}; border-radius: 8px; padding: 3px 6px; display: flex; align-items: center; gap: 4px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.4); color: white; font-size: 11px; font-weight: 600;">
-          <span>${iconoSvg}</span>
+          <span>${iconoTexto}</span>
           <span style="font-size: 9px; text-transform: uppercase; color: ${colorCupo};">${estadoCupo}</span>
         </div>
         <div style="width: 0; height: 0; border-left: 5px solid transparent; border-right: 5px solid transparent; border-top: 6px solid #0f172a; margin-top: -1px;"></div>
@@ -157,9 +157,9 @@ export const MapaEsmeraldas: React.FC<Props> = ({
             </span>
           </div>
           <strong style="color: #0f172a; font-size: 14px; display: block; margin-bottom: 4px;">${rep.titulo}</strong>
-          <div style="color: #475569; font-size: 11px; margin-bottom: 6px;">📍 ${rep.sector}</div>
+          <div style="color: #475569; font-size: 11px; margin-bottom: 6px;">Sector: ${rep.sector}</div>
           <p style="margin: 0 0 6px 0; color: #334155; font-size: 12px;">${rep.descripcion}</p>
-          ${rep.personas_afectadas > 0 ? `<div style="font-size: 11px; background: #f1f5f9; padding: 4px 6px; border-radius: 4px; color: #1e293b;"><strong>👥 ${rep.personas_afectadas} personas afectadas</strong> (Niños: ${rep.ninos})</div>` : ''}
+          ${rep.personas_afectadas > 0 ? `<div style="font-size: 11px; background: #f1f5f9; padding: 4px 6px; border-radius: 4px; color: #1e293b;"><strong>${rep.personas_afectadas} personas afectadas</strong> (Niños: ${rep.ninos})</div>` : ''}
         </div>
       `;
 
@@ -211,7 +211,7 @@ export const MapaEsmeraldas: React.FC<Props> = ({
               <div style="width: ${Math.min(porcentaje, 100)}%; height: 100%; background: ${pto.estado_cupo === 'verde' ? '#16a34a' : pto.estado_cupo === 'ambar' ? '#d97706' : '#dc2626'};"></div>
             </div>
           </div>
-          <div style="font-size: 11px; color: #334155;">📞 Teléfono: <strong>${pto.telefono}</strong></div>
+          <div style="font-size: 11px; color: #334155;">Teléfono: <strong>${pto.telefono}</strong></div>
         </div>
       `;
 

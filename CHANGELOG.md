@@ -15,6 +15,10 @@ Todos los cambios relevantes del proyecto se registran aquí. Se sigue una estru
 - Guía de teselas, atribución y conexión OAuth 2.0 de OpenStreetMap en `docs/OPENSTREETMAP.md`.
 - Plantillas de variables de entorno para desarrollo, Cloudflare y distribución móvil.
 - Estructura del monorepo y responsabilidades de las ramas documentadas en `AGENTS.md` y `estructura-esmeraldas-resiliente.md`.
+- Librería `lucide-react` y sustitución de emojis por iconos accesibles en la interfaz web.
+- Rediseño de la portada web en `apps/web/src/pages/index.astro` con estética SaaS minimalista (Remote.com): red de nodos territoriales, llamadas a la acción e instituciones aliadas.
+- Centro de Mando y gestión de emergencias en `apps/web/src/pages/mapa.astro` con mapa interactivo Leaflet/OpenStreetMap, KPIs, filtros y lista de incidentes en tema claro y limpio.
+- Módulo de autenticación en `apps/web/src/pages/login.astro` con diseño unificado blanco, roles para demostración y persistencia de sesión.
 
 ### Planned
 

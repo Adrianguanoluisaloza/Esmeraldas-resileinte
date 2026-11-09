@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import type { ReporteMapa, PuntoServicioMapa, Gravedad, TipoIncidente, EstadoReporte } from '../types/mapa';
 import { REPORTES_INICIALES, PUNTOS_SERVICIO_INICIALES } from '../data/mockEscenario';
 import { MapaEsmeraldas } from './MapaEsmeraldas';
+import { AlertTriangle, Hospital, MapPin, TentTree, Users } from 'lucide-react';
 
 export const PanelOperaciones: React.FC = () => {
   const [reportes, setReportes] = useState<ReporteMapa[]>(REPORTES_INICIALES);
@@ -91,10 +92,10 @@ export const PanelOperaciones: React.FC = () => {
             className="filtro-select"
           >
             <option value="todas">Todas las gravedades</option>
-            <option value="critica">🔴 Crítica</option>
-            <option value="alta">🟠 Alta</option>
-            <option value="media">🟡 Media</option>
-            <option value="baja">🔵 Baja</option>
+            <option value="critica">Crítica</option>
+            <option value="alta">Alta</option>
+            <option value="media">Media</option>
+            <option value="baja">Baja</option>
           </select>
         </div>
 
@@ -119,7 +120,7 @@ export const PanelOperaciones: React.FC = () => {
               checked={mostrarAlbergues}
               onChange={(e) => setMostrarAlbergues(e.target.checked)}
             />
-            <span>⛺ Albergues ({puntosServicio.filter((p) => p.tipo === 'albergue').length})</span>
+            <span><TentTree aria-hidden="true" /> Albergues ({puntosServicio.filter((p) => p.tipo === 'albergue').length})</span>
           </label>
           <label className="capa-toggle">
             <input
@@ -127,7 +128,7 @@ export const PanelOperaciones: React.FC = () => {
               checked={mostrarCentrosSalud}
               onChange={(e) => setMostrarCentrosSalud(e.target.checked)}
             />
-            <span>🏥 Centros de Salud ({puntosServicio.filter((p) => p.tipo === 'centro_salud').length})</span>
+            <span><Hospital aria-hidden="true" /> Centros de Salud ({puntosServicio.filter((p) => p.tipo === 'centro_salud').length})</span>
           </label>
         </div>
       </div>
@@ -158,11 +159,11 @@ export const PanelOperaciones: React.FC = () => {
                     </span>
                   </div>
                   <strong className="tarjeta-titulo">{rep.titulo}</strong>
-                  <div className="tarjeta-sector">📍 {rep.sector}</div>
+                  <div className="tarjeta-sector"><MapPin aria-hidden="true" /> {rep.sector}</div>
                   <div className="tarjeta-footer">
                     <span className={`badge-estado estado-${rep.estado}`}>{rep.estado}</span>
                     {rep.personas_afectadas > 0 && (
-                      <span className="tarjeta-afectados">👥 {rep.personas_afectadas}</span>
+                      <span className="tarjeta-afectados"><Users aria-hidden="true" /> {rep.personas_afectadas}</span>
                     )}
                   </div>
                 </div>
@@ -200,7 +201,7 @@ export const PanelOperaciones: React.FC = () => {
 
               <h2 className="detalle-titulo">{reporteSeleccionado.titulo}</h2>
               <div className="detalle-sector">
-                📍 <strong>Sector:</strong> {reporteSeleccionado.sector}
+                <MapPin aria-hidden="true" /> <strong>Sector:</strong> {reporteSeleccionado.sector}
               </div>
 
               <div className="detalle-coords">
@@ -226,7 +227,7 @@ export const PanelOperaciones: React.FC = () => {
                   {reporteSeleccionado.necesidades.length > 0 && (
                     <div className="necesidades-tags">
                       {reporteSeleccionado.necesidades.map((n) => (
-                        <span key={n} className="tag-necesidad">🚨 {n.toUpperCase()}</span>
+                        <span key={n} className="tag-necesidad"><AlertTriangle aria-hidden="true" /> {n.toUpperCase()}</span>
                       ))}
                     </div>
                   )}
