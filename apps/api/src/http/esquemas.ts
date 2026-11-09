@@ -87,3 +87,6 @@ export const EntregaEntrada = z.object({
 }).strict();
 
 export const AlertasFiltro = z.object({ todas: booleanoTexto.default(false) });
+
+export const InventarioRuta = z.object({ necesidad: z.enum(["agua", "alimentos", "medicinas"]) });
+export const AjusteInventarioEntrada = z.object({ delta: z.number().int().min(-100_000).max(100_000).refine((n) => n !== 0) }).strict();

@@ -1,7 +1,7 @@
 import type { Rol } from "./catalogos.js";
 import type { PuntoServicio } from "./puntoServicio.js";
 import type { Reporte } from "./reporte.js";
-import type { Alerta, Entrega, EstadoVia, HistorialEstado } from "./operacion.js";
+import type { Alerta, Entrega, EstadoVia, HistorialEstado, ItemInventario, Suministro } from "./operacion.js";
 import type { EstadoReporte, Gravedad, TipoIncidente, TipoPuntoServicio } from "./catalogos.js";
 
 /**
@@ -56,8 +56,12 @@ export interface RepositorioAlertas {
 
 /** Módulo 5: entregas de asistencia humanitaria ligadas a un reporte. */
 export interface RepositorioAsistencia {
-  registrar(e: Entrega): Promise<void>;
+  /** Registra la entrega y, si es un suministro, descuenta el stock en la misma transacción. */
+  registrar(e: Entrega): Promise<"ok" | "sin_stock">;
   listar(): Promise<Entrega[]>;
+  inventario(): Promise<ItemInventario[]>;
+  /** Suma (o resta) stock; nunca deja la cantidad negativa. */
+  ajustarInventario(necesidad: Suministro, delta: number): Promise<ItemInventario | null>;
 }
 
 /** Donde viven los archivos de foto. Hoy disco local (volumen Docker); mañana Object Storage de Oracle o R2. */
@@ -83,7 +87,8 @@ export interface RepositorioTerritorio {
   sectorDe(latitud: number, longitud: number): Promise<string | null>;
   listarPuntos(tipo?: TipoPuntoServicio, soloActivos?: boolean): Promise<PuntoServicio[]>;
   /** Puntos activos con cupo, ordenados por distancia real (ST_Distance sobre geography). */
-  puntosCercanos(c: Cercania): Promise<Array<PuntoServicio & { distancia_m: number }>>;
+  /** paso_bloqueado = el tramo recto hasta el punto cruza una vía bloqueada (ruta de evacuación a revisar). */
+  puntosCercanos(c: Cercania): Promise<Array<PuntoServicio & { distancia_m: number; paso_bloqueado: boolean }>>;
   actualizarOcupacion(id: string, ocupacion: number): Promise<PuntoServicio | null>;
   /** Cambia el estado de una vía; devuelve sus propiedades o null si no existe. */
   actualizarVia(id: string, estado: EstadoVia): Promise<Record<string, unknown> | null>;

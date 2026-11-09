@@ -328,3 +328,33 @@ test("CORS: localhost exacto en desarrollo y nunca dominios que solo lo contiene
   assert.equal((await pedir("GET", "/zonas", { origen: "https://localhost.atacante.com" })).headers.get("Access-Control-Allow-Origin"), null);
   assert.equal((await pedir("GET", "/zonas", { origen: "https://cualquiera.trycloudflare.com" })).headers.get("Access-Control-Allow-Origin"), null);
 });
+
+test("inventario: la entrega descuenta stock y no deja entregar más de lo que hay", async () => {
+  const ciudadano = await cuenta();
+  const coe = await cuenta("operador_911");
+  const { json } = await pedir("POST", "/reportes", { token: ciudadano.token, json: reporte({ necesidades: ["medicinas", "rescate"] }) });
+  const antes = (await pedir("GET", "/asistencia/inventario", { token: coe.token })).json.find((i: { necesidad: string }) => i.necesidad === "medicinas").cantidad;
+  const ok = await pedir("POST", "/asistencia/entregas", { token: coe.token, json: { reporte_id: json.id, necesidad: "medicinas", cantidad: 2 } });
+  assert.equal(ok.status, 201);
+  const despues = (await pedir("GET", "/asistencia/inventario", { token: coe.token })).json.find((i: { necesidad: string }) => i.necesidad === "medicinas").cantidad;
+  assert.equal(despues, antes - 2);
+  const otro = await pedir("POST", "/reportes", { token: ciudadano.token, json: reporte({ necesidades: ["medicinas"] }) });
+  const mucho = await pedir("POST", "/asistencia/entregas", { token: coe.token, json: { reporte_id: otro.json.id, necesidad: "medicinas", cantidad: despues + 1 } });
+  assert.equal(mucho.status, 409);
+  // El rescate no consume stock.
+  assert.equal((await pedir("POST", "/asistencia/entregas", { token: coe.token, json: { reporte_id: json.id, necesidad: "rescate", cantidad: 1 } })).status, 201);
+  const ingreso = await pedir("PATCH", "/asistencia/inventario/medicinas", { token: coe.token, json: { delta: 10 } });
+  assert.equal(ingreso.json.cantidad, despues + 10);
+  assert.equal((await pedir("PATCH", "/asistencia/inventario/medicinas", { token: ciudadano.token, json: { delta: 10 } })).status, 403);
+  await pedir("PATCH", "/asistencia/inventario/medicinas", { token: coe.token, json: { delta: -10 } });
+});
+
+test("ruta de evacuación: un albergue detrás de una vía bloqueada va al final y se marca", async () => {
+  const coe = await cuenta("operador_911");
+  // Desde el norte de Tachina, el tramo recto hacia el centro cruza el acceso al puente (bloqueado en la semilla).
+  const r = await pedir("GET", "/puntos-servicio/cercanos?lat=0.995&lng=-79.630&limite=5", { token: coe.token });
+  assert.equal(r.status, 200);
+  assert.ok(r.json.some((p: { paso_bloqueado: boolean }) => p.paso_bloqueado));
+  const primeroBloqueado = r.json.findIndex((p: { paso_bloqueado: boolean }) => p.paso_bloqueado);
+  assert.ok(r.json.slice(primeroBloqueado).every((p: { paso_bloqueado: boolean }) => p.paso_bloqueado));
+});

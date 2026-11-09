@@ -348,6 +348,9 @@ paths:
                     - type: object
                       properties:
                         distancia_m: { type: integer }
+                        paso_bloqueado:
+                          type: boolean
+                          description: El tramo recto hasta el punto cruza una vía bloqueada (ST_Intersects). Estos van al final
 
   /zonas:
     get:
@@ -550,7 +553,7 @@ paths:
                   $ref: '#/components/schemas/Entrega'
     post:
       summary: Registrar entrega de agua, alimentos, medicinas o rescate para un reporte. Solo COE
-      description: La necesidad debe estar pedida en el reporte. Las entregas no se editan ni se borran (auditoría).
+      description: La necesidad debe estar pedida en el reporte. Descuenta stock en la misma transacción (409 si no alcanza). Las entregas no se editan ni se borran (auditoría).
       tags: [Asistencia]
       security:
         - BearerAuth: []
@@ -573,6 +576,47 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Entrega'
+
+  /asistencia/inventario:
+    get:
+      summary: Stock de agua, alimentos y medicinas. Solo COE
+      tags: [Asistencia]
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Inventario
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ItemInventario'
+
+  /asistencia/inventario/{necesidad}:
+    patch:
+      summary: Ingreso o ajuste de stock. Solo COE
+      tags: [Asistencia]
+      security:
+        - BearerAuth: []
+      parameters:
+        - { name: necesidad, in: path, required: true, schema: { type: string, enum: [agua, alimentos, medicinas] } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [delta]
+              properties:
+                delta: { type: integer, description: Positivo suma, negativo resta. Nunca queda bajo cero }
+      responses:
+        '200':
+          description: Stock actualizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ItemInventario'
 
   /estadisticas:
     get:
@@ -856,6 +900,14 @@ components:
         nota: { type: string, nullable: true }
         entregado_por: { type: string, format: uuid, nullable: true }
         entregado_en: { type: string, format: date-time }
+
+    ItemInventario:
+      type: object
+      properties:
+        necesidad: { type: string, enum: [agua, alimentos, medicinas] }
+        cantidad: { type: integer }
+        unidad: { type: string }
+        actualizado_en: { type: string, format: date-time }
 
     SugerenciaIA:
       type: object

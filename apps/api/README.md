@@ -50,9 +50,10 @@ TEST_DATABASE_URL=postgres://usuario:clave@localhost:5432/resiliente npm run tes
 | 3 COE | `GET /alertas` (vigentes) | público |
 | 3 COE | `POST /alertas`, `PATCH /alertas/{id}/cerrar`, `GET /alertas?todas=true` | COE |
 | 3 COE | `GET /estadisticas` | COE |
-| 4 Evacuación | `GET /puntos-servicio`, `GET /puntos-servicio/cercanos?lat&lng&personas` | público |
+| 4 Evacuación | `GET /puntos-servicio`, `GET /puntos-servicio/cercanos?lat&lng&personas` (marca `paso_bloqueado`) | público |
 | 4 Evacuación | `PATCH /puntos-servicio/{id}/ocupacion` | COE |
-| 5 Asistencia | `GET /asistencia/pendientes`, `GET/POST /asistencia/entregas` | COE |
+| 5 Asistencia | `GET /asistencia/pendientes`, `GET/POST /asistencia/entregas` (descuenta stock) | COE |
+| 5 Asistencia | `GET /asistencia/inventario`, `PATCH /asistencia/inventario/{necesidad}` | COE |
 | 6 Análisis | `GET /estadisticas/recurrencia` (sectores priorizados con reglas explicables) | COE |
 | — | `GET /ws?token=` (tiempo real filtrado por rol) | sesión |
 | fuera de alcance | `POST /reportes/{id}/clasificar` | responde 501 |

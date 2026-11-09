@@ -41,6 +41,28 @@ export interface Entrega {
 
 export type EstadoVia = "habilitada" | "parcial" | "bloqueada";
 
+/** Suministros con stock. El rescate no se inventaría. */
+export type Suministro = Exclude<Necesidad, "rescate">;
+export const esSuministro = (n: Necesidad): n is Suministro => n !== "rescate";
+
+export interface ItemInventario {
+  necesidad: Suministro;
+  cantidad: number;
+  unidad: string;
+  actualizado_en: string;
+}
+
+/** ¿Se cruzan los segmentos ab y cd? (plano, suficiente para distancias urbanas). */
+function seCruzan(a: number[], b: number[], c: number[], d: number[]): boolean {
+  const o = (p: number[], q: number[], r: number[]) => Math.sign((q[0]! - p[0]!) * (r[1]! - p[1]!) - (q[1]! - p[1]!) * (r[0]! - p[0]!));
+  return o(a, b, c) !== o(a, b, d) && o(c, d, a) !== o(c, d, b);
+}
+
+/** ¿El tramo recto desde el origen al destino cruza alguna vía bloqueada? Coordenadas [lng, lat]. */
+export function cruzaViaBloqueada(origen: number[], destino: number[], viasBloqueadas: number[][][]): boolean {
+  return viasBloqueadas.some((linea) => linea.slice(1).some((p, i) => seCruzan(origen, destino, linea[i]!, p)));
+}
+
 const PESO: Record<Gravedad, number> = { baja: 1, media: 2, alta: 3, critica: 4 };
 const abierto = (r: Reporte) => r.estado === "pendiente" || r.estado === "en_proceso";
 

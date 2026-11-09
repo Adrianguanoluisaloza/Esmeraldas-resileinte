@@ -1,6 +1,6 @@
 import type { TipoPuntoServicio } from "../../dominio/catalogos.js";
 import { randomUUID } from "node:crypto";
-import type { Alerta, Entrega, EstadoVia, HistorialEstado } from "../../dominio/operacion.js";
+import { cruzaViaBloqueada, esSuministro, type Alerta, type Entrega, type EstadoVia, type HistorialEstado, type ItemInventario, type Suministro } from "../../dominio/operacion.js";
 import type {
   Cercania,
   FiltroReportes,
@@ -13,7 +13,7 @@ import type {
 } from "../../dominio/puertos.js";
 import type { PuntoServicio } from "../../dominio/puntoServicio.js";
 import type { Reporte } from "../../dominio/reporte.js";
-import { ALERTAS, PUNTOS, REPORTES, VIAS, ZONAS, zonasGeoJson } from "./semilla.js";
+import { ALERTAS, INVENTARIO, PUNTOS, REPORTES, VIAS, ZONAS, zonasGeoJson } from "./semilla.js";
 
 /** Implementaciones en RAM. Sirven para pruebas y para una demo sin Docker; se pierden al reiniciar. */
 
@@ -125,10 +125,15 @@ export class TerritorioEnMemoria implements RepositorioTerritorio {
     return [...this.puntos.values()].filter((p) => (!tipo || p.tipo === tipo) && (!soloActivos || p.activo)).map(copia);
   }
   async puntosCercanos(c: Cercania) {
+    const bloqueadas = [...this.vias.values()].filter((v) => v.estado === "bloqueada").map((v) => v.linea);
     return [...this.puntos.values()]
       .filter((p) => p.activo && p.capacidad - p.ocupacion >= c.personas && (!c.tipo || p.tipo === c.tipo))
-      .map((p) => ({ ...copia(p), distancia_m: haversineM(c.latitud, c.longitud, p.latitud, p.longitud) }))
-      .sort((a, b) => a.distancia_m - b.distancia_m)
+      .map((p) => ({
+        ...copia(p),
+        distancia_m: haversineM(c.latitud, c.longitud, p.latitud, p.longitud),
+        paso_bloqueado: cruzaViaBloqueada([c.longitud, c.latitud], [p.longitud, p.latitud], bloqueadas),
+      }))
+      .sort((a, b) => Number(a.paso_bloqueado) - Number(b.paso_bloqueado) || a.distancia_m - b.distancia_m)
       .slice(0, c.limite);
   }
   async actualizarOcupacion(id: string, ocupacion: number) {
@@ -157,8 +162,26 @@ export class AlertasEnMemoria implements RepositorioAlertas {
 
 export class AsistenciaEnMemoria implements RepositorioAsistencia {
   private readonly datos: Entrega[] = [];
+  private readonly stock = new Map<Suministro, ItemInventario>(INVENTARIO.map((i) => [i.necesidad, copia(i)]));
   async registrar(e: Entrega) {
+    if (esSuministro(e.necesidad)) {
+      const item = this.stock.get(e.necesidad);
+      if (!item || item.cantidad < e.cantidad) return "sin_stock" as const;
+      item.cantidad -= e.cantidad;
+      item.actualizado_en = new Date().toISOString();
+    }
     this.datos.push(copia(e));
+    return "ok" as const;
+  }
+  async inventario() {
+    return [...this.stock.values()].map(copia);
+  }
+  async ajustarInventario(necesidad: Suministro, delta: number) {
+    const item = this.stock.get(necesidad);
+    if (!item) return null;
+    item.cantidad = Math.max(0, item.cantidad + delta);
+    item.actualizado_en = new Date().toISOString();
+    return copia(item);
   }
   async listar() {
     return this.datos.map(copia);

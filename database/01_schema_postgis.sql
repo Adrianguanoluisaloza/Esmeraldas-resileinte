@@ -125,6 +125,14 @@ CREATE TABLE entregas (
 );
 CREATE INDEX entregas_reporte ON entregas (reporte_id, necesidad);
 
+-- Inventario de suministros (agua, alimentos, medicinas). El rescate no es stock.
+CREATE TABLE inventario (
+  necesidad      VARCHAR(10) PRIMARY KEY CHECK (necesidad IN ('agua', 'alimentos', 'medicinas')),
+  cantidad       INTEGER     NOT NULL DEFAULT 0 CHECK (cantidad >= 0),
+  unidad         VARCHAR(30) NOT NULL,
+  actualizado_en TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
 -- Integridad extra --------------------------------------------------------------------------------
 ALTER TABLE reportes ADD CONSTRAINT reportes_vulnerables_coherentes
   CHECK (ninos + adultos_mayores <= GREATEST(personas_afectadas, ninos + adultos_mayores));

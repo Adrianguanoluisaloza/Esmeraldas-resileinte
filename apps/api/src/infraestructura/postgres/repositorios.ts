@@ -1,6 +1,6 @@
 import pg from "pg";
 import type { TipoPuntoServicio } from "../../dominio/catalogos.js";
-import type { Alerta, Entrega, EstadoVia, HistorialEstado } from "../../dominio/operacion.js";
+import { esSuministro, type Alerta, type Entrega, type EstadoVia, type HistorialEstado, type ItemInventario, type Suministro } from "../../dominio/operacion.js";
 import type {
   Cercania,
   RepositorioAlertas,
@@ -157,6 +157,9 @@ export class ReportesPg implements RepositorioReportes {
 
 const COLUMNAS_PUNTO = `id, nombre, tipo, telefono, direccion, capacidad, ocupacion, activo,
   ST_Y(geom) AS latitud, ST_X(geom) AS longitud`;
+/** Mismas columnas con alias "p." para consultas con varias tablas. */
+const COLUMNAS_PUNTO_P = `p.id, p.nombre, p.tipo, p.telefono, p.direccion, p.capacidad, p.ocupacion, p.activo,
+  ST_Y(p.geom) AS latitud, ST_X(p.geom) AS longitud`;
 
 const filaPunto = (f: Record<string, unknown>) =>
   ({ ...(f as unknown as PuntoServicio), latitud: Number(f.latitud), longitud: Number(f.longitud) });
@@ -205,14 +208,17 @@ export class TerritorioPg implements RepositorioTerritorio {
 
   async puntosCercanos(c: Cercania) {
     const r = await this.db.query(
-      `SELECT ${COLUMNAS_PUNTO},
-         ST_Distance(geom::geography, ST_SetSRID(ST_MakePoint($1, $2), 4326)::geography) AS distancia_m
-       FROM puntos_servicio
-       WHERE activo AND capacidad - ocupacion >= $5 AND ($3::text IS NULL OR tipo = $3)
-       ORDER BY distancia_m LIMIT $4`,
+      `WITH origen AS (SELECT ST_SetSRID(ST_MakePoint($1, $2), 4326) AS g),
+            bloqueadas AS (SELECT geom FROM vias WHERE estado = 'bloqueada')
+       SELECT ${COLUMNAS_PUNTO_P},
+         ST_Distance(p.geom::geography, o.g::geography) AS distancia_m,
+         EXISTS (SELECT 1 FROM bloqueadas b WHERE ST_Intersects(ST_MakeLine(o.g, p.geom), b.geom)) AS paso_bloqueado
+       FROM puntos_servicio p, origen o
+       WHERE p.activo AND p.capacidad - p.ocupacion >= $5 AND ($3::text IS NULL OR p.tipo = $3)
+       ORDER BY paso_bloqueado, distancia_m LIMIT $4`,
       [c.longitud, c.latitud, c.tipo ?? null, c.limite, c.personas],
     );
-    return r.rows.map((f) => ({ ...filaPunto(f), distancia_m: Number(f.distancia_m) }));
+    return r.rows.map((f) => ({ ...filaPunto(f), distancia_m: Number(f.distancia_m), paso_bloqueado: Boolean(f.paso_bloqueado) }));
   }
 
   async actualizarVia(id: string, estado: EstadoVia) {
@@ -268,12 +274,48 @@ export class AlertasPg implements RepositorioAlertas {
 export class AsistenciaPg implements RepositorioAsistencia {
   constructor(private readonly db: pg.Pool) {}
 
+  /** Descuento de stock e inserción en una sola transacción: o pasan las dos, o ninguna. */
   async registrar(e: Entrega) {
-    await this.db.query(
-      `INSERT INTO entregas (id, reporte_id, necesidad, cantidad, nota, entregado_por, entregado_en)
-       VALUES ($1, $2, $3, $4, $5, $6, $7)`,
-      [e.id, e.reporte_id, e.necesidad, e.cantidad, e.nota, e.entregado_por, e.entregado_en],
+    const cliente = await this.db.connect();
+    try {
+      await cliente.query("BEGIN");
+      if (esSuministro(e.necesidad)) {
+        const r = await cliente.query(
+          "UPDATE inventario SET cantidad = cantidad - $2, actualizado_en = now() WHERE necesidad = $1 AND cantidad >= $2",
+          [e.necesidad, e.cantidad],
+        );
+        if (r.rowCount !== 1) {
+          await cliente.query("ROLLBACK");
+          return "sin_stock" as const;
+        }
+      }
+      await cliente.query(
+        `INSERT INTO entregas (id, reporte_id, necesidad, cantidad, nota, entregado_por, entregado_en)
+         VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+        [e.id, e.reporte_id, e.necesidad, e.cantidad, e.nota, e.entregado_por, e.entregado_en],
+      );
+      await cliente.query("COMMIT");
+      return "ok" as const;
+    } catch (err) {
+      await cliente.query("ROLLBACK");
+      throw err;
+    } finally {
+      cliente.release();
+    }
+  }
+
+  async inventario() {
+    const r = await this.db.query("SELECT necesidad, cantidad, unidad, actualizado_en FROM inventario ORDER BY necesidad");
+    return r.rows.map((f) => ({ ...f, actualizado_en: iso(f.actualizado_en) }) as ItemInventario);
+  }
+
+  async ajustarInventario(necesidad: Suministro, delta: number) {
+    const r = await this.db.query(
+      `UPDATE inventario SET cantidad = GREATEST(0, cantidad + $2), actualizado_en = now() WHERE necesidad = $1
+       RETURNING necesidad, cantidad, unidad, actualizado_en`,
+      [necesidad, delta],
     );
+    return r.rows[0] ? ({ ...r.rows[0], actualizado_en: iso(r.rows[0].actualizado_en) } as ItemInventario) : null;
   }
 
   async listar() {
