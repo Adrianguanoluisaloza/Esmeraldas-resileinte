@@ -123,7 +123,8 @@ test("validación: coordenadas fuera de Esmeraldas y campos extra se rechazan", 
   const { token } = await cuenta();
   assert.equal((await pedir("POST", "/reportes", { token, json: reporte({ latitud: 0, longitud: 0 }) })).status, 400);
   assert.equal((await pedir("POST", "/reportes", { token, json: reporte({ estado: "atendido" }) })).status, 400);
-  assert.equal((await pedir("POST", "/reportes", { json: reporte() })).status, 401);
+  // Sin cuenta se acepta (emergencia anónima); con token inválido no.
+  assert.equal((await pedir("POST", "/reportes", { json: reporte() })).status, 201);
 });
 
 test("el ciudadano solo ve sus reportes; el COE ve todos (incluida la semilla)", async () => {
@@ -290,4 +291,40 @@ test("configuración: rechaza CORS con comodín y secretos de ejemplo en producc
   assert.throws(() => leerConfig({ JWT_SECRET: "x".repeat(40), CORS_ORIGENES: "*" }), /CORS_ORIGENES/);
   assert.throws(() => leerConfig({ JWT_SECRET: "replace_with_a_long_random_secret_of_at_least_32_chars", APP_ENV: "production", CORS_ORIGENES: "https://a.ec" }), /JWT_SECRET/);
   assert.throws(() => leerConfig({ JWT_SECRET: "y".repeat(40), APP_ENV: "production", CORS_ORIGENES: "http://a.ec" }), /https/);
+});
+
+test("reporte de emergencia sin cuenta: se guarda anónimo, foto una sola vez y solo el COE lo ve", async () => {
+  const datos = reporte();
+  const r = await pedir("POST", "/reportes", { json: datos });
+  assert.equal(r.status, 201);
+  assert.equal(r.json.usuario_id, null);
+  assert.equal((await pedir("POST", "/reportes", { json: datos })).status, 200);
+  const foto = () => {
+    const f = new FormData();
+    f.append("foto", new File([new Uint8Array([0xff, 0xd8, 0xff, 0xe0, 0, 0])], "a.jpg", { type: "image/jpeg" }));
+    return f;
+  };
+  assert.equal((await pedir("POST", `/reportes/${datos.id}/foto`, { body: foto() })).status, 201);
+  assert.equal((await pedir("POST", `/reportes/${datos.id}/foto`, { body: foto() })).status, 403);
+  const ciudadano = await cuenta();
+  assert.equal((await pedir("POST", "/reportes", { token: ciudadano.token, json: datos })).status, 409);
+  assert.equal((await pedir("GET", `/reportes/${datos.id}`, { token: ciudadano.token })).status, 404);
+  const coe = await cuenta("operador_911");
+  assert.equal((await pedir("GET", `/reportes/${datos.id}`, { token: coe.token })).status, 200);
+  assert.equal((await pedir("POST", "/reportes", { token: "x".repeat(40), json: reporte() })).status, 401);
+});
+
+test("foto de un reporte con dueño exige su sesión", async () => {
+  const { token } = await cuenta();
+  const datos = reporte();
+  await pedir("POST", "/reportes", { token, json: datos });
+  const f = new FormData();
+  f.append("foto", new File([new Uint8Array([0xff, 0xd8, 0xff, 0xe0])], "a.jpg", { type: "image/jpeg" }));
+  assert.equal((await pedir("POST", `/reportes/${datos.id}/foto`, { body: f })).status, 401);
+});
+
+test("CORS: localhost exacto en desarrollo y nunca dominios que solo lo contienen", async () => {
+  assert.equal((await pedir("GET", "/zonas", { origen: "http://localhost:5555" })).headers.get("Access-Control-Allow-Origin"), "http://localhost:5555");
+  assert.equal((await pedir("GET", "/zonas", { origen: "https://localhost.atacante.com" })).headers.get("Access-Control-Allow-Origin"), null);
+  assert.equal((await pedir("GET", "/zonas", { origen: "https://cualquiera.trycloudflare.com" })).headers.get("Access-Control-Allow-Origin"), null);
 });

@@ -15,7 +15,8 @@ Qué protege el sistema, cómo y qué falta. Se revisa antes de cada despliegue.
 | Inyección SQL | Solo consultas parametrizadas (`$1, $2`) | `infraestructura/postgres/` |
 | XSS | React escapa por defecto; el HTML de los popups del mapa pasa por `escaparHtml` | `apps/web/src/lib/escapar.ts` |
 | Fotos | Tipo detectado por bytes reales (JPEG/PNG), 2 MB máximo, nombre = UUID, solo el autor sube | `http/rutas/reportes.ts` |
-| CORS | Lista exacta de orígenes; sin comodines; en producción solo `https` | `config.ts`, `http/app.ts` |
+| CORS | Lista exacta de orígenes; sin comodines ni "contiene"; localhost solo fuera de producción; en producción solo `https` | `config.ts`, `http/app.ts` |
+| Reporte sin cuenta | Se guarda con `usuario_id` nulo y sin verificar; nadie salvo el COE lo lee; foto una sola vez y dentro de 2 horas; límite por IP | `aplicacion/reportes.ts` |
 | Cabeceras | HSTS, `nosniff`, `X-Frame-Options`, `Referrer-Policy` (secureHeaders); `Cache-Control: no-store` en datos privados | `http/app.ts` |
 | Abuso | Límite de escrituras por IP (`LIMITE_ESCRITURAS_MINUTO`), cuerpo máximo 3 MB | `http/limites.ts`, `http/app.ts` |
 | Tiempo real | WebSocket exige token; el ciudadano solo recibe alertas, cupos, vías y sus propios reportes; entregas solo COE | `http/tiempoReal.ts` |

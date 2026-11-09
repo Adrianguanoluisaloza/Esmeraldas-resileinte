@@ -19,6 +19,8 @@ export interface Dependencias {
   tokens: ServicioTokens;
   corsOrigenes: string[];
   confiarEnProxy: boolean;
+  /** true fuera de producción: acepta http://localhost:* en CORS. */
+  permitirLocalhost: boolean;
   limiteEscriturasMinuto: number;
   /** Comprueba la base de datos para GET /salud. */
   comprobarAlmacen: () => Promise<boolean>;
@@ -32,6 +34,9 @@ export interface Sesion {
 
 export type Entorno = { Variables: { sesion: Sesion; idPeticion: string } };
 
+/** Sesión del contexto o null si la ruta acepta peticiones sin cuenta. */
+export const sesionDe = (c: { get(k: "sesion"): Sesion | undefined }) => c.get("sesion") ?? null;
+
 /** Exige Bearer JWT válido. Si se pasan roles, además exige uno de ellos. */
 export function requiereSesion(tokens: ServicioTokens, roles?: readonly Rol[]): MiddlewareHandler<Entorno> {
   return async (c, next) => {
@@ -41,6 +46,21 @@ export function requiereSesion(tokens: ServicioTokens, roles?: readonly Rol[]): 
     if (!sesion) throw new ErrorDominio("NO_AUTENTICADO", "Sesión requerida");
     if (roles && !roles.includes(sesion.rol)) throw new ErrorDominio("SIN_PERMISO", "Tu rol no permite esta acción");
     c.set("sesion", sesion);
+    await next();
+  };
+}
+
+/** Si viene un token válido, deja la sesión en el contexto; si no viene, sigue sin sesión. Un token inválido es 401. */
+export function sesionOpcional(tokens: ServicioTokens): MiddlewareHandler<Entorno> {
+  return async (c, next) => {
+    const cabecera = c.req.header("Authorization");
+    if (cabecera) {
+      const coincide = /^Bearer ([A-Za-z0-9._~-]{20,4096})$/.exec(cabecera);
+      const sesion = coincide?.[1] ? await tokens.verificar(coincide[1]) : null;
+      // Token vencido: el celular debe volver a iniciar sesión; no se convierte en anónimo en silencio.
+      if (!sesion) throw new ErrorDominio("NO_AUTENTICADO", "Sesión vencida o inválida");
+      c.set("sesion", sesion);
+    }
     await next();
   };
 }
