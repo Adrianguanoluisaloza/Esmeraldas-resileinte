@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:dio/dio.dart';
 
 import '../../data/models/punto_servicio_model.dart';
@@ -276,12 +277,19 @@ class DioApiClient implements ApiClient {
   }) async {
     try {
       MultipartFile archivo;
-      final File f = File(rutaArchivoLocal);
-      if (await f.exists()) {
-        archivo = await MultipartFile.fromFile(
-          rutaArchivoLocal,
-          filename: '$reporteId.jpg',
-        );
+      if (!kIsWeb && rutaArchivoLocal.isNotEmpty) {
+        final File f = File(rutaArchivoLocal);
+        if (await f.exists()) {
+          archivo = await MultipartFile.fromFile(
+            rutaArchivoLocal,
+            filename: '$reporteId.jpg',
+          );
+        } else {
+          archivo = MultipartFile.fromBytes(
+            _jpegMinimoDemo,
+            filename: '$reporteId.jpg',
+          );
+        }
       } else {
         archivo = MultipartFile.fromBytes(
           _jpegMinimoDemo,

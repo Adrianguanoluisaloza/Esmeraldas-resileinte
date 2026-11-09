@@ -7,12 +7,14 @@ class AppConfig {
 
   static const String _apiBaseUrlEnv = String.fromEnvironment('API_BASE_URL');
 
-  /// URL base del backend. En web usa localhost:3000, en emulador 10.0.2.2:3000,
-  /// o la URL pasada por --dart-define=API_BASE_URL=...
+  /// URL base del backend.
+  /// Si se pasa --dart-define=API_BASE_URL=... la usa con prioridad.
+  /// En web usa localhost:3000. En celular físico/emulador se conecta al
+  /// túnel público Cloudflare activo del backend para sincronización inmediata.
   static String get apiBaseUrl {
     if (_apiBaseUrlEnv.isNotEmpty) return _apiBaseUrlEnv;
     if (kIsWeb) return 'http://localhost:3000';
-    return 'http://10.0.2.2:3000';
+    return 'https://seasonal-acceptable-crimes-remember.trycloudflare.com';
   }
 
   /// Modo demostración: cuando es false usa la API real.

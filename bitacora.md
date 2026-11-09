@@ -130,3 +130,9 @@ Este documento registra decisiones, avances, bloqueos y pendientes importantes. 
 - **Validación:** Build de 12 páginas y typecheck sin errores. Recorrido completo en navegador (operador y ciudadano en celular) sin errores de consola.
 - **Pendientes:** Tareas W1 a W4 y M1 a M7 en `docs/orquestacion/`.
 
+## 2026-11-09
+- **Área:** mobile | backend | mapas
+- **Cambio:** Se corrigió la visualización del mapa en modo offline (`MapaFondoEsmeraldas`) manteniendo siempre activos los marcadores de incidentes, albergues y pines de emergencia sobre el lienzo vectorial. Se habilitó en `POST /reportes` la recepción de reportes sin token para emergencias offline (`ciudadano-offline`), sincronizando la cola local de Hive directamente con la base de datos y WebSocket del COE. Se generó guía y archivo comprimido de credenciales para Franco (`mobile/GUIA_RAPIDA_FRANCO.md`, `mobile/acceso_franco_demo.zip`).
+- **Validación:** Backend recompilado y verificado con `POST /reportes` anónimo (201 OK). App móvil recompilada para Web en puerto 5000 y configurada para apuntar por defecto al túnel Cloudflare en dispositivos físicos.
+- **Pendientes:** Pruebas integradas de sincronización de reportes desde el celular de Franco hacia el panel web del COE.
+
