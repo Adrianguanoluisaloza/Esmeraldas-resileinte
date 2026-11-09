@@ -2,25 +2,32 @@ import 'dart:io';
 
 import '../../../../core/config/app_config.dart';
 import '../../../../core/enums/app_enums.dart';
+import '../../../../core/error/failures.dart';
 import '../../../../core/network/api_client.dart';
 import '../../../../data/models/reporte_cola_model.dart';
 import '../../../../data/repositories/cola_reportes_repository.dart';
 
 /// Servicio de sincronización en dos pasos con espera creciente (backoff) y control de concurrencia por UUID.
+/// Cumple las reglas de `TAREAS_MOVIL_FRANCO.md` (M1 y M2):
+/// - `ValidationFailure` (400/409) -> estado `error`, no reintentar.
+/// - `UnauthorizedFailure` (401) -> pedir login otra vez sin borrar la cola de Hive.
+/// - `NetworkFailure` / `ServerFailure` -> reintentar con backoff (5, 15, 30, 60 s).
 class SyncWorkerService {
-  SyncWorkerService({required this.colaRepository, required this.apiClient});
+  SyncWorkerService({
+    required this.colaRepository,
+    required this.apiClient,
+    this.onNoAutenticado,
+  });
 
   final ColaReportesRepository colaRepository;
   final ApiClient apiClient;
+  final void Function()? onNoAutenticado;
 
-  /// Conjunto de UUIDs actualmente en proceso para evitar envíos duplicados en paralelo.
   final Set<String> _uuidsEnVuelo = <String>{};
   bool _sincronizando = false;
 
   bool get estaSincronizando => _sincronizando;
 
-  /// Ejecuta un ciclo de sincronización de los reportes pendientes en la cola.
-  /// Antes de enviar, comprueba que exista salida real al servidor (`GET /salud`).
   Future<int> sincronizarPendientes() async {
     if (_sincronizando) return 0;
     _sincronizando = true;
@@ -37,6 +44,7 @@ class SyncWorkerService {
       }
 
       for (final ReporteColaModel reporte in pendientes) {
+        if (reporte.estadoCola == EstadoColaReporte.error) continue;
         if (_uuidsEnVuelo.contains(reporte.id)) continue;
         _uuidsEnVuelo.add(reporte.id);
 
@@ -76,7 +84,7 @@ class SyncWorkerService {
         );
       }
 
-      // Paso 2: Subida de foto comprimida (si existe archivo local)
+      // Paso 2: Subida de foto comprimida
       if (estadoActual == EstadoColaReporte.datosEnviados ||
           estadoActual == EstadoColaReporte.enviandoFoto) {
         if (reporte.rutaFotoLocal.isNotEmpty) {
@@ -90,7 +98,6 @@ class SyncWorkerService {
             rutaArchivoLocal: reporte.rutaFotoLocal,
           );
 
-          // Al recibir confirmación, borrar foto local para liberar almacenamiento
           final File archivoLocal = File(reporte.rutaFotoLocal);
           if (await archivoLocal.exists()) {
             await archivoLocal.delete();
@@ -105,6 +112,28 @@ class SyncWorkerService {
       }
 
       return true;
+    } on ValidationFailure catch (f) {
+      // 400 VALIDACION o 409 CONFLICTO -> estado error, no reintentar
+      await colaRepository.actualizarEstadoReporte(
+        id: reporte.id,
+        nuevoEstado: EstadoColaReporte.error,
+        mensajeError: f.mensaje,
+      );
+      return false;
+    } on UnauthorizedFailure catch (f) {
+      // 401 NO_AUTENTICADO -> conservar en cola y pedir login nuevamente
+      final EstadoColaReporte estadoRecuperacion =
+          (estadoActual == EstadoColaReporte.datosEnviados ||
+              estadoActual == EstadoColaReporte.enviandoFoto)
+          ? EstadoColaReporte.datosEnviados
+          : EstadoColaReporte.pendiente;
+      await colaRepository.actualizarEstadoReporte(
+        id: reporte.id,
+        nuevoEstado: estadoRecuperacion,
+        mensajeError: f.mensaje,
+      );
+      onNoAutenticado?.call();
+      return false;
     } catch (error) {
       final int nuevosIntentos = reporte.intentos + 1;
       final Duration espera = _calcularEsperaBackoff(nuevosIntentos);
@@ -114,12 +143,13 @@ class SyncWorkerService {
           ? EstadoColaReporte.datosEnviados
           : EstadoColaReporte.pendiente;
 
+      final String msg = error is Failure ? error.mensaje : error.toString();
       await colaRepository.actualizarEstadoReporte(
         id: reporte.id,
         nuevoEstado: estadoRecuperacion,
         intentos: nuevosIntentos,
         proximoIntentoUtc: DateTime.now().toUtc().add(espera),
-        mensajeError: error.toString(),
+        mensajeError: msg,
       );
       return false;
     }

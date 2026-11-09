@@ -51,7 +51,8 @@ class _EsmeraldasResilienteAppState extends State<EsmeraldasResilienteApp> {
     super.initState();
     _authRepository = widget.authRepository ?? SecureStorageAuthRepository();
     _locationService = widget.locationService ?? const LocalLocationService();
-    _apiClient = widget.apiClient ?? DioApiClient();
+    _apiClient =
+        widget.apiClient ?? DioApiClient(authRepository: _authRepository);
     _crearReporteUseCase = CrearReporteOfflineUseCase(
       colaRepository: widget.colaRepository,
     );
@@ -71,6 +72,7 @@ class _EsmeraldasResilienteAppState extends State<EsmeraldasResilienteApp> {
         colaRepository: widget.colaRepository,
         authRepository: _authRepository,
         locationService: _locationService,
+        apiClient: _apiClient,
         crearReporteUseCase: _crearReporteUseCase,
         syncWorkerService: _syncWorkerService,
       ),

@@ -59,3 +59,9 @@ Este documento registra decisiones, avances, bloqueos y pendientes importantes. 
 - **Decisión:** Todo el acceso a las cajas locales de Hive (`cola_reportes_box` y `directorio_puntos_servicio_box`) se encapsuló en una única clase (`HiveColaReportesRepository`) y la pantalla de albergues usa respaldo en lista cuando no hay conexión real.
 - **Validación:** Ejecutados `dart format`, `flutter analyze` y `flutter test` en `mobile/`.
 - **Pendientes:** Conectar la cámara/compresión física en dispositivo real y los endpoints definitivos del backend (`POST /reportes` y `POST /reportes/:id/foto`).
+
+## 2026-11-09
+- **Área:** mobile
+- **Cambio:** Se implementaron las tareas M1–M5 de `docs/orquestacion/TAREAS_MOVIL_FRANCO.md` en `mobile/`: `DioApiClient` con interceptor Bearer y mapeo de errores (`400/409` a `error`, `401` a re-login sin borrar la cola), login/registro con validación y botón de Google (`flutter_appauth` PKCE), `MapaFondoEsmeraldas` centrado en Esmeraldas (`0.9592, -79.6539`) con respaldo vectorial offline, barra de navegación por rol (ciudadano, operador 911 y admin), paleta de `docs/DISENO.md` sin emojis e insignia de origen con borde discontinuo, y directorio de albergues con semáforo textual y consulta `/puntos-servicio/cercanos`.
+- **Validación:** `dart format --set-exit-if-changed lib test`, `flutter analyze` (0 issues) y `flutter test` (100% pass).
+- **Pendientes:** Probar el APK generado en dispositivo físico Android en modo avión.
