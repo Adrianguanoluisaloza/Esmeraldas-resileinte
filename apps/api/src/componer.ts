@@ -60,6 +60,7 @@ export function componer(config: Config) {
     tokens,
     corsOrigenes: config.corsOrigenes,
     confiarEnProxy: config.CONFIAR_EN_PROXY,
+    permitirLocalhost: config.APP_ENV !== "production",
     limiteEscriturasMinuto: config.LIMITE_ESCRITURAS_MINUTO,
     comprobarAlmacen,
   };
