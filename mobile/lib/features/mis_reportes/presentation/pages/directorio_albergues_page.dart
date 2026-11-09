@@ -36,6 +36,7 @@ class DirectorioAlberguesPage extends StatefulWidget {
 
 class _DirectorioAlberguesPageState extends State<DirectorioAlberguesPage> {
   List<PuntoServicioModel>? _puntosActualizados;
+  List<Map<String, dynamic>> _alertasActivas = const <Map<String, dynamic>>[];
   bool _ordenarMasCercano = false;
   int _tamanoFamilia = 1;
   bool _cargando = false;
@@ -62,6 +63,11 @@ class _DirectorioAlberguesPageState extends State<DirectorioAlberguesPage> {
         if (mounted) {
           setState(() => _puntosActualizados = remotos);
         }
+      }
+      final List<Map<String, dynamic>> alertas = await widget.apiClient!
+          .obtenerAlertasActivas();
+      if (mounted) {
+        setState(() => _alertasActivas = alertas);
       }
     } catch (_) {
       // Mantiene la copia local de Hive cuando no responde el servidor
@@ -145,6 +151,65 @@ class _DirectorioAlberguesPageState extends State<DirectorioAlberguesPage> {
         ListView(
           padding: const EdgeInsets.fromLTRB(14, 140, 14, 16),
           children: <Widget>[
+            ..._alertasActivas.map((Map<String, dynamic> alerta) {
+              final bool esSimulacro =
+                  alerta['es_simulacro'] == true ||
+                  alerta['origen'] == 'simulacro' ||
+                  alerta['origen'] == 'simulada';
+              final Color colorAlerta = esSimulacro
+                  ? AppTheme.colorOrigenSimulado
+                  : AppTheme.colorSemaforoRojo;
+              final String encabezado =
+                  (alerta['titulo'] ?? alerta['sector'] ?? 'Alerta COE')
+                      .toString();
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 10),
+                child: Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: colorAlerta,
+                      width: esSimulacro ? 1.5 : 2,
+                    ),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: <Widget>[
+                      Row(
+                        children: <Widget>[
+                          Icon(Icons.campaign, size: 18, color: colorAlerta),
+                          const SizedBox(width: 6),
+                          Expanded(
+                            child: Text(
+                              encabezado,
+                              style: TextStyle(
+                                fontWeight: FontWeight.w800,
+                                fontSize: 13.5,
+                                color: colorAlerta,
+                              ),
+                            ),
+                          ),
+                          if (esSimulacro)
+                            const InsigniaOrigenDato(
+                              esOficial: false,
+                              etiquetaPersonalizada: 'Simulacro',
+                            )
+                          else
+                            const InsigniaOrigenDato(esOficial: true),
+                        ],
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        '${alerta['mensaje'] ?? ''}',
+                        style: const TextStyle(fontSize: 12),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            }),
             Card(
               child: Padding(
                 padding: const EdgeInsets.all(12),

@@ -5,15 +5,20 @@ import '../../../../core/theme/app_theme.dart';
 import '../../../../data/models/reporte_cola_model.dart';
 
 /// Pantalla "Mis reportes" con los pasos de sincronización de 2 fases (`1 · Datos`, `2 · Foto`).
+/// Cumple M11: en modo emergencia sin cuenta avisa que "Mis reportes" solo lista los enviados con cuenta.
 class MisReportesPage extends StatelessWidget {
   const MisReportesPage({
     super.key,
     required this.reportes,
     required this.onSincronizarManual,
+    this.sinCuenta = false,
+    this.onIniciarSesion,
   });
 
   final List<ReporteColaModel> reportes;
   final VoidCallback onSincronizarManual;
+  final bool sinCuenta;
+  final VoidCallback? onIniciarSesion;
 
   Color _colorPorEstado(EstadoColaReporte estado) {
     switch (estado) {
@@ -31,13 +36,34 @@ class MisReportesPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (reportes.isEmpty) {
-      return const Center(
+    final List<ReporteColaModel> visibles = sinCuenta
+        ? reportes
+              .where((ReporteColaModel r) => !r.estadoCola.estaSincronizado)
+              .toList()
+        : reportes;
+
+    if (visibles.isEmpty) {
+      return Center(
         child: Padding(
-          padding: EdgeInsets.all(24),
-          child: Text(
-            'Aún no tienes reportes en la cola local.\nCrea uno desde la pestaña "Reportar".',
-            textAlign: TextAlign.center,
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              Text(
+                sinCuenta
+                    ? 'Modo emergencia sin cuenta: tus reportes anónimos se envían directo al COE.\nInicia sesión para consultar el historial de tus reportes enviados con cuenta.'
+                    : 'Aún no tienes reportes en la cola local.\nCrea uno desde la pestaña "Reportar".',
+                textAlign: TextAlign.center,
+              ),
+              if (sinCuenta && onIniciarSesion != null) ...<Widget>[
+                const SizedBox(height: 12),
+                FilledButton.icon(
+                  onPressed: onIniciarSesion,
+                  icon: const Icon(Icons.login, size: 18),
+                  label: const Text('Iniciar sesión con mi cuenta'),
+                ),
+              ],
+            ],
           ),
         ),
       );
@@ -45,10 +71,10 @@ class MisReportesPage extends StatelessWidget {
 
     return ListView.separated(
       padding: const EdgeInsets.all(14),
-      itemCount: reportes.length,
+      itemCount: visibles.length,
       separatorBuilder: (_, _) => const SizedBox(height: 10),
       itemBuilder: (BuildContext context, int index) {
-        final ReporteColaModel item = reportes[index];
+        final ReporteColaModel item = visibles[index];
         final Color colorBadge = _colorPorEstado(item.estadoCola);
         final bool paso1Listo =
             item.estadoCola == EstadoColaReporte.datosEnviados ||

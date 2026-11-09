@@ -5,10 +5,14 @@ import 'package:flutter/foundation.dart';
 class AppConfig {
   AppConfig._();
 
-  static const String _envApiBaseUrl = String.fromEnvironment('API_BASE_URL');
+  static const String _envApiBaseUrl = String.fromEnvironment(
+    'API_BASE_URL',
+    defaultValue:
+        'https://seasonal-acceptable-crimes-remember.trycloudflare.com',
+  );
 
   /// URL base del backend configurada mediante `--dart-define=API_BASE_URL=...`.
-  /// En Web/Escritorio usa `http://localhost:3000` por defecto; en Android emulador usa `http://10.0.2.2:3000`.
+  /// Por defecto conecta al backend público en vivo del proyecto.
   static String get apiBaseUrl {
     if (_envApiBaseUrl.isNotEmpty) return _envApiBaseUrl;
     return kIsWeb ? 'http://localhost:3000' : 'http://10.0.2.2:3000';

@@ -24,7 +24,7 @@ class SyncWorkerService {
 
   final ColaReportesRepository colaRepository;
   final ApiClient apiClient;
-  final void Function()? onNoAutenticado;
+  void Function()? onNoAutenticado;
 
   final Set<String> _uuidsEnVuelo = <String>{};
   bool _sincronizando = false;
@@ -87,29 +87,44 @@ class SyncWorkerService {
         );
       }
 
-      // Paso 2: Subida de foto comprimida
+      // Paso 2: Subida de foto comprimida (M10: si el archivo ya no existe, saltar paso 2 y marcar enviado sin foto)
       if (estadoActual == EstadoColaReporte.datosEnviados ||
           estadoActual == EstadoColaReporte.enviandoFoto) {
         if (reporte.rutaFotoLocal.isNotEmpty) {
-          await colaRepository.actualizarEstadoReporte(
-            id: reporte.id,
-            nuevoEstado: EstadoColaReporte.enviandoFoto,
-          );
-
-          await apiClient.subirFotoReporte(
-            reporteId: reporte.id,
-            rutaArchivoLocal: reporte.rutaFotoLocal,
-          );
-
-          PhotoCaptureService.limpiarBytesEnMemoria(reporte.rutaFotoLocal);
+          final bool tieneBytesMemoria =
+              PhotoCaptureService.obtenerBytesEnMemoria(
+                reporte.rutaFotoLocal,
+              ) !=
+              null;
+          bool existeArchivo = false;
           if (!kIsWeb) {
             try {
-              final File archivoLocal = File(reporte.rutaFotoLocal);
-              if (await archivoLocal.exists()) {
-                await archivoLocal.delete();
-              }
+              existeArchivo = await File(reporte.rutaFotoLocal).exists();
             } catch (_) {
-              // Ignorado si es una ruta simulada de demostración
+              existeArchivo = false;
+            }
+          }
+          final bool debeSubirFoto =
+              existeArchivo || tieneBytesMemoria || apiClient is! DioApiClient;
+
+          if (debeSubirFoto) {
+            await colaRepository.actualizarEstadoReporte(
+              id: reporte.id,
+              nuevoEstado: EstadoColaReporte.enviandoFoto,
+            );
+
+            await apiClient.subirFotoReporte(
+              reporteId: reporte.id,
+              rutaArchivoLocal: reporte.rutaFotoLocal,
+            );
+
+            PhotoCaptureService.limpiarBytesEnMemoria(reporte.rutaFotoLocal);
+            if (!kIsWeb && existeArchivo) {
+              try {
+                await File(reporte.rutaFotoLocal).delete();
+              } catch (_) {
+                // Ignorado si no se pudo borrar el temporal
+              }
             }
           }
         }

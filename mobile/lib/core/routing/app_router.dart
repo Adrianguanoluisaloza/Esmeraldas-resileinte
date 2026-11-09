@@ -65,12 +65,42 @@ class _HomeShellPageState extends State<HomeShellPage> {
   @override
   void initState() {
     super.initState();
-    _ops = widget.operacionesRepository ?? OperacionesRepository();
+    _ops =
+        widget.operacionesRepository ??
+        OperacionesRepository(apiClient: widget.apiClient);
+    _ops.apiClient ??= widget.apiClient;
+    _ops.addListener(_onOperacionesActualizadas);
+    widget.syncWorkerService.onNoAutenticado = () {
+      unawaited(_manejarSesionVencida401());
+    };
     _inicializarDatosYSincronizar();
     _restaurarSesion();
     _relojSesion = Timer.periodic(
       const Duration(seconds: 15),
       (_) => _vigilarSesion(),
+    );
+  }
+
+  void _onOperacionesActualizadas() {
+    if (mounted) {
+      setState(() {});
+    }
+  }
+
+  Future<void> _manejarSesionVencida401() async {
+    await widget.authRepository.cerrarSesion();
+    if (!mounted) return;
+    setState(() {
+      _sesion = null;
+      _modoEmergenciaSinCuenta = false;
+      _indiceActual = 0;
+    });
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text(
+          'Tu sesión venció. Inicia sesión nuevamente; tu cola de reportes sigue intacta.',
+        ),
+      ),
     );
   }
 
@@ -83,6 +113,7 @@ class _HomeShellPageState extends State<HomeShellPage> {
 
   @override
   void dispose() {
+    _ops.removeListener(_onOperacionesActualizadas);
     _relojSesion?.cancel();
     super.dispose();
   }
@@ -91,6 +122,9 @@ class _HomeShellPageState extends State<HomeShellPage> {
     final UsuarioSesion? s = await widget.authRepository.obtenerSesionActual();
     if (mounted && s != null) {
       setState(() => _sesion = s);
+      if (!_modoOfflineSimulado) {
+        unawaited(_sincronizarDatosBackend());
+      }
     }
   }
 
@@ -129,6 +163,23 @@ class _HomeShellPageState extends State<HomeShellPage> {
       _reportes = listaReportes;
       _puntos = listaPuntos;
     });
+    if (!_modoOfflineSimulado && widget.apiClient != null) {
+      unawaited(_sincronizarDatosBackend());
+    }
+  }
+
+  Future<void> _sincronizarDatosBackend() async {
+    final ApiClient? cliente = widget.apiClient;
+    if (cliente == null || _modoOfflineSimulado) return;
+    await _ops.sincronizarDesdeBackend(cliente);
+    if (_ops.puntos.isNotEmpty) {
+      await widget.colaRepository.guardarDirectorioPuntosServicio(_ops.puntos);
+      if (mounted) {
+        setState(() {
+          _puntos = List<PuntoServicioModel>.from(_ops.puntos);
+        });
+      }
+    }
   }
 
   Future<void> _ejecutarSincronizacion() async {
@@ -176,9 +227,16 @@ class _HomeShellPageState extends State<HomeShellPage> {
           _ops.auditar(s, 'LOGIN OK', '${s.rol.valor} (${s.proveedor})');
           setState(() {
             _sesion = s;
+            _modoEmergenciaSinCuenta = false;
             _ultimaActividad = DateTime.now();
             _indiceActual = 0;
           });
+          if (!_modoOfflineSimulado) {
+            unawaited(_sincronizarDatosBackend());
+            if (_cantidadPendientes > 0) {
+              unawaited(_ejecutarSincronizacion());
+            }
+          }
         },
         onContinuarSinCuenta: () {
           setState(() {
@@ -348,6 +406,13 @@ class _HomeShellPageState extends State<HomeShellPage> {
             MisReportesPage(
               reportes: _reportes,
               onSincronizarManual: _ejecutarSincronizacion,
+              sinCuenta: _sesion == null,
+              onIniciarSesion: () {
+                setState(() {
+                  _modoEmergenciaSinCuenta = false;
+                  _indiceActual = 0;
+                });
+              },
             ),
             DirectorioAlberguesPage(
               puntos: _puntos,
