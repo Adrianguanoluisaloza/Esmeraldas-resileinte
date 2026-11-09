@@ -264,3 +264,4 @@ export const PanelOperaciones: React.FC = () => {
     </div>
   );
 };
+

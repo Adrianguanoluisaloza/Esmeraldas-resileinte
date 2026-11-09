@@ -152,3 +152,4 @@ export const PUNTOS_SERVICIO_INICIALES: PuntoServicioMapa[] = [
     direccion: 'Av. Kennedy y Malecón',
   },
 ];
+
