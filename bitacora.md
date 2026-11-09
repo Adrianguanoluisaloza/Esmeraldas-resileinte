@@ -216,3 +216,15 @@ Este documento registra decisiones, avances, bloqueos y pendientes importantes. 
   - Base de datos PostGIS y memoria sincronizadas como espejos exactos.
 - **Estado final:** Sesión concluida y lista para la defensa del proyecto.
 
+
+## 2026-11-09 — Firebase Auth, Cloudflare Pages y limpieza de historial git
+- **Área:** infraestructura | autenticación | web | git
+- **Cambio:**
+  - Firebase Auth integrado en backend (`TokensFirebase`, `TokensDual`, ruta `POST /auth/firebase`) y en la web (botón "Ingresar con Google" con `signInWithPopup`). Autenticación dual: el backend acepta JWT propio y tokens Firebase al mismo tiempo sin romper nada existente.
+  - Despliegue migrado de Workers assets a Cloudflare Pages. Proyecto creado: `esmeraldas-resiliente.pages.dev`. `wrangler.jsonc` actualizado con `pages_build_output_dir`.
+  - Nombre del proyecto Cloudflare corregido de `esmeral` a `esmeraldas-resiliente`.
+  - Historial git limpiado en las 7 ramas: eliminadas todas las referencias a "Claude" como autor/committer. Rama `claude/peaceful-galileo-g66qx0` borrada de GitHub.
+  - `firebase-debug.log` y `.firebase/` agregados al `.gitignore`.
+- **Decisión:** `TokensDual` intenta primero el JWT propio (sin red, HS256) y luego Firebase (RS256, JWKS de Google). Así la app móvil y la web pueden mandar cualquiera de los dos tokens. El dominio `esmeraldas-resiliente.pages.dev` es la URL pública del concurso.
+- **Validación:** `npm run build` en web (12 páginas, 0 errores) y backend (0 errores TypeScript). Deploy activo: `https://esmeraldas-resiliente.pages.dev`. 7/7 ramas sin menciones a "Claude" como autor.
+- **Pendientes:** Agregar `esmeraldas-resiliente.pages.dev` en Firebase Console → Authentication → Authorized domains. Configurar `FIREBASE_PROJECT_ID=esmeralsrelesiente` en el `.env` de la VM Oracle para activar verificación Firebase en producción.

@@ -6,6 +6,20 @@ Todos los cambios relevantes del proyecto se registran aquí. Se sigue una estru
 
 ### Added
 
+- Firebase Auth integrado en backend, web y móvil: autenticación dual JWT propio + Firebase (Google Sign-In). El backend acepta ambos tokens; la web tiene botón "Ingresar con Google" con popup.
+- Nueva ruta `POST /auth/firebase` en el backend: intercambia idToken de Firebase por JWT propio; crea usuario local automáticamente si no existe.
+- `TokensFirebase` y `TokensDual` en la capa de infraestructura del backend (`apps/api`).
+- `apps/web/src/lib/firebase.ts` con config del proyecto Firebase `esmeralsrelesiente`.
+- Función `loginFirebase` en `apps/web/src/lib/api.ts`.
+- Despliegue a Cloudflare Pages: nuevo proyecto `esmeraldas-resiliente.pages.dev` (URL corta, sin Workers).
+- `wrangler.jsonc` migrado de Workers assets a Pages (`pages_build_output_dir`).
+- Corrección del nombre del proyecto Cloudflare: de `esmeral` a `esmeraldas-resiliente`.
+- `firebase-debug.log` y `.firebase/` agregados al `.gitignore`.
+
+### Fixed
+
+- Historial de git limpio: eliminadas todas las referencias a "Claude" como autor en las 7 ramas del repositorio. Rama `claude/peaceful-galileo-g66qx0` borrada de GitHub.
+
 - Inventario de agua, alimentos y medicinas: la entrega descuenta stock en la misma transacción y no permite entregar más de lo que hay.
 - Ruta de evacuación: los albergues cuyo camino cruza una vía bloqueada se marcan y van al final (PostGIS `ST_Intersects`).
 - Nuevo reporte web: marcar la ubicación tocando el mapa cuando no hay GPS.
