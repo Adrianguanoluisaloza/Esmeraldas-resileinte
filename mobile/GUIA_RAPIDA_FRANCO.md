@@ -1,5 +1,7 @@
 # Guía de Conexión y Pruebas para Franco
 
+> La URL del túnel de abajo es temporal. La forma vigente de conectar está en `docs/orquestacion/TAREAS_MOVIL_FRANCO.md` (M9 y M11).
+
 Franco, este archivo contiene todo listo para que hagas `git pull` en tu celular o tu máquina y todo se sincronice con el backend en vivo.
 
 ---

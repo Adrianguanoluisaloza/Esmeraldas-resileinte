@@ -136,3 +136,9 @@ Este documento registra decisiones, avances, bloqueos y pendientes importantes. 
 - **Validación:** Backend recompilado y verificado con `POST /reportes` anónimo (201 OK). App móvil recompilada para Web en puerto 5000 y configurada para apuntar por defecto al túnel Cloudflare en dispositivos físicos.
 - **Pendientes:** Pruebas integradas de sincronización de reportes desde el celular de Franco hacia el panel web del COE.
 
+## 2026-11-09
+- **Área:** backend | seguridad | móvil
+- **Cambio:** Revisión de la conexión con la app. Se mantiene el reporte sin cuenta, rehecho con `usuario_id` nulo (el valor "ciudadano-offline" rompía la inserción en PostGIS). CORS vuelve a lista exacta: aceptar cualquier origen que contenga "localhost" o "trycloudflare.com" dejaba pasar dominios ajenos. Se retiran `acceso_franco_demo.zip` y `credenciales_demo.txt`.
+- **Validación:** 28 pruebas en memoria y 24 contra PostGIS con el usuario restringido.
+- **Pendientes:** Franco: M9 (URL fuera del código), M10 (no subir foto de relleno), M11 (flujo sin cuenta). Poner la URL del túnel en `CORS_ORIGENES` si la web la usa.
+

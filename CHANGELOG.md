@@ -48,6 +48,10 @@ Todos los cambios relevantes del proyecto se registran aquí. Se sigue una estru
 
 ### Security
 
+- CORS sin coincidencias parciales: lista exacta y localhost solo fuera de producción.
+- Reporte de emergencia sin cuenta guardado como anónimo (antes fallaba en PostGIS); foto anónima una vez y dentro de 2 horas.
+- Se retiran del repo el zip y el txt de accesos; `.gitignore` los bloquea.
+
 - Popups del mapa escapan el texto de los reportes (evita XSS).
 
 ### Planned
