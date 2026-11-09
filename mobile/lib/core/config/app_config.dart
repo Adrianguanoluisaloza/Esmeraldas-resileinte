@@ -1,19 +1,24 @@
+import 'package:flutter/foundation.dart';
+
 /// Configuración por entorno para la aplicación móvil Esmeraldas Resiliente.
 /// No almacena secretos ni claves privadas en el código fuente.
 class AppConfig {
-  AppConfig._();
+  const AppConfig._();
 
-  /// URL base del backend configurada mediante `--dart-define=API_BASE_URL=...`
-  static const String apiBaseUrl = String.fromEnvironment(
-    'API_BASE_URL',
-    defaultValue: 'http://10.0.2.2:3000',
-  );
+  static const String _apiBaseUrlEnv = String.fromEnvironment('API_BASE_URL');
 
-  /// Modo demostración: usa cuentas y datos simulados en el dispositivo
-  /// mientras el backend no está listo. `--dart-define=MODO_DEMO=false` para usar la API.
+  /// URL base del backend. En web usa localhost:3000, en emulador 10.0.2.2:3000,
+  /// o la URL pasada por --dart-define=API_BASE_URL=...
+  static String get apiBaseUrl {
+    if (_apiBaseUrlEnv.isNotEmpty) return _apiBaseUrlEnv;
+    if (kIsWeb) return 'http://localhost:3000';
+    return 'http://10.0.2.2:3000';
+  }
+
+  /// Modo demostración: cuando es false usa la API real.
   static const bool modoDemo = bool.fromEnvironment(
     'MODO_DEMO',
-    defaultValue: true,
+    defaultValue: false,
   );
 
   /// OAuth de Google (cliente de tipo Android/iOS; nunca se incluye client secret).
