@@ -34,7 +34,7 @@ export function rutasReportes(deps: Dependencias) {
 
   r.get("/:id", async (c) => {
     const { id } = validar(IdRuta, c.req.param());
-    return c.json(await deps.reportes.detalle(c.get("sesion"), id));
+    return c.json(await deps.reportes.detalleConHistorial(c.get("sesion"), id));
   });
 
   r.patch("/:id/estado", async (c) => {

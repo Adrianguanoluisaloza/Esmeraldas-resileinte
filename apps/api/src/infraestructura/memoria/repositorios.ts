@@ -1,7 +1,11 @@
 import type { TipoPuntoServicio } from "../../dominio/catalogos.js";
+import { randomUUID } from "node:crypto";
+import type { Alerta, Entrega, EstadoVia, HistorialEstado } from "../../dominio/operacion.js";
 import type {
   Cercania,
   FiltroReportes,
+  RepositorioAlertas,
+  RepositorioAsistencia,
   RepositorioReportes,
   RepositorioTerritorio,
   RepositorioUsuarios,
@@ -9,7 +13,7 @@ import type {
 } from "../../dominio/puertos.js";
 import type { PuntoServicio } from "../../dominio/puntoServicio.js";
 import type { Reporte } from "../../dominio/reporte.js";
-import { PUNTOS, REPORTES, ZONAS, viasGeoJson, zonasGeoJson } from "./semilla.js";
+import { ALERTAS, PUNTOS, REPORTES, VIAS, ZONAS, zonasGeoJson } from "./semilla.js";
 
 /** Implementaciones en RAM. Sirven para pruebas y para una demo sin Docker; se pierden al reiniciar. */
 
@@ -28,6 +32,7 @@ export class UsuariosEnMemoria implements RepositorioUsuarios {
 
 export class ReportesEnMemoria implements RepositorioReportes {
   private readonly datos = new Map<string, Reporte>();
+  private readonly cambios = new Map<string, HistorialEstado[]>();
   constructor(semilla: Reporte[] = REPORTES) {
     for (const r of semilla) this.datos.set(r.id, copia(r));
   }
@@ -48,11 +53,19 @@ export class ReportesEnMemoria implements RepositorioReportes {
     const inicio = (f.pagina - 1) * f.limite;
     return { total: todos.length, items: todos.slice(inicio, inicio + f.limite).map(copia) };
   }
-  async actualizarEstado(id: string, cambios: Pick<Reporte, "estado" | "verificado">) {
+  async actualizarEstado(id: string, cambios: Pick<Reporte, "estado" | "verificado">, nota: string | null, operadorId: string) {
     const r = this.datos.get(id);
     if (!r) return null;
+    const previo = r.estado;
     Object.assign(r, cambios);
+    this.cambios.set(id, [
+      ...(this.cambios.get(id) ?? []),
+      { id: randomUUID(), estado_anterior: previo, estado_nuevo: cambios.estado, operador_nombre: operadorId, nota, fecha: new Date().toISOString() },
+    ]);
     return copia(r);
+  }
+  async historial(id: string) {
+    return copia(this.cambios.get(id) ?? []);
   }
   async guardarFoto(id: string, url: string, miniaturaUrl: string) {
     const r = this.datos.get(id);
@@ -73,12 +86,29 @@ export function haversineM(lat1: number, lon1: number, lat2: number, lon2: numbe
 
 export class TerritorioEnMemoria implements RepositorioTerritorio {
   private readonly puntos = new Map<string, PuntoServicio>(PUNTOS.map((p) => [p.id, copia(p)]));
+  private readonly vias = new Map<string, { id: string; nombre: string; estado: EstadoVia; linea: number[][] }>(
+    VIAS.map((v) => [v.id, { id: v.id, nombre: v.nombre, estado: v.estado, linea: v.linea.map((p) => [...p]) }]),
+  );
 
   async zonasGeoJson() {
     return zonasGeoJson();
   }
   async viasGeoJson() {
-    return viasGeoJson();
+    return {
+      type: "FeatureCollection" as const,
+      features: [...this.vias.values()].map((v) => ({
+        type: "Feature" as const,
+        id: v.id,
+        geometry: { type: "LineString", coordinates: v.linea },
+        properties: { id: v.id, nombre: v.nombre, estado: v.estado, origen: "simulado" },
+      })),
+    };
+  }
+  async actualizarVia(id: string, estado: EstadoVia) {
+    const v = this.vias.get(id);
+    if (!v) return null;
+    v.estado = estado;
+    return { id: v.id, nombre: v.nombre, estado: v.estado, origen: "simulado", actualizado_en: new Date().toISOString() };
   }
   async sectorDe(lat: number, lon: number) {
     // Las zonas semilla son rectángulos, así que basta comparar contra sus límites.
@@ -106,5 +136,31 @@ export class TerritorioEnMemoria implements RepositorioTerritorio {
     if (!p) return null;
     p.ocupacion = ocupacion;
     return copia(p);
+  }
+}
+
+export class AlertasEnMemoria implements RepositorioAlertas {
+  private readonly datos: Alerta[] = ALERTAS.map(copia);
+  async listar(soloVigentes: boolean) {
+    return this.datos.filter((a) => !soloVigentes || a.vigente).sort((a, b) => b.creado_en.localeCompare(a.creado_en)).map(copia);
+  }
+  async crear(a: Alerta) {
+    this.datos.push(copia(a));
+  }
+  async cerrar(id: string) {
+    const a = this.datos.find((x) => x.id === id);
+    if (!a) return null;
+    a.vigente = false;
+    return copia(a);
+  }
+}
+
+export class AsistenciaEnMemoria implements RepositorioAsistencia {
+  private readonly datos: Entrega[] = [];
+  async registrar(e: Entrega) {
+    this.datos.push(copia(e));
+  }
+  async listar() {
+    return this.datos.map(copia);
   }
 }
