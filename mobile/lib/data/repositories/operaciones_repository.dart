@@ -1,7 +1,10 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:latlong2/latlong.dart';
 
 import '../../core/enums/app_enums.dart';
+import '../../core/network/api_client.dart';
 import '../../core/security/permisos.dart';
 import '../../features/auth/domain/repositories/auth_repository.dart';
 import '../models/punto_servicio_model.dart';
@@ -93,15 +96,117 @@ class EventoAuditoria {
 /// En modo demo trabaja en memoria con datos SIMULADOS del escenario "jueves 06:00".
 /// Cada método verifica el permiso del rol antes de actuar (el backend repite la validación).
 class OperacionesRepository extends ChangeNotifier {
-  OperacionesRepository() {
+  OperacionesRepository({this.apiClient}) {
     _sembrar();
   }
 
+  ApiClient? apiClient;
   final List<ReporteOperacion> reportes = <ReporteOperacion>[];
   final List<PuntoServicioModel> puntos = <PuntoServicioModel>[];
   final List<AlertaSector> alertas = <AlertaSector>[];
   final List<UsuarioGestion> usuarios = <UsuarioGestion>[];
   final List<EventoAuditoria> auditoria = <EventoAuditoria>[];
+
+  /// Descarga incidentes georreferenciados (`GET /reportes`), albergues (`GET /puntos-servicio`)
+  /// y alertas (`GET /alertas`) desde el backend real y los fusiona con el estado local.
+  Future<void> sincronizarDesdeBackend([ApiClient? clienteOverride]) async {
+    final ApiClient? cliente = clienteOverride ?? apiClient;
+    if (cliente == null) return;
+    bool huboCambios = false;
+
+    try {
+      final List<PuntoServicioModel> puntosRemotos = await cliente
+          .obtenerPuntosServicio();
+      if (puntosRemotos.isNotEmpty) {
+        puntos
+          ..clear()
+          ..addAll(puntosRemotos);
+        huboCambios = true;
+      }
+    } catch (_) {
+      // Mantiene los puntos sembrados localmente si no hay red
+    }
+
+    try {
+      final List<Map<String, dynamic>> alertasRemotas = await cliente
+          .obtenerAlertasActivas();
+      if (alertasRemotas.isNotEmpty) {
+        alertas
+          ..clear()
+          ..addAll(
+            alertasRemotas.map((Map<String, dynamic> a) {
+              final bool esOficial =
+                  a['origen'] == 'oficial' && a['es_simulacro'] != true;
+              return AlertaSector(
+                sector: '${a['sector'] ?? a['titulo'] ?? 'Esmeraldas'}',
+                nivel: GravedadIncidente.fromValor('${a['nivel'] ?? 'alta'}'),
+                mensaje: '${a['mensaje'] ?? ''}',
+                creadaPor: '${a['creado_por'] ?? 'COE Provincial'}',
+                oficial: esOficial,
+                hora:
+                    DateTime.tryParse('${a['creado_en'] ?? ''}')?.toLocal() ??
+                    DateTime.now(),
+              );
+            }),
+          );
+        huboCambios = true;
+      }
+    } catch (_) {
+      // Mantiene las alertas locales si falla la consulta
+    }
+
+    try {
+      final List<Map<String, dynamic>> remotos = await cliente
+          .obtenerReportesRemotos();
+      for (final Map<String, dynamic> m in remotos) {
+        final String id = '${m['id'] ?? ''}';
+        if (id.isEmpty) continue;
+        final double lat = ((m['latitud'] ?? m['lat'] ?? 0.9592) as num)
+            .toDouble();
+        final double lng = ((m['longitud'] ?? m['lng'] ?? -79.6539) as num)
+            .toDouble();
+        final List<dynamic> necRaw = m['necesidades'] is List
+            ? m['necesidades'] as List<dynamic>
+            : const <dynamic>[];
+        final ReporteOperacion mapeado = ReporteOperacion(
+          id: id,
+          usuarioId: '${m['usuario_id'] ?? 'u1'}',
+          tipo: TipoIncidente.fromValor('${m['tipo'] ?? 'otro'}'),
+          gravedad: GravedadIncidente.fromValor('${m['gravedad'] ?? 'media'}'),
+          estado: EstadoReporte.fromValor('${m['estado'] ?? 'pendiente'}'),
+          sector:
+              '${m['sector'] ?? 'Esmeraldas (${lat.toStringAsFixed(4)}, ${lng.toStringAsFixed(4)})'}',
+          punto: LatLng(lat, lng),
+          descripcion: '${m['descripcion'] ?? ''}',
+          personas: ((m['personas_afectadas'] ?? 0) as num).toInt(),
+          ninos: ((m['ninos'] ?? 0) as num).toInt(),
+          mayores: ((m['adultos_mayores'] ?? 0) as num).toInt(),
+          necesidades: necRaw
+              .map((dynamic item) => NecesidadFamiliar.fromValor('$item'))
+              .toList(),
+          verificado: m['verificado'] == true,
+          tieneFoto: m['foto_url'] != null || m['foto_ruta'] != null,
+          iaExplicacion: m['ia_explicacion'] as String?,
+          iaConfianza: m['ia_confianza']?.toString(),
+        );
+        final int idx = reportes.indexWhere(
+          (ReporteOperacion op) => op.id == id,
+        );
+        if (idx == -1) {
+          reportes.insert(0, mapeado);
+        } else {
+          reportes[idx] = mapeado;
+        }
+        huboCambios = true;
+      }
+    } catch (_) {
+      // Mantiene los reportes locales/escenario si no hay token de operador o sin red
+    }
+
+    if (huboCambios) {
+      notifyListeners();
+    }
+  }
 
   void auditar(
     UsuarioSesion? s,
@@ -197,18 +302,43 @@ class OperacionesRepository extends ChangeNotifier {
     r
       ..estado = estado
       ..gravedad = gravedad;
+    if (apiClient != null) {
+      unawaited(
+        apiClient!
+            .actualizarEstadoReporteRemoto(
+              id: r.id,
+              estado: estado.valor,
+              verificado: r.verificado,
+              nota: n,
+            )
+            .catchError((_) {}),
+      );
+    }
     notifyListeners();
   }
 
   void verificar(UsuarioSesion s, ReporteOperacion r) {
     exigir(s, Permiso.reporteCambiarEstado);
     r.verificado = true;
+    if (apiClient != null) {
+      unawaited(
+        apiClient!
+            .actualizarEstadoReporteRemoto(
+              id: r.id,
+              estado: r.estado.valor,
+              verificado: true,
+              nota: 'Reporte verificado en campo por ${s.correo}',
+            )
+            .catchError((_) {}),
+      );
+    }
     auditar(s, 'VERIFICAR', r.id.substring(0, 8));
   }
 
   void ajustarOcupacion(UsuarioSesion s, PuntoServicioModel p, int delta) {
     exigir(s, Permiso.puntosEditar);
     final int i = puntos.indexOf(p);
+    final int nuevaOcupacion = (p.ocupacion + delta).clamp(0, p.capacidad);
     final PuntoServicioModel n = PuntoServicioModel(
       id: p.id,
       nombre: p.nombre,
@@ -217,15 +347,21 @@ class OperacionesRepository extends ChangeNotifier {
       longitud: p.longitud,
       telefono: p.telefono,
       capacidad: p.capacidad,
-      ocupacion: (p.ocupacion + delta).clamp(0, p.capacidad),
+      ocupacion: nuevaOcupacion,
       activo: p.activo,
     );
     puntos[i] = n;
-    auditar(
-      s,
-      'PATCH /puntos-servicio/:id/ocupacion',
-      '${p.nombre}: ${n.ocupacion}',
-    );
+    if (apiClient != null) {
+      unawaited(
+        apiClient!
+            .actualizarOcupacionAlbergueRemoto(
+              id: p.id,
+              ocupacion: nuevaOcupacion,
+            )
+            .catchError((_) {}),
+      );
+    }
+    auditar(s, 'PATCH /albergues/:id/ocupacion', '${p.nombre}: ${n.ocupacion}');
   }
 
   void crearPunto(
@@ -275,6 +411,18 @@ class OperacionesRepository extends ChangeNotifier {
         hora: DateTime.now(),
       ),
     );
+    if (apiClient != null) {
+      unawaited(
+        apiClient!
+            .crearAlertaRemota(
+              sector: sector.trim(),
+              nivel: nivel.valor,
+              mensaje: mensaje.trim(),
+              origen: oficial ? 'oficial' : 'simulada',
+            )
+            .catchError((_) {}),
+      );
+    }
     auditar(s, 'POST /alertas', sector);
   }
 
@@ -312,17 +460,18 @@ class OperacionesRepository extends ChangeNotifier {
   void _sembrar() {
     reportes.addAll(<ReporteOperacion>[
       ReporteOperacion(
-        id: 'a1f3c2d4-0001',
-        usuarioId: 'u1',
+        id: 'a4000000-0000-4000-8000-000000000001',
+        usuarioId: 'b0000000-0000-4000-8000-000000000001',
         tipo: TipoIncidente.inundacion,
         gravedad: GravedadIncidente.critica,
         estado: EstadoReporte.pendiente,
-        sector: 'Las Palmas',
-        punto: const LatLng(0.9790, -79.6580),
-        descripcion: 'Agua sobre 1 m en calles',
-        personas: 12,
-        ninos: 4,
-        mayores: 2,
+        sector: 'Isla Piedad',
+        punto: const LatLng(0.9765, -79.6582),
+        descripcion:
+            'Acumulación de agua en calles y viviendas de barrios ribereños.',
+        personas: 35,
+        ninos: 12,
+        mayores: 5,
         necesidades: <NecesidadFamiliar>[
           NecesidadFamiliar.rescate,
           NecesidadFamiliar.agua,
@@ -332,129 +481,176 @@ class OperacionesRepository extends ChangeNotifier {
         iaConfianza: 'alta',
       ),
       ReporteOperacion(
-          id: 'b2e4d5f6-0002',
-          usuarioId: 'u9',
-          tipo: TipoIncidente.deslizamiento,
-          gravedad: GravedadIncidente.alta,
-          estado: EstadoReporte.enProceso,
-          sector: 'Barrio 50 Casas',
-          punto: const LatLng(0.9480, -79.6700),
-          descripcion: 'Tierra cayó sobre 2 casas',
-          personas: 7,
-          ninos: 2,
-          mayores: 1,
-          necesidades: <NecesidadFamiliar>[NecesidadFamiliar.alimentos],
-          verificado: true,
-          iaExplicacion:
-              'Masa de tierra visible contra la pared de una vivienda.',
-          iaConfianza: 'media',
-        )
-        ..historial.add(
-          'Pendiente → En proceso · operador@911.ec · Bomberos en camino',
-        ),
-      ReporteOperacion(
-        id: 'c3f5e6a7-0003',
-        usuarioId: 'u9',
-        tipo: TipoIncidente.viaBloqueada,
-        gravedad: GravedadIncidente.media,
+        id: 'a4000000-0000-4000-8000-000000000002',
+        usuarioId: 'b0000000-0000-4000-8000-000000000001',
+        tipo: TipoIncidente.inundacion,
+        gravedad: GravedadIncidente.critica,
         estado: EstadoReporte.pendiente,
-        sector: 'Vía Esmeraldas–Atacames',
-        punto: const LatLng(0.9600, -79.6900),
-        descripcion: 'Árbol caído bloquea ambos carriles',
-        tieneFoto: false,
+        sector: 'Ribera del río Teaone (Tabiazo)',
+        punto: const LatLng(0.9120, -79.6320),
+        descripcion:
+            'Desbordamiento del río en comunidad rural con señal limitada.',
+        personas: 60,
+        ninos: 20,
+        mayores: 9,
+        necesidades: <NecesidadFamiliar>[
+          NecesidadFamiliar.rescate,
+          NecesidadFamiliar.alimentos,
+          NecesidadFamiliar.agua,
+        ],
       ),
       ReporteOperacion(
-        id: 'd4a6f7b8-0004',
+          id: 'a4000000-0000-4000-8000-000000000003',
+          usuarioId: 'u9',
+          tipo: TipoIncidente.viaBloqueada,
+          gravedad: GravedadIncidente.alta,
+          estado: EstadoReporte.enProceso,
+          sector: 'Acceso Puente Tachina',
+          punto: const LatLng(0.9824, -79.6385),
+          descripcion:
+              'Deslizamiento interrumpe la vía. Se requiere ruta alterna.',
+          verificado: true,
+          tieneFoto: false,
+        )
+        ..historial.add(
+          'Pendiente → En proceso · operador@demo.esmeraldas-resiliente.ec · Maquinaria en ruta',
+        ),
+      ReporteOperacion(
+        id: 'a4000000-0000-4000-8000-000000000004',
         usuarioId: 'u8',
         tipo: TipoIncidente.personasAtrapadas,
         gravedad: GravedadIncidente.critica,
         estado: EstadoReporte.pendiente,
-        sector: 'Isla Piedad',
-        punto: const LatLng(0.9700, -79.6450),
-        descripcion: 'Familia en el techo',
-        personas: 5,
-        ninos: 3,
-        mayores: 1,
+        sector: 'Barrio 20 de Noviembre',
+        punto: const LatLng(0.9548, -79.6695),
+        descripcion: 'Familias atrapadas en planta alta, piden evacuación.',
+        personas: 14,
+        ninos: 6,
+        mayores: 3,
         necesidades: <NecesidadFamiliar>[
           NecesidadFamiliar.rescate,
           NecesidadFamiliar.medicinas,
         ],
-        iaExplicacion: 'Personas sobre un techo rodeadas de agua.',
+        iaExplicacion: 'Personas sobre planta alta rodeadas de agua.',
         iaConfianza: 'media',
       ),
       ReporteOperacion(
-        id: 'e5b7a8c9-0005',
+        id: 'a4000000-0000-4000-8000-000000000005',
         usuarioId: 'u8',
-        tipo: TipoIncidente.danoVivienda,
-        gravedad: GravedadIncidente.baja,
-        estado: EstadoReporte.atendido,
-        sector: 'Centro',
-        punto: const LatLng(0.9560, -79.6530),
-        descripcion: 'Techo con filtraciones',
-        personas: 3,
-        ninos: 1,
+        tipo: TipoIncidente.otro,
+        gravedad: GravedadIncidente.alta,
+        estado: EstadoReporte.enProceso,
+        sector: 'Barrio 20 de Noviembre',
+        punto: const LatLng(0.9515, -79.6732),
+        descripcion: 'Albergue temporal UTLVTE cerca del límite de capacidad. Se necesita redirigir familias.',
+        personas: 112,
+        ninos: 40,
+        mayores: 15,
+        necesidades: <NecesidadFamiliar>[
+          NecesidadFamiliar.alimentos,
+          NecesidadFamiliar.agua,
+        ],
         verificado: true,
+      ),
+      ReporteOperacion(
+        id: 'a4000000-0000-4000-8000-000000000006',
+        usuarioId: 'u8',
+        tipo: TipoIncidente.otro,
+        gravedad: GravedadIncidente.alta,
+        estado: EstadoReporte.pendiente,
+        sector: 'El Arenal',
+        punto: const LatLng(0.9700, -79.6490),
+        descripcion:
+            'Solicitud urgente de agua potable, alimentos y medicamentos.',
+        personas: 22,
+        ninos: 8,
+        mayores: 4,
+        necesidades: <NecesidadFamiliar>[
+          NecesidadFamiliar.agua,
+          NecesidadFamiliar.alimentos,
+          NecesidadFamiliar.medicinas,
+        ],
       ),
     ]);
     puntos.addAll(const <PuntoServicioModel>[
       PuntoServicioModel(
-        id: 'p1',
-        nombre: 'Albergue Unidad Educativa (sim.)',
+        id: 'a3000000-0000-4000-8000-000000000001',
+        nombre: 'Albergue temporal UTLVTE',
         tipo: TipoPuntoServicio.albergue,
-        latitud: 0.9620,
-        longitud: -79.6600,
-        telefono: '06-000-0001',
-        capacidad: 150,
-        ocupacion: 60,
+        latitud: 0.9515,
+        longitud: -79.6732,
+        telefono: '911',
+        capacidad: 120,
+        ocupacion: 112,
       ),
       PuntoServicioModel(
-        id: 'p2',
-        nombre: 'Albergue Coliseo (sim.)',
+        id: 'a3000000-0000-4000-8000-000000000002',
+        nombre: 'Coliseo Nubia Villacís',
         tipo: TipoPuntoServicio.albergue,
-        latitud: 0.9450,
-        longitud: -79.6480,
-        telefono: '06-000-0002',
-        capacidad: 300,
-        ocupacion: 240,
+        latitud: 0.9635,
+        longitud: -79.6542,
+        telefono: '911',
+        capacidad: 200,
+        ocupacion: 70,
       ),
       PuntoServicioModel(
-        id: 'p3',
-        nombre: 'Centro de Salud Norte (sim.)',
+        id: 'a3000000-0000-4000-8000-000000000003',
+        nombre: 'Unidad educativa Las Palmas',
+        tipo: TipoPuntoServicio.albergue,
+        latitud: 0.9880,
+        longitud: -79.6470,
+        telefono: '911',
+        capacidad: 90,
+        ocupacion: 20,
+      ),
+      PuntoServicioModel(
+        id: 'a3000000-0000-4000-8000-000000000004',
+        nombre: 'Hospital Delfina Torres de Concha',
         tipo: TipoPuntoServicio.centroSalud,
-        latitud: 0.9820,
-        longitud: -79.6520,
-        telefono: '06-000-0003',
+        latitud: 0.9428,
+        longitud: -79.6812,
+        telefono: '911',
+        capacidad: 150,
+        ocupacion: 138,
+      ),
+      PuntoServicioModel(
+        id: 'a3000000-0000-4000-8000-000000000005',
+        nombre: 'Centro de salud Las Palmas',
+        tipo: TipoPuntoServicio.centroSalud,
+        latitud: 0.9902,
+        longitud: -79.6455,
+        telefono: '911',
         capacidad: 40,
-        ocupacion: 39,
+        ocupacion: 22,
       ),
     ]);
     alertas.add(
       AlertaSector(
-        sector: 'Las Palmas',
-        nivel: GravedadIncidente.alta,
-        mensaje: 'Crecida del río. Evacuar hacia zonas altas.',
-        creadaPor: 'operador@911.ec',
+        sector: 'Ribera del río Teaone (Tabiazo)',
+        nivel: GravedadIncidente.critica,
+        mensaje: 'Simulacro: crecida del río. Dirigirse a zonas altas y seguir indicaciones de las autoridades.',
+        creadaPor: 'operador@demo.esmeraldas-resiliente.ec',
         oficial: false,
         hora: DateTime.now(),
       ),
     );
     usuarios.addAll(<UsuarioGestion>[
       UsuarioGestion(
-        id: 'u1',
+        id: 'b0000000-0000-4000-8000-000000000001',
         nombre: 'María Quiñónez',
-        correo: 'ciudadano@demo.ec',
+        correo: 'ciudadano@demo.esmeraldas-resiliente.ec',
         rol: RolUsuario.ciudadano,
       ),
       UsuarioGestion(
-        id: 'u2',
+        id: 'b0000000-0000-4000-8000-000000000002',
         nombre: 'Operador Turno A',
-        correo: 'operador@911.ec',
+        correo: 'operador@demo.esmeraldas-resiliente.ec',
         rol: RolUsuario.operador911,
       ),
       UsuarioGestion(
-        id: 'u3',
-        nombre: 'Administrador',
-        correo: 'admin@resiliente.ec',
+        id: 'b0000000-0000-4000-8000-000000000003',
+        nombre: 'Administrador COE',
+        correo: 'admin@demo.esmeraldas-resiliente.ec',
         rol: RolUsuario.admin,
       ),
     ]);
