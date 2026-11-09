@@ -1,0 +1,9 @@
+---
+import PanelLayout from '../../layouts/PanelLayout.astro';
+import { Asistencia } from '../../components/Asistencia';
+import '../../styles/operaciones.css';
+---
+
+<PanelLayout titulo="Asistencia" roles={['operador_911', 'admin']}>
+  <Asistencia client:only="react" />
+</PanelLayout>

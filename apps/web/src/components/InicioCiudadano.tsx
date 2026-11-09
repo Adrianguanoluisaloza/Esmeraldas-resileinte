@@ -2,13 +2,10 @@ import { useEffect, useState } from 'react';
 import { Siren } from 'lucide-react';
 import type { PuntoServicioMapa } from '../types/mapa';
 import * as api from '../lib/api';
+import { AlertasVigentes } from './AlertasVias';
 import { MapaEsmeraldas } from './MapaEsmeraldas';
-import { Aviso } from './ui/Basicos';
 
-/**
- * Pantalla 1 del prototipo móvil de Franco ("Inicio y mapa") en versión web:
- * mapa con zonas de riesgo y albergues, y el botón rojo de emergencia.
- */
+/** Inicio del ciudadano: alertas vigentes, mapa con zonas y albergues, y el botón de emergencia. */
 export function InicioCiudadano() {
   const [puntos, setPuntos] = useState<PuntoServicioMapa[]>([]);
   const [zonas, setZonas] = useState<GeoJSON.FeatureCollection | null>(null);
@@ -22,16 +19,14 @@ export function InicioCiudadano() {
 
   return (
     <div className="pn-bloque">
-      <Aviso tipo="info" titulo="Esta plataforma no reemplaza al 911">
-        En peligro inmediato llama al ECU 911. Aquí puedes reportar lo que ves y encontrar albergues con cupo.
-      </Aviso>
+      <AlertasVigentes />
       <div className="er-tarjeta op-mapa-tarjeta pn-mapa-ciudadano">
         <MapaEsmeraldas reportes={[]} puntosServicio={puntos} zonas={zonas} vias={vias} onSeleccionarReporte={() => {}} />
       </div>
       <a className="er-btn er-btn--emergencia er-btn--lg er-btn--bloque" href="/panel/reportar">
         <Siren aria-hidden="true" /> Reportar emergencia
       </a>
-      <p className="pn-sub pn-centrado">Desde la app móvil funciona sin internet: el reporte se guarda y se envía al volver la señal.</p>
+      <p className="pn-sub pn-centrado">Emergencia inmediata: ECU 911</p>
     </div>
   );
 }
