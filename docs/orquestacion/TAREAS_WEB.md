@@ -32,51 +32,23 @@ Probar con la API apagada: debe aparecer el aviso morado de datos simulados y na
 
 ---
 
-## W1. Portada y login con el sistema de diseño
+## Hecho
 
-**Objetivo:** que `index.astro` y `login.astro` dejen su CSS propio (azul `#2563eb`) y usen `BaseLayout` + tokens.
-**Archivos:** `src/pages/index.astro`, `src/pages/login.astro`, `src/components/LoginCard.tsx`,
-nuevo `src/styles/sitio.css` (prefijo `st-`).
-**Pasos:**
-1. Envolver ambas páginas en `BaseLayout`. Borrar el bloque `<style is:global>` y pasar lo necesario a `sitio.css`
-   usando solo tokens.
-2. Navbar pública mínima: marca (mismo escudo verde del panel), enlaces Inicio y "Ingresar".
-3. Quitar "EN VIVO · 06:00 UTC" y las flechas "→" de los botones.
-4. `LoginCard`: botones `er-btn`, campos `er-campo`/`er-entrada`, selector de rol demo con `er-segmentos`.
-5. Portada: texto real del reto (lema "Programar hoy para proteger vidas mañana"), 3 bloques (Reportar, Coordinar,
-   Albergues) y CTA "Ingresar al panel". Sin cifras inventadas.
-**Hecho cuando:** ningún hex en esos archivos, se ve bien en claro/oscuro/móvil y el login lleva al panel por rol.
+Portada y acceso, mapa operativo, reportes con detalle e historial, alertas y vías, asistencia, estadísticas,
+albergues con ajuste de ocupación, nuevo reporte web, inicio y mis reportes del ciudadano.
 
-## W2. Detalle de reporte con historial
+## W1. Detalle de reporte desde el mapa operativo
 
-**Objetivo:** `/panel/reportes` abre un panel lateral con el detalle y el historial de estados.
-**Archivos:** `src/components/TablaReportes.tsx`, nuevo `src/components/DetalleReporte.tsx`.
-**Pasos:** fila clicable (botón accesible) -> `DetalleReporte` con insignias, datos, foto (`foto_url` si existe,
-`<img loading="lazy">` con texto alternativo) y botones de estado reutilizando la lógica de `PanelOperaciones`.
-Agregar `api.obtenerReporte(id)` en coordinación con backend.
-**Hecho cuando:** se puede despachar y marcar atendido desde la tabla, y el teclado (Tab/Enter/Escape) funciona.
+**Archivos:** `src/components/PanelOperaciones.tsx`. Botón "Ver detalle" en el panel derecho que abre `DetalleReporte`.
 
-## W3. Ajustar ocupación de albergues (COE)
+## W2. Mapa en la pantalla de asistencia
 
-**Objetivo:** en `/panel/albergues`, el operador suma o resta personas a un albergue.
-**Archivos:** `src/components/ListaAlbergues.tsx`.
-**Pasos:** solo si el rol es `operador_911` o `admin` (leer `obtenerSesionActual()`), mostrar botones `-1`, `+1`, `+5`
-que llaman `api.actualizarOcupacion`. Mostrar el semáforo actualizado. Aviso ámbar si pasa de 90 %.
-**Hecho cuando:** el cambio llega a la API y a otra pestaña abierta del mapa (WebSocket) sin recargar.
+**Archivos:** `src/components/Asistencia.tsx`. Al elegir una fila, centrar un `MapaEsmeraldas` pequeño en el reporte.
 
-## W4. Formulario web "Nuevo reporte" (versión navegador del prototipo)
+## W3. Accesibilidad
 
-**Objetivo:** reemplazar `PaginaPendiente` en `/panel/reportar` por el formulario del prototipo de Franco.
-**Archivos:** `src/pages/panel/reportar.astro`, nuevo `src/components/FormularioReporte.tsx`.
-**Pasos:** rejilla de 6 tipos (botones con icono Lucide + `ETIQUETA_TIPO`), gravedad, descripción, ubicación con
-`navigator.geolocation` (mostrar latitud, longitud y ± metros), bloque opcional de familia (personas, niños, adultos
-mayores, necesidades como casillas). `id = crypto.randomUUID()`. Enviar con una función nueva `api.crearReporte`
-(coordinar con backend). Botón `er-btn--emergencia` "Enviar reporte".
-**Hecho cuando:** el reporte aparece en el mapa del COE en otra pestaña al instante, y en "Mis reportes".
+Recorrer todas las pantallas con Tab; foco visible siempre; contraste AA en claro y oscuro. Anotar en `bitacora.md`.
 
-## W5. Revisión de accesibilidad
+## W4. Prueba en celular de gama baja
 
-**Objetivo:** pasar el panel con teclado y lector de pantalla.
-**Archivos:** solo los que fallen.
-**Pasos:** recorrer todas las pantallas con Tab; foco visible siempre; cada botón con texto; contraste AA
-en claro y oscuro. Anotar en `bitacora.md` qué se corrigió.
+Abrir `/panel/inicio` y `/panel/reportar` en un celular real con datos móviles. Medir tiempo de carga y anotar.
