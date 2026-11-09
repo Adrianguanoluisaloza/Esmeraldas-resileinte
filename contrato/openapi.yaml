@@ -7,6 +7,17 @@ info:
     de emergencias por el fenómeno de El Niño en Esmeraldas (Ecuador).
     Diseñada con arquitectura offline-first para sincronización resiliente.
 
+    Errores: todas las respuestas de error usan el esquema Error con un `codigo` estable
+    (VALIDACION, NO_AUTENTICADO, SIN_PERMISO, NO_ENCONTRADO, CONFLICTO, TRANSICION_INVALIDA,
+    NO_IMPLEMENTADO, ERROR_INTERNO). La web y la app eligen el texto a mostrar según el código.
+
+    Tiempo real: `GET /ws?token=JWT` abre un WebSocket. Mensajes JSON
+    `{ "tipo": "reporte.creado" | "reporte.estado" | "punto.ocupacion" | "alerta.emitida", "datos": {...} }`.
+    El COE recibe todo; un ciudadano solo recibe alertas, cupos y los cambios de sus propios reportes.
+
+    Origen del dato (exigido por el reto): `ciudadano` (reporte de la comunidad), `simulado`
+    (escenario Jueves 06:00) y `oficial` (INAMHI / SNGR). Debe diferenciarse en la interfaz.
+
 servers:
   - url: http://localhost:3000
     description: Servidor de desarrollo local
@@ -99,7 +110,7 @@ paths:
 
   /reportes:
     post:
-      summary: Crear reporte ciudadano (Paso 1 offline: datos livianos)
+      summary: 'Crear reporte ciudadano (Paso 1 offline: datos livianos)'
       description: >-
         Idempotente mediante UUID v4 generado en el celular. Si el reporte ya fue
         recibido, retorna 200/201 sin duplicar registros.
@@ -296,6 +307,41 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/SugerenciaIA'
+
+  /vias:
+    get:
+      summary: Red vial con estado (habilitada, parcial, bloqueada)
+      tags: [Zonas de Riesgo]
+      responses:
+        '200':
+          description: Vías en formato GeoJSON FeatureCollection (LineString)
+
+  /puntos-servicio/cercanos:
+    get:
+      summary: Albergues o centros de salud con cupo, ordenados por distancia real (PostGIS)
+      tags: [Puntos de Servicio]
+      parameters:
+        - { name: lat, in: query, required: true, schema: { type: number } }
+        - { name: lng, in: query, required: true, schema: { type: number } }
+        - { name: tipo, in: query, schema: { $ref: '#/components/schemas/TipoPuntoServicio' } }
+        - name: personas
+          in: query
+          description: Cupos libres mínimos (tamaño de la familia)
+          schema: { type: integer, default: 1 }
+        - { name: limite, in: query, schema: { type: integer, default: 3, maximum: 20 } }
+      responses:
+        '200':
+          description: Puntos con cupo más cercanos
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  allOf:
+                    - $ref: '#/components/schemas/PuntoServicio'
+                    - type: object
+                      properties:
+                        distancia_m: { type: integer }
 
   /zonas:
     get:
@@ -581,6 +627,23 @@ components:
           items:
             $ref: '#/components/schemas/Necesidad'
 
+    Origen:
+      type: string
+      enum: [ciudadano, simulado, oficial]
+
+    Error:
+      type: object
+      properties:
+        codigo:
+          type: string
+          example: VALIDACION
+        mensaje:
+          type: string
+        errores:
+          type: array
+          items:
+            type: string
+
     Reporte:
       type: object
       properties:
@@ -590,6 +653,13 @@ components:
         usuario_id:
           type: string
           format: uuid
+          nullable: true
+        origen:
+          $ref: '#/components/schemas/Origen'
+        sector:
+          type: string
+          nullable: true
+          description: Zona de riesgo que contiene el punto (ST_Contains), asignada por el servidor
         tipo:
           $ref: '#/components/schemas/TipoIncidente'
         descripcion:
@@ -704,6 +774,10 @@ components:
           type: integer
         ocupacion:
           type: integer
+        direccion:
+          type: string
+        cupos_libres:
+          type: integer
         porcentaje_ocupacion:
           type: number
           example: 75.0
@@ -801,12 +875,5 @@ components:
       content:
         application/json:
           schema:
-            type: object
-            properties:
-              mensaje:
-                type: string
-              errores:
-                type: array
-                items:
-                  type: string
+            $ref: '#/components/schemas/Error'
 
