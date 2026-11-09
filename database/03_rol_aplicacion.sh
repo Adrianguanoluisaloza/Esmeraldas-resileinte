@@ -22,6 +22,7 @@ GRANT SELECT ON ALL TABLES IN SCHEMA public TO resiliente_app;
 GRANT INSERT, UPDATE ON usuarios, reportes, alertas TO resiliente_app;
 GRANT UPDATE (ocupacion, activo, actualizado_en) ON puntos_servicio TO resiliente_app;
 GRANT UPDATE (estado, actualizado_en) ON vias TO resiliente_app;
+GRANT UPDATE (cantidad, actualizado_en) ON inventario TO resiliente_app;
 GRANT INSERT ON reportes_historial, entregas TO resiliente_app;
 
 -- Límites para que una consulta mala no tumbe el servidor.

@@ -1,7 +1,7 @@
 import { Hono } from "hono";
 import { ROLES_COE } from "../../dominio/catalogos.js";
 import { leerJson, requiereSesion, validar, type Dependencias, type Entorno } from "../contexto.js";
-import { AlertaEntrada, AlertasFiltro, EntregaEntrada, IdRuta, ViaEstadoEntrada } from "../esquemas.js";
+import { AjusteInventarioEntrada, AlertaEntrada, AlertasFiltro, EntregaEntrada, IdRuta, InventarioRuta, ViaEstadoEntrada } from "../esquemas.js";
 
 /** Alertas, vías, indicadores del COE y asistencia humanitaria. */
 export function rutasOperacion(deps: Dependencias) {
@@ -39,6 +39,13 @@ export function rutasOperacion(deps: Dependencias) {
   r.post("/asistencia/entregas", coe, async (c) => {
     const e = await leerJson(c, EntregaEntrada);
     return c.json(await deps.operacion.registrarEntrega(c.get("sesion"), { ...e, nota: e.nota ?? null }), 201);
+  });
+
+  r.get("/asistencia/inventario", coe, async (c) => c.json(await deps.operacion.inventario(c.get("sesion"))));
+  r.patch("/asistencia/inventario/:necesidad", coe, async (c) => {
+    const { necesidad } = validar(InventarioRuta, c.req.param());
+    const { delta } = await leerJson(c, AjusteInventarioEntrada);
+    return c.json(await deps.operacion.ajustarInventario(c.get("sesion"), necesidad, delta));
   });
 
   return r;

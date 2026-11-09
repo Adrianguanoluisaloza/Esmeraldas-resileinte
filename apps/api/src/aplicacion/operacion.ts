@@ -9,6 +9,7 @@ import {
   type EstadoVia,
   type NivelAlerta,
   type OrigenAlerta,
+  type Suministro,
 } from "../dominio/operacion.js";
 import type {
   PublicadorEventos,
@@ -107,8 +108,23 @@ export class CasosOperacion {
       throw new ErrorDominio("VALIDACION", "Ese reporte no pidió esa necesidad");
     }
     const entrega = { id: randomUUID(), ...datos, entregado_por: actor.id, entregado_en: this.reloj.ahora().toISOString() };
-    await this.asistencia.registrar(entrega);
+    if ((await this.asistencia.registrar(entrega)) === "sin_stock") {
+      throw new ErrorDominio("CONFLICTO", "No hay stock suficiente en el inventario");
+    }
     this.eventos.publicar({ tipo: "asistencia.entrega", datos: entrega });
     return entrega;
+  }
+
+  async inventario(actor: Actor) {
+    this.exigirCoe(actor);
+    return this.asistencia.inventario();
+  }
+
+  /** Ingreso (delta positivo) o ajuste (negativo) de stock. */
+  async ajustarInventario(actor: Actor, necesidad: Suministro, delta: number) {
+    this.exigirCoe(actor);
+    const item = await this.asistencia.ajustarInventario(necesidad, delta);
+    if (!item) throw new ErrorDominio("NO_ENCONTRADO", "Suministro no encontrado");
+    return item;
   }
 }

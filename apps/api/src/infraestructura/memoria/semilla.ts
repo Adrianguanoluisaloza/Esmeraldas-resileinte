@@ -1,6 +1,6 @@
 import type { PuntoServicio } from "../../dominio/puntoServicio.js";
 import type { GeoJsonColeccion } from "../../dominio/puertos.js";
-import type { Alerta } from "../../dominio/operacion.js";
+import type { Alerta, ItemInventario } from "../../dominio/operacion.js";
 import type { Reporte } from "../../dominio/reporte.js";
 
 /**
@@ -82,4 +82,10 @@ export const ALERTAS: Alerta[] = [
     creado_en: "2026-11-12T11:15:00.000Z",
     vigente: true,
   },
+];
+
+export const INVENTARIO: ItemInventario[] = [
+  { necesidad: "agua", cantidad: 400, unidad: "bidones de 20 L", actualizado_en: "2026-11-12T11:00:00.000Z" },
+  { necesidad: "alimentos", cantidad: 250, unidad: "kits familiares", actualizado_en: "2026-11-12T11:00:00.000Z" },
+  { necesidad: "medicinas", cantidad: 80, unidad: "botiquines", actualizado_en: "2026-11-12T11:00:00.000Z" },
 ];

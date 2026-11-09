@@ -74,3 +74,10 @@ INSERT INTO reportes (id, usuario_id, origen, tipo, descripcion, gravedad, estad
 INSERT INTO alertas (id, sector, mensaje, nivel, origen) VALUES
 ('a5000000-0000-4000-8000-000000000001', 'Ribera del río Teaone (Tabiazo)',
   'Simulacro: crecida del río. Dirigirse a zonas altas y seguir indicaciones de las autoridades.', 'critica', 'simulada');
+
+-- Inventario inicial del escenario (simulado) -----------------------------------------------------
+INSERT INTO inventario (necesidad, cantidad, unidad) VALUES
+('agua', 400, 'bidones de 20 L'),
+('alimentos', 250, 'kits familiares'),
+('medicinas', 80, 'botiquines');
+
