@@ -8,6 +8,7 @@ import '../../../../core/location/location_service.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/mapa_fondo_esmeraldas.dart';
 import '../../../../data/models/punto_servicio_model.dart';
+import '../../../../data/models/reporte_cola_model.dart';
 import '../../domain/usecases/crear_reporte_offline_usecase.dart';
 import '../widgets/bloque_familia_widget.dart';
 
@@ -26,6 +27,8 @@ class CrearReportePage extends StatefulWidget {
     required this.onReporteGuardado,
     this.tieneConexionReal = true,
     this.puntosServicio = const <PuntoServicioModel>[],
+    this.reportes = const <ReporteColaModel>[],
+    this.incidentesExtra = const <PinMapaIncidente>[],
   });
 
   final CrearReporteOfflineUseCase crearReporteUseCase;
@@ -33,6 +36,8 @@ class CrearReportePage extends StatefulWidget {
   final VoidCallback onReporteGuardado;
   final bool tieneConexionReal;
   final List<PuntoServicioModel> puntosServicio;
+  final List<ReporteColaModel> reportes;
+  final List<PinMapaIncidente> incidentesExtra;
 
   @override
   State<CrearReportePage> createState() => _CrearReportePageState();
@@ -155,12 +160,9 @@ class _CrearReportePageState extends State<CrearReportePage> {
     );
 
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text(
-          'Reporte guardado en cola local. Se enviará al recuperar señal.',
-        ),
-      ),
+    final LatLng puntoCreado = LatLng(
+      coordenadaFinal.latitud,
+      coordenadaFinal.longitud,
     );
     _descripcionController.clear();
     setState(() {
@@ -172,14 +174,108 @@ class _CrearReportePageState extends State<CrearReportePage> {
       _puntoMarcadoEnMapa = null;
       _paso = _PasoReporte.mapaInicial;
     });
+    if (widget.tieneConexionReal) {
+      try {
+        _mapController.move(puntoCreado, AppConfig.defaultZoom);
+      } catch (_) {}
+    }
     widget.onReporteGuardado();
+  }
+
+  List<PinMapaIncidente> _construirPinesIncidentes() {
+    final Set<String> idsLocales = <String>{};
+    final List<PinMapaIncidente> pines = <PinMapaIncidente>[];
+
+    for (final ReporteColaModel r in widget.reportes) {
+      idsLocales.add(r.id);
+      pines.add(
+        PinMapaIncidente(
+          punto: LatLng(r.latitud, r.longitud),
+          gravedad: r.gravedad,
+          etiqueta: r.tipo.etiqueta,
+          onTap: () => _mostrarDetalleReporteMapa(r),
+        ),
+      );
+    }
+
+    for (final PinMapaIncidente extra in widget.incidentesExtra) {
+      pines.add(extra);
+    }
+
+    return pines;
+  }
+
+  void _mostrarDetalleReporteMapa(ReporteColaModel r) {
+    showModalBottomSheet<void>(
+      context: context,
+      showDragHandle: true,
+      builder: (BuildContext ctx) {
+        final bool sincronizado = r.estadoCola.estaSincronizado;
+        return Padding(
+          padding: const EdgeInsets.fromLTRB(16, 4, 16, 20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              Row(
+                children: <Widget>[
+                  Icon(
+                    _iconosTipo[r.tipo] ?? Icons.warning_amber,
+                    color: AppTheme.colorGravedad(r.gravedad),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      '${r.tipo.etiqueta} · Gravedad ${r.gravedad.etiqueta}',
+                      style: const TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                  Chip(
+                    visualDensity: VisualDensity.compact,
+                    backgroundColor: sincronizado
+                        ? AppTheme.colorSemaforoVerde.withValues(alpha: 0.14)
+                        : AppTheme.colorSemaforoAmbar.withValues(alpha: 0.16),
+                    label: Text(
+                      r.estadoCola.etiqueta,
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                        color: sincronizado
+                            ? AppTheme.colorSemaforoVerde
+                            : AppTheme.colorSemaforoAmbar,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              if (r.descripcion.trim().isNotEmpty) ...<Widget>[
+                Text(r.descripcion, style: const TextStyle(fontSize: 13)),
+                const SizedBox(height: 6),
+              ],
+              Text(
+                'Coordenadas: ${r.latitud.toStringAsFixed(4)}, ${r.longitud.toStringAsFixed(4)} '
+                '· Personas: ${r.personasAfectadas}',
+                style: const TextStyle(
+                  fontSize: 12,
+                  color: AppTheme.colorTextoSecundario,
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Stack(
       children: <Widget>[
-        // Fondo: Mapa interactivo y seleccionable de Esmeraldas
+        // Fondo: Mapa interactivo y seleccionable de Esmeraldas con pines de reportes
         Positioned.fill(
           child: MapaFondoEsmeraldas(
             mapController: _mapController,
@@ -187,6 +283,7 @@ class _CrearReportePageState extends State<CrearReportePage> {
             ubicacionUsuario: _ubicacionGps,
             ubicacionIncidenteMarcado: _puntoMarcadoEnMapa,
             puntosServicio: widget.puntosServicio,
+            incidentes: _construirPinesIncidentes(),
             onTapMapa: _alTocarMapa,
           ),
         ),

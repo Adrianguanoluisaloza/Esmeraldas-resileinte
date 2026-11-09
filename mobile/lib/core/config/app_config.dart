@@ -1,13 +1,18 @@
+import 'package:flutter/foundation.dart';
+
 /// Configuración por entorno para la aplicación móvil Esmeraldas Resiliente.
 /// No almacena secretos ni claves privadas en el código fuente.
 class AppConfig {
   AppConfig._();
 
-  /// URL base del backend configurada mediante `--dart-define=API_BASE_URL=...`
-  static const String apiBaseUrl = String.fromEnvironment(
-    'API_BASE_URL',
-    defaultValue: 'http://10.0.2.2:3000',
-  );
+  static const String _envApiBaseUrl = String.fromEnvironment('API_BASE_URL');
+
+  /// URL base del backend configurada mediante `--dart-define=API_BASE_URL=...`.
+  /// En Web/Escritorio usa `http://localhost:3000` por defecto; en Android emulador usa `http://10.0.2.2:3000`.
+  static String get apiBaseUrl {
+    if (_envApiBaseUrl.isNotEmpty) return _envApiBaseUrl;
+    return kIsWeb ? 'http://localhost:3000' : 'http://10.0.2.2:3000';
+  }
 
   /// Modo demostración: usa cuentas y datos simulados en el dispositivo
   /// mientras el backend no está listo. `--dart-define=MODO_DEMO=false` para usar la API.
@@ -16,16 +21,16 @@ class AppConfig {
     defaultValue: true,
   );
 
-  /// OAuth de Google (cliente de tipo Android/iOS; nunca se incluye client secret).
+  /// OAuth de Google (cliente configurado en `google-services.json`, proyecto `esmeralsrelesiente`).
   static const String googleClientId = String.fromEnvironment(
     'GOOGLE_CLIENT_ID',
+    defaultValue: '644267053650-hdva73c46tut51k2tjrgk23ul4n4r5ve.apps.googleusercontent.com',
   );
 
-  /// Debe coincidir con `appAuthRedirectScheme` en `android/app/build.gradle.kts`
-  /// (para Google: el client ID invertido, ej. `com.googleusercontent.apps.XXXX:/oauthredirect`).
+  /// Esquema inverso del `client_id` de Google (`appAuthRedirectScheme` en `android/app/build.gradle.kts`).
   static const String googleRedirectUri = String.fromEnvironment(
     'GOOGLE_REDIRECT_URI',
-    defaultValue: 'ec.esmeraldas.resiliente.mobile:/oauthredirect',
+    defaultValue: 'com.googleusercontent.apps.644267053650-hdva73c46tut51k2tjrgk23ul4n4r5ve:/oauthredirect',
   );
 
   /// Seguridad de sesión.

@@ -16,6 +16,11 @@ Todos los cambios relevantes del proyecto se registran aquí. Se sigue una estru
 - Plantillas de variables de entorno para desarrollo, Cloudflare y distribución móvil.
 - Esqueleto de la aplicación Flutter en `mobile/` con Clean Architecture, cola offline en `hive_ce`, flujo de sincronización en dos pasos (`POST /reportes` y `POST /reportes/:id/foto`) y directorio de albergues con respaldo sin internet.
 - Integración de `TAREAS_MOVIL_FRANCO.md` (M1–M5) en `mobile/`: `DioApiClient` real con interceptor JWT y mapeo de `Failure`s, login/registro y botón de Google OAuth con PKCE, mapa de Esmeraldas (`FlutterMap`) de fondo con respaldo vectorial offline, navegación inferior por rol (ciudadano, operador 911 y administrador), paleta de `docs/DISENO.md` sin emojis y búsqueda de albergue más cercano.
+- Flujo de inicio ciudadano en 3 pasos sobre el mapa de Esmeraldas (`CrearReportePage`): mapa interactivo y seleccionable con botón lateral de ubicación GPS (`Geolocator`) y botón inferior de reporte, tarjeta de confirmación de coordenadas y formulario flotante.
+- Configuración de autenticación OAuth de Google desde `google-services.json` (`esmeralsrelesiente`) en `mobile/android/app/`, exclusión en `.gitignore` y compilación de `app-release.apk` con Android SDK 36 y OpenJDK 21.
+- API TypeScript en `apps/api/` con autenticación, reportes, territorio, pendientes, tiempo real y pruebas de API/dominio.
+- Persistencia PostGIS con esquema y datos iniciales en `database/`, además de configuración de desarrollo local con `docker-compose.yml`.
+- Repositorios de memoria como respaldo de desarrollo y configuración del backend mediante variables de entorno, sin incluir secretos en Git.
 
 ### Planned
 

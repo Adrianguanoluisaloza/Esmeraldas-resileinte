@@ -5,6 +5,7 @@ import '../../core/enums/app_enums.dart';
 import '../../core/security/permisos.dart';
 import '../../features/auth/domain/repositories/auth_repository.dart';
 import '../models/punto_servicio_model.dart';
+import '../models/reporte_cola_model.dart';
 
 /// Reporte tal como lo ve el centro de operaciones (`GET /reportes`).
 class ReporteOperacion {
@@ -132,6 +133,47 @@ class OperacionesRepository extends ChangeNotifier {
   List<ReporteOperacion> reportesVisibles(UsuarioSesion s) {
     if (s.rol.puede(Permiso.reporteVerTodos)) return reportes;
     return reportes.where((r) => r.usuarioId == s.id).toList();
+  }
+
+  /// Une los reportes creados por el ciudadano en la cola local de Hive (`cola_reportes_box`)
+  /// con el repositorio de operaciones para que aparezcan en los mapas de Ciudadano, Operador 911 y Admin.
+  void sincronizarDesdeColaLocal(
+    List<ReporteColaModel> cola, {
+    String usuarioIdActual = 'u1',
+  }) {
+    bool huboCambios = false;
+    for (final ReporteColaModel r in cola) {
+      final int idx = reportes.indexWhere((op) => op.id == r.id);
+      if (idx == -1) {
+        reportes.insert(
+          0,
+          ReporteOperacion(
+            id: r.id,
+            usuarioId: usuarioIdActual,
+            tipo: r.tipo,
+            gravedad: r.gravedad,
+            estado: EstadoReporte.pendiente,
+            sector: r.descripcion.trim().isNotEmpty
+                ? r.descripcion.trim()
+                : 'Esmeraldas (${r.latitud.toStringAsFixed(4)}, ${r.longitud.toStringAsFixed(4)})',
+            punto: LatLng(r.latitud, r.longitud),
+            descripcion: r.descripcion.trim().isNotEmpty
+                ? r.descripcion.trim()
+                : '${r.tipo.etiqueta} reportada desde la app móvil',
+            personas: r.personasAfectadas,
+            ninos: r.ninos,
+            mayores: r.adultosMayores,
+            necesidades: r.necesidades,
+            tieneFoto:
+                r.rutaFotoLocal.isNotEmpty || r.estadoCola.estaSincronizado,
+          ),
+        );
+        huboCambios = true;
+      }
+    }
+    if (huboCambios) {
+      notifyListeners();
+    }
   }
 
   void cambiarEstado(

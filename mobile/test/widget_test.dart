@@ -169,10 +169,20 @@ void main() {
       // Paso 3: Formulario del reporte
       expect(find.text('¿Qué está pasando?'), findsOneWidget);
 
-      await tester.drag(find.byType(ListView).first, const Offset(0, -600));
+      await tester.drag(find.byType(ListView).first, const Offset(0, -900));
+      await tester.pumpAndSettle();
+      await tester.ensureVisible(find.text('Enviar reporte de emergencia'));
       await tester.pumpAndSettle();
 
       expect(find.text('Enviar reporte de emergencia'), findsOneWidget);
+      await tester.tap(find.text('Enviar reporte de emergencia'));
+      await tester.pumpAndSettle();
+
+      // El reporte debe haberse sincronizado automáticamente (enviado) y aparecer en la cola local
+      final List<ReporteColaModel> guardados = await repo
+          .obtenerTodosLosReportes();
+      expect(guardados, hasLength(1));
+      expect(guardados.first.estadoCola, EstadoColaReporte.enviado);
     },
   );
 }

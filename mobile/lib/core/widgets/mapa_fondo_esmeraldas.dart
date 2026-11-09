@@ -71,7 +71,11 @@ class MapaFondoEsmeraldas extends StatelessWidget {
                 );
               },
         child: CustomPaint(
-          painter: const _MapaOfflineEsmeraldasPainter(),
+          painter: _MapaOfflineEsmeraldasPainter(
+            ubicacionUsuario: ubicacionUsuario,
+            ubicacionIncidenteMarcado: ubicacionIncidenteMarcado,
+            incidentes: incidentes,
+          ),
           child: const SizedBox.expand(),
         ),
       );
@@ -122,25 +126,59 @@ class MapaFondoEsmeraldas extends StatelessWidget {
                     ),
                   ),
                 ),
-                // Incidentes
+                // Incidentes reportados
                 ...incidentes.map(
                   (PinMapaIncidente inc) => Marker(
                     point: inc.punto,
-                    width: 30,
-                    height: 30,
+                    width: 118,
+                    height: 58,
                     child: GestureDetector(
                       onTap: inc.onTap,
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: AppTheme.colorGravedad(inc.gravedad),
-                          shape: BoxShape.circle,
-                          border: Border.all(color: Colors.white, width: 2.5),
-                        ),
-                        child: const Icon(
-                          Icons.priority_high,
-                          size: 15,
-                          color: Colors.white,
-                        ),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: <Widget>[
+                          Container(
+                            width: 28,
+                            height: 28,
+                            decoration: BoxDecoration(
+                              color: AppTheme.colorGravedad(inc.gravedad),
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: Colors.white,
+                                width: 2.5,
+                              ),
+                            ),
+                            child: const Icon(
+                              Icons.priority_high,
+                              size: 15,
+                              color: Colors.white,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 4,
+                              vertical: 1,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withValues(alpha: 0.94),
+                              borderRadius: BorderRadius.circular(3),
+                              border: Border.all(
+                                color: AppTheme.colorGravedad(inc.gravedad),
+                              ),
+                            ),
+                            child: Text(
+                              inc.etiqueta,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontSize: 8.5,
+                                fontWeight: FontWeight.w700,
+                                color: AppTheme.colorGravedad(inc.gravedad),
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ),
@@ -270,7 +308,26 @@ class MapaFondoEsmeraldas extends StatelessWidget {
 /// Respaldo vectorial del mapa de Esmeraldas (costa, río Esmeraldas y vías)
 /// cuando el celular está en modo avión.
 class _MapaOfflineEsmeraldasPainter extends CustomPainter {
-  const _MapaOfflineEsmeraldasPainter();
+  const _MapaOfflineEsmeraldasPainter({
+    this.ubicacionUsuario,
+    this.ubicacionIncidenteMarcado,
+    this.incidentes = const <PinMapaIncidente>[],
+  });
+
+  final LatLng? ubicacionUsuario;
+  final LatLng? ubicacionIncidenteMarcado;
+  final List<PinMapaIncidente> incidentes;
+
+  Offset _latLngToOffset(LatLng p, Size size) {
+    final double nx =
+        ((p.longitude - AppConfig.esmeraldasCenterLng) / 0.04) + 0.5;
+    final double ny =
+        0.5 - ((p.latitude - AppConfig.esmeraldasCenterLat) / 0.04);
+    return Offset(
+      (nx.clamp(0.08, 0.92)) * size.width,
+      (ny.clamp(0.08, 0.92)) * size.height,
+    );
+  }
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -329,8 +386,38 @@ class _MapaOfflineEsmeraldasPainter extends CustomPainter {
     canvas.drawLine(Offset(w * 0.24, h * 0.12), Offset(w * 0.34, h), via);
     canvas.drawLine(Offset(w * 0.80, h * 0.10), Offset(w * 0.86, h), via);
     canvas.drawCircle(Offset(w * 0.40, h * 0.42), 26, via);
+
+    // Pines de incidentes en modo offline
+    final Paint bordeBlanco = Paint()
+      ..color = Colors.white
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2.5;
+    for (final PinMapaIncidente inc in incidentes) {
+      final Offset pos = _latLngToOffset(inc.punto, size);
+      canvas.drawCircle(
+        pos,
+        11,
+        Paint()..color = AppTheme.colorGravedad(inc.gravedad),
+      );
+      canvas.drawCircle(pos, 11, bordeBlanco);
+    }
+
+    if (ubicacionUsuario != null) {
+      final Offset pos = _latLngToOffset(ubicacionUsuario!, size);
+      canvas.drawCircle(pos, 9, Paint()..color = Colors.white);
+      canvas.drawCircle(pos, 5, Paint()..color = const Color(0xFF1F4FB8));
+    }
+
+    if (ubicacionIncidenteMarcado != null) {
+      final Offset pos = _latLngToOffset(ubicacionIncidenteMarcado!, size);
+      canvas.drawCircle(pos, 12, Paint()..color = AppTheme.colorSemaforoRojo);
+      canvas.drawCircle(pos, 12, bordeBlanco);
+    }
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+  bool shouldRepaint(covariant _MapaOfflineEsmeraldasPainter oldDelegate) =>
+      oldDelegate.ubicacionUsuario != ubicacionUsuario ||
+      oldDelegate.ubicacionIncidenteMarcado != ubicacionIncidenteMarcado ||
+      oldDelegate.incidentes.length != incidentes.length;
 }

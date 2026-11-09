@@ -201,6 +201,13 @@ class _DirectorioAlberguesPageState extends State<DirectorioAlberguesPage> {
                         ),
                         const Spacer(),
                         FilledButton.tonalIcon(
+                          style: FilledButton.styleFrom(
+                            minimumSize: const Size(0, 38),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 6,
+                            ),
+                          ),
                           onPressed: _buscarMasCercanos,
                           icon: const Icon(Icons.near_me, size: 16),
                           label: Text(
