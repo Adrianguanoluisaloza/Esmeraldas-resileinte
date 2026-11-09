@@ -195,4 +195,13 @@ Este documento registra decisiones, avances, bloqueos y pendientes importantes. 
   - **M6 (Alertas en la app):** Se agregó `obtenerAlertasActivas()` (`GET /alertas` sin token) en `DioApiClient` y su visualización en `DirectorioAlberguesPage` diferenciando alertas oficiales en rojo y simulacros con insignia `Simulacro`.
   - **Incidentes y puntos georreferenciados en el mapa (`OperacionesRepository`):** Se implementó `sincronizarDesdeBackend` en `OperacionesRepository` y su invocación desde `HomeShellPage` para descargar `GET /reportes?limite=100`, `GET /puntos-servicio` y `GET /alertas` del backend público en vivo (`https://seasonal-acceptable-crimes-remember.trycloudflare.com`), pintando todos los incidentes y albergues georreferenciados en `MapaFondoEsmeraldas` y sincronizando las acciones de operador (`PATCH /reportes/:id/estado`, `PATCH /albergues/:id/ocupacion`, `POST /alertas`). Además, se alineó la semilla local con los 6 incidentes y 5 puntos de servicio oficiales de `database/02_seed_escenario_06am.sql`.
 - **Archivos tocados:** `mobile/lib/core/config/app_config.dart`, `mobile/lib/core/network/api_client.dart`, `mobile/lib/data/repositories/operaciones_repository.dart`, `mobile/lib/data/repositories/cola_reportes_repository.dart`, `mobile/lib/features/sync/data/services/sync_worker_service.dart`, `mobile/lib/core/routing/app_router.dart`, `mobile/lib/features/mis_reportes/presentation/pages/mis_reportes_page.dart`, `mobile/lib/features/mis_reportes/presentation/pages/directorio_albergues_page.dart`, `mobile/lib/core/theme/app_theme.dart`, `CHANGELOG.md`, `bitacora.md`.
-- **Pendientes:** Probar en dispositivo físico durante la demostración.
+## 2026-11-09 — Punto de Control Laboratorio (Adrian & Franco en vivo)
+- **Área:** general | infraestructura | integración
+- **Cambio:** Punto de control consolidado del sistema en ejecución simultánea entre Adrian y Franco. Se verificó la sincronización en tiempo real vía Cloudflare Tunnel (`https://seasonal-acceptable-crimes-remember.trycloudflare.com`), backend Hono (`http://localhost:3000`), web Astro (`http://localhost:4321`) y app móvil Flutter (`http://localhost:5000`). Se integró el soporte para emergencias sin señal GPS en web y móvil (selector de sectores de Esmeraldas y `ubicacion_aproximada: true`), 3 alertas vigentes del escenario oficial cargadas en semilla y SQL, 30 de 30 pruebas pasando en la API (`npm run ci`), y PR #2 integrado y mergeado limpiamente.
+- **Validación:**
+  - `apps/api`: `npm run ci` (30/30 pruebas OK, 0 fallos).
+  - `apps/web`: `astro build` (12 páginas compiladas en 1.50s, 0 errores).
+  - `mobile`: `flutter build web` exitoso (`√ Built build\web`).
+  - Túnel y salud: `GET /salud` y `GET /alertas` respondiendo HTTP 200 en local y túnel público.
+- **Pendientes:** Preparar la presentación y guion de demostración ante el jurado del Hackathon.
+
