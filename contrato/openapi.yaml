@@ -113,9 +113,12 @@ paths:
       summary: 'Crear reporte ciudadano (Paso 1 offline: datos livianos)'
       description: >-
         Idempotente mediante UUID v4 generado en el celular. Si el reporte ya fue
-        recibido, retorna 200/201 sin duplicar registros.
+        recibido, retorna 200/201 sin duplicar registros. Sin cabecera Authorization se
+        guarda como reporte de emergencia sin cuenta (usuario_id null). Con un token
+        inválido o vencido responde 401.
       tags: [Reportes]
       security:
+        - {}
         - BearerAuth: []
       requestBody:
         required: true
@@ -250,8 +253,11 @@ paths:
       description: >-
         Sube el archivo JPEG/PNG (máx 2MB, recomendado 150-400 KB).
         El servidor genera automáticamente una miniatura (20-40 KB).
+        Reporte con cuenta: solo su dueño. Reporte sin cuenta: sin token, una sola vez y
+        dentro de 2 horas desde que se recibió.
       tags: [Fotos]
       security:
+        - {}
         - BearerAuth: []
       parameters:
         - name: id
