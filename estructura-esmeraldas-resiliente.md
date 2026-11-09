@@ -24,7 +24,7 @@ Las bases no exigen completar los 6 módulos, pero se tocan todos en tres nivele
 | 3. Centro de operaciones | **Núcleo** | Lista con filtros, cambio de estado, contadores, aviso por sector escrito por el operador | Gráficos |
 | 4. Albergues y vías | **Ligero** | Puntos de servicio (albergue o centro de salud) con cupo en color verde/ámbar/rojo; vías cortadas como tipo de reporte `via_bloqueada` | Rutas de evacuación dibujadas (si existen, marcadas como simuladas) |
 | 5. Familias y asistencia | **Ligero** | Bloque plegable opcional en el reporte (personas, niños, adultos mayores, necesidades) y contadores en el panel | Bloque de familias en la app |
-| 6. IA y análisis | **Mínimo** | Sugerencia de tipo y gravedad por foto (con explicación en palabras y confianza) y conteo por sector de dónde se repiten los eventos | La IA completa |
+| 6. IA y análisis | **Mínimo** |(no implementar) Sugerencia de tipo y gravedad por foto (con explicación en palabras y confianza) y conteo por sector de dónde se repiten los eventos | La IA completa |
 
 Inventarios y control de entregas (módulo 5) se presentan como mejora futura.
 
