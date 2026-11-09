@@ -6,6 +6,10 @@ Todos los cambios relevantes del proyecto se registran aquí. Se sigue una estru
 
 ### Added
 
+- Inventario de agua, alimentos y medicinas: la entrega descuenta stock en la misma transacción y no permite entregar más de lo que hay.
+- Ruta de evacuación: los albergues cuyo camino cruza una vía bloqueada se marcan y van al final (PostGIS `ST_Intersects`).
+- Nuevo reporte web: marcar la ubicación tocando el mapa cuando no hay GPS.
+
 - Alertas por sector, estado de vías, estadísticas del COE, sectores priorizados y asistencia humanitaria (pendientes y entregas) en API y web.
 - Detalle de reporte con historial de atención, formulario web de nuevo reporte y ajuste de ocupación de albergues.
 - Usuario de base de datos con permisos mínimos, auditoría de solo inserción y hoja de seguridad (`docs/SEGURIDAD.md`).
@@ -37,6 +41,9 @@ Todos los cambios relevantes del proyecto se registran aquí. Se sigue una estru
 - Guía de conectividad y credenciales demo empaquetadas para Franco (`mobile/GUIA_RAPIDA_FRANCO.md`, `mobile/acceso_franco_demo.zip`).
 
 ### Changed
+
+- Interfaz compacta estilo Vercel (Geist, tamaños menores, sin sombras); mapa operativo sin contadores y en una sola pantalla.
+- El login ya no entra en modo local sin servidor: muestra el error de conexión con la URL de la API.
 
 - Portada y acceso rehechos con el sistema de diseño; menú sin marcas "Pronto"; sin subtítulos ni textos de relleno.
 - Repositorio ordenado: documentos en `docs/arquitectura` y `docs/movil`; se quitan `backend/` y `frontend/` vacíos.

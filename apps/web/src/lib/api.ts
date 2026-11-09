@@ -131,7 +131,7 @@ export function listarPuntos(tipo?: 'albergue' | 'centro_salud') {
 }
 
 export function puntosCercanos(lat: number, lng: number, personas = 1) {
-  return pedir<Array<PuntoServicioMapa & { distancia_m: number; cupos_libres: number }>>(
+  return pedir<Array<PuntoServicioMapa & { distancia_m: number; cupos_libres: number; paso_bloqueado: boolean }>>(
     `/puntos-servicio/cercanos?lat=${lat}&lng=${lng}&personas=${personas}`,
   );
 }
@@ -289,4 +289,19 @@ export function listarEntregas() {
 
 export function registrarEntrega(datos: { reporte_id: string; necesidad: Necesidad; cantidad: number; nota?: string }) {
   return pedir<Entrega>('/asistencia/entregas', { method: 'POST', body: JSON.stringify(datos) });
+}
+
+export interface ItemInventario {
+  necesidad: 'agua' | 'alimentos' | 'medicinas';
+  cantidad: number;
+  unidad: string;
+  actualizado_en: string;
+}
+
+export function inventario() {
+  return pedir<ItemInventario[]>('/asistencia/inventario');
+}
+
+export function ajustarInventario(necesidad: ItemInventario['necesidad'], delta: number) {
+  return pedir<ItemInventario>(`/asistencia/inventario/${necesidad}`, { method: 'PATCH', body: JSON.stringify({ delta }) });
 }

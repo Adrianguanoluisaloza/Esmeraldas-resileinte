@@ -13,8 +13,8 @@ Todos los módulos del reto tienen endpoint funcionando (ver `apps/api/README.md
 
 | Id | Qué | Valor |
 |---|---|---|
-| B1 | Ruta de evacuación: en `cercanos`, descartar albergues cuyo tramo cruce una vía bloqueada (`ST_Intersects` con buffer) | GIS, pregunta 6 |
-| B2 | Inventario de suministros (stock por bodega) y descuento al registrar entrega, en una transacción | Módulo 5 |
+| B1 | Rutas reales por la red vial (pgRouting) en lugar del tramo recto | GIS |
+| B2 | Inventario por bodega (hoy es un stock único) | Módulo 5 |
 | B3 | Migraciones numeradas (hoy el esquema se crea solo en la primera carga) | Mantenimiento |
 | B4 | Sesión con cookie `HttpOnly` en lugar de token en `localStorage` | Seguridad |
 | B5 | Fotos en Oracle Object Storage implementando `AlmacenFotos` | Escala |

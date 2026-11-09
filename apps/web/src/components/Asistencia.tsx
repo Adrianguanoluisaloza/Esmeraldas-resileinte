@@ -9,6 +9,7 @@ const clave = (p: Pick<api.NecesidadPendiente, 'reporte_id' | 'necesidad'>) => `
 export function Asistencia() {
   const [pendientes, setPendientes] = useState<api.NecesidadPendiente[] | null>(null);
   const [entregas, setEntregas] = useState<api.Entrega[]>([]);
+  const [stock, setStock] = useState<api.ItemInventario[]>([]);
   const [cantidades, setCantidades] = useState<Record<string, number>>({});
   const [ocupado, setOcupado] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -18,6 +19,7 @@ export function Asistencia() {
   useEffect(() => {
     api.necesidadesPendientes().then(setPendientes).catch(fallo);
     api.listarEntregas().then(setEntregas).catch(() => {});
+    api.inventario().then(setStock).catch(() => {});
   }, []);
 
   async function entregar(p: api.NecesidadPendiente) {
@@ -27,6 +29,7 @@ export function Asistencia() {
     try {
       const e = await api.registrarEntrega({ reporte_id: p.reporte_id, necesidad: p.necesidad, cantidad: cantidades[k] ?? Math.max(1, p.personas) });
       setEntregas((l) => [e, ...l]);
+      api.inventario().then(setStock).catch(() => {});
       setPendientes((l) => l?.filter((x) => clave(x) !== k) ?? null);
     } catch (err) {
       fallo(err);
@@ -40,6 +43,28 @@ export function Asistencia() {
   return (
     <div className="pn-bloque">
       {error && <Aviso tipo="peligro">{error}</Aviso>}
+
+      {stock.length > 0 && (
+        <section className="er-indicadores">
+          {stock.map((i) => (
+            <div key={i.necesidad} className="er-indicador">
+              <div className="er-indicador__etiqueta">{ETIQUETA_NECESIDAD[i.necesidad]}</div>
+              <div className="er-indicador__valor">{i.cantidad}</div>
+              <div className="op-item__fila">
+                <span className="er-indicador__detalle">{i.unidad}</span>
+                <Boton tamano="sm" onClick={async () => {
+                  try {
+                    const nuevo = await api.ajustarInventario(i.necesidad, 10);
+                    setStock((l) => l.map((x) => (x.necesidad === nuevo.necesidad ? nuevo : x)));
+                  } catch (err) {
+                    fallo(err);
+                  }
+                }}>+10</Boton>
+              </div>
+            </div>
+          ))}
+        </section>
+      )}
 
       {pendientes && pendientes.length === 0 ? (
         <EstadoVacio titulo="Sin necesidades pendientes" />
