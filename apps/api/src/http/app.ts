@@ -12,6 +12,8 @@ import { rutasPendientes } from "./rutas/pendientes.js";
 import { rutasReportes } from "./rutas/reportes.js";
 import { rutasTerritorio } from "./rutas/territorio.js";
 
+const LOCALHOST = /^http:\/\/(localhost|127\.0\.0\.1)(:\d{1,5})?$/;
+
 const ESTADO_HTTP: Record<CodigoError, 400 | 401 | 403 | 404 | 409 | 422 | 501> = {
   VALIDACION: 400,
   NO_AUTENTICADO: 401,
@@ -40,8 +42,10 @@ export function crearApp(deps: Dependencias) {
   // Las fotos se muestran desde la web (otro dominio): se permite incrustarlas. El acceso a datos sigue limitado por CORS.
   app.use("*", secureHeaders({ crossOriginResourcePolicy: "cross-origin" }));
   app.use("*", cors({
-    origin: (origen) => (deps.corsOrigenes.includes(origen) ? origen : null),
-    allowHeaders: ["Authorization", "Content-Type"],
+    // Lista exacta de CORS_ORIGENES (ahí va la URL del túnel). Fuera de producción también localhost con cualquier
+    // puerto, para Astro y Flutter web. Nunca "contiene": "https://localhost.atacante.com" no debe pasar.
+    origin: (origen) => (deps.corsOrigenes.includes(origen) || (deps.permitirLocalhost && LOCALHOST.test(origen)) ? origen : null),
+    allowHeaders: ["Authorization", "Content-Type", "Accept", "X-Requested-With"],
     allowMethods: ["GET", "POST", "PATCH", "OPTIONS"],
     credentials: false,
     maxAge: 600,
