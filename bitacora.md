@@ -93,9 +93,10 @@ Este documento registra decisiones, avances, bloqueos y pendientes importantes. 
 - **Pendientes:** B1 a B8 en `docs/orquestacion/TAREAS_BACKEND.md`.
 
 ## 2026-11-09
-- **Área:** web | diseño | orquestación
-- **Cambio:** Sistema de diseño con la paleta de la app de Franco (verde `#0B6E4F` y semáforo), claro y oscuro. Componentes reutilizables y `PanelLayout` con barra lateral por rol: COE (mapa operativo, reportes, alertas, estadísticas) y las 4 pantallas ciudadanas del prototipo móvil. Cliente API único con respaldo a datos simulados. Mapa con capas de zonas y vías desde PostGIS. Login contra la API real.
-- **Decisión:** Rojo solo para emergencia y peligro. Origen del dato con color y texto propios (simulado con borde discontinuo). Cuentas demo con dominio propio, no `.gob.ec`. Se corrigió un riesgo de XSS en los popups del mapa y el YAML inválido del contrato. `wrangler.jsonc` usa `/` para que funcione fuera de Windows.
-- **Validación:** `astro build` (11 páginas) y typecheck sin errores. Recorrido con Playwright contra la API con PostGIS: login operador, despachar unidad (cambio guardado), tabla, albergues, modo oscuro, ciudadano en móvil y bloqueo del ciudadano en pantallas del COE.
-- **Pendientes:** Portada y login todavía con su CSS antiguo (tarea W1). Tareas W1 a W5 para Gemini y M1 a M5 para Franco en `docs/orquestacion/`.
+- **Área:** backend | web | integración local
+- **Cambio:** Se configuró y levantó localmente la API en Node 22 (`apps/api`) en modo memoria con soporte para cuentas demo y el escenario simulado "Jueves 06:00 AM" (los 6 eventos oficiales del reto). Se conectó el frontend Astro (`http://localhost:4321`) con la API (`http://localhost:3000`).
+- **Decisión:** Debido a que las llaves SSH de la VM de Oracle Cloud se encuentran en la máquina de casa de Adrian, se priorizó habilitar la API localmente para iteración y pruebas inmedias en el laboratorio sin bloqueos.
+- **Validación:** Comprobados endpoints `/salud`, `/auth/login` (generación de JWT con rol operador COE), `/reportes` (retorna los 6 eventos del escenario), `/zonas` y `/vias` (GeoJSON con 5 y 4 features respectivamente). Web sirviendo en puerto 4321 y API en puerto 3000.
+- **Pendientes:** Al llegar a casa, ejecutar `docker compose up -d --build` en la VM de Oracle con la llave SSH local para dejar la infraestructura en la nube activa 24/7.
+
 
