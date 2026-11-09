@@ -8,7 +8,7 @@ import type { Entorno, Sesion } from "./contexto.js";
 /**
  * GET /ws?token=JWT  (el navegador no puede mandar cabeceras en un WebSocket).
  * El COE recibe todo; un ciudadano solo recibe alertas, cupos y los cambios de SUS reportes.
- * Mensajes: {"tipo": "reporte.creado" | "reporte.estado" | "punto.ocupacion" | "alerta.emitida", "datos": {...}}
+ * Mensajes: {"tipo": "reporte.creado" | "reporte.estado" | "punto.ocupacion" | "alerta.emitida" | "via.estado" | "asistencia.entrega", "datos": {...}}
  */
 export function montarTiempoReal(app: Hono<Entorno>, upgradeWebSocket: UpgradeWebSocket, bus: BusEventos, tokens: ServicioTokens) {
   app.get(
@@ -39,6 +39,9 @@ export function montarTiempoReal(app: Hono<Entorno>, upgradeWebSocket: UpgradeWe
 
 export function puedeVer(sesion: Sesion, e: EventoTiempoReal): boolean {
   if (esPersonalCoe(sesion.rol)) return true;
-  if (e.tipo === "alerta.emitida" || e.tipo === "punto.ocupacion") return true;
-  return e.datos.usuario_id === sesion.id;
+  // Información pública para la ciudadanía: alertas, cupos y estado de vías.
+  if (e.tipo === "alerta.emitida" || e.tipo === "punto.ocupacion" || e.tipo === "via.estado") return true;
+  // De los reportes, solo los propios. Las entregas (datos de familias) son solo para el COE.
+  if (e.tipo === "reporte.creado" || e.tipo === "reporte.estado") return e.datos.usuario_id === sesion.id;
+  return false;
 }
