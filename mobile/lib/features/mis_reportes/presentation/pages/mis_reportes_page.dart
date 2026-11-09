@@ -4,8 +4,7 @@ import '../../../../core/enums/app_enums.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../data/models/reporte_cola_model.dart';
 
-/// Pantalla "Mis reportes" que muestra el estado en la cola offline:
-/// pendiente, enviando_datos, datos_enviados, enviando_foto, enviado o error.
+/// Pantalla "Mis reportes" con los pasos de sincronización de 2 fases (`1 · Datos`, `2 · Foto`).
 class MisReportesPage extends StatelessWidget {
   const MisReportesPage({
     super.key,
@@ -45,57 +44,138 @@ class MisReportesPage extends StatelessWidget {
     }
 
     return ListView.separated(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(14),
       itemCount: reportes.length,
       separatorBuilder: (_, _) => const SizedBox(height: 10),
       itemBuilder: (BuildContext context, int index) {
         final ReporteColaModel item = reportes[index];
         final Color colorBadge = _colorPorEstado(item.estadoCola);
+        final bool paso1Listo =
+            item.estadoCola == EstadoColaReporte.datosEnviados ||
+            item.estadoCola == EstadoColaReporte.enviandoFoto ||
+            item.estadoCola == EstadoColaReporte.enviado;
+        final bool paso2Listo = item.estadoCola == EstadoColaReporte.enviado;
 
         return Card(
-          child: ListTile(
-            leading: CircleAvatar(
-              backgroundColor: colorBadge.withValues(alpha: 0.15),
-              child: Icon(
-                item.estadoCola.estaSincronizado
-                    ? Icons.cloud_done
-                    : Icons.schedule_send,
-                color: colorBadge,
-              ),
-            ),
-            title: Text(
-              '${item.tipo.etiqueta} • Gravedad ${item.gravedad.etiqueta}',
-              style: const TextStyle(fontWeight: FontWeight.bold),
-            ),
-            subtitle: Column(
+          child: Padding(
+            padding: const EdgeInsets.all(12),
+            child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
-                if (item.descripcion.isNotEmpty) Text(item.descripcion),
-                Text(
-                  'Estado cola: ${item.estadoCola.etiqueta} '
-                  '(Intentos: ${item.intentos})',
-                  style: TextStyle(
-                    color: colorBadge,
-                    fontWeight: FontWeight.w600,
-                  ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: <Widget>[
+                    Text(
+                      '${item.tipo.etiqueta} · ${item.gravedad.etiqueta}',
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w700,
+                        fontSize: 14,
+                      ),
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 3,
+                      ),
+                      decoration: BoxDecoration(
+                        color: colorBadge.withValues(alpha: .15),
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: Text(
+                        item.estadoCola.etiqueta,
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w700,
+                          color: colorBadge,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
+                if (item.descripcion.isNotEmpty) ...<Widget>[
+                  const SizedBox(height: 4),
+                  Text(item.descripcion, style: const TextStyle(fontSize: 12)),
+                ],
+                const SizedBox(height: 4),
                 Text(
-                  'UUID: ${item.id.substring(0, 8)}... • '
-                  'GPS: ${item.latitud.toStringAsFixed(4)}, ${item.longitud.toStringAsFixed(4)}',
-                  style: Theme.of(context).textTheme.bodySmall,
+                  'ID ${item.id.substring(0, 8)}… · '
+                  'GPS ${item.latitud.toStringAsFixed(4)}, ${item.longitud.toStringAsFixed(4)}'
+                  '${item.ubicacionAproximada ? " (aprox.)" : ""}',
+                  style: const TextStyle(fontSize: 11, color: Colors.black54),
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  children: <Widget>[
+                    _PasoChip(
+                      texto: '1 · Datos',
+                      completado: paso1Listo,
+                      activo:
+                          item.estadoCola == EstadoColaReporte.enviandoDatos,
+                    ),
+                    const SizedBox(width: 6),
+                    _PasoChip(
+                      texto: '2 · Foto',
+                      completado: paso2Listo,
+                      activo: item.estadoCola == EstadoColaReporte.enviandoFoto,
+                    ),
+                    const Spacer(),
+                    if (!item.estadoCola.estaSincronizado)
+                      TextButton.icon(
+                        onPressed: onSincronizarManual,
+                        icon: const Icon(Icons.sync, size: 16),
+                        label: const Text(
+                          'Reintentar',
+                          style: TextStyle(fontSize: 12),
+                        ),
+                      ),
+                  ],
                 ),
               ],
             ),
-            trailing: !item.estadoCola.estaSincronizado
-                ? IconButton(
-                    icon: const Icon(Icons.sync),
-                    tooltip: 'Reintentar envío',
-                    onPressed: onSincronizarManual,
-                  )
-                : const Icon(Icons.verified, color: Colors.green),
           ),
         );
       },
+    );
+  }
+}
+
+class _PasoChip extends StatelessWidget {
+  const _PasoChip({
+    required this.texto,
+    required this.completado,
+    required this.activo,
+  });
+
+  final String texto;
+  final bool completado;
+  final bool activo;
+
+  @override
+  Widget build(BuildContext context) {
+    final Color bg = completado
+        ? const Color(0xFFDCFCE7)
+        : activo
+        ? const Color(0xFFFEF9C3)
+        : const Color(0xFFEEEEEE);
+    final Color fg = completado
+        ? const Color(0xFF166534)
+        : activo
+        ? const Color(0xFF854D0E)
+        : Colors.black54;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      decoration: BoxDecoration(
+        color: bg,
+        borderRadius: BorderRadius.circular(5),
+      ),
+      child: Text(
+        texto,
+        style: TextStyle(
+          fontSize: 10.5,
+          fontWeight: FontWeight.w600,
+          color: fg,
+        ),
+      ),
     );
   }
 }
