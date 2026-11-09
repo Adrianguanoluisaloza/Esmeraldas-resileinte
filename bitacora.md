@@ -52,3 +52,16 @@ Este documento registra decisiones, avances, bloqueos y pendientes importantes. 
 - **Cambio:** Se configuró y autenticó Cloudflare Wrangler (`wrangler login`). Se generó la configuración `wrangler.jsonc` para el despliegue de `apps/web/dist` y se publicó en Cloudflare Pages / Workers.
 - **Validación:** Despliegue completado con éxito. URL activa: `https://esmeraldas-resiliente.eliasadrianlozadaguanoluisa.workers.dev` respondiendo HTTP 200 OK.
 - **Pendientes:** Integrar componentes interactivos React y mapa Leaflet en la web.
+
+## 2026-11-09
+- **Área:** arquitectura | documentación | git
+- **Cambio:** Se actualizó la estructura documentada para reflejar `apps/web`, `apps/mobile`, `backend`, `frontend`, `mobile` y `contrato`.
+- **Decisión:** `backend`, `desarrollo-adrian` y `desarrollofranco` funcionan como espacios de trabajo por rama; el código ejecutable permanece en `apps/` hasta su revisión.
+- **Validación:** Revisados `AGENTS.md` y `estructura-esmeraldas-resiliente.md` contra el árbol actual del repositorio.
+- **Pendientes:** Completar la implementación de cada módulo y mantener los contratos OpenAPI sincronizados antes de integrar a `main`.
+
+## 2026-11-09
+- **Área:** web | mapas | UI
+- **Cambio:** Se implementó el Centro de Operaciones 911 en `apps/web`: componente de mapa interactivo con Leaflet y OpenStreetMap enfocado en Esmeraldas (`MapaEsmeraldas.tsx`), pines por gravedad con `L.divIcon`, semáforo de albergues y centros de salud, panel de detalle y métricas clave en tiempo real (`PanelOperaciones.tsx`).
+- **Validación:** Compilación `npm run build` exitosa en 1.01s. Despliegue en vivo en Cloudflare: `https://esmeraldas-resiliente.eliasadrianlozadaguanoluisa.workers.dev` respondiendo 200 OK.
+- **Pendientes:** Conectar con la API del backend una vez que se implementen los endpoints de Hono.

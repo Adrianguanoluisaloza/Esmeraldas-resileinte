@@ -14,6 +14,7 @@ Todos los cambios relevantes del proyecto se registran aquí. Se sigue una estru
 - Proyecto Flutter inicial en `apps/mobile`.
 - Guía de teselas, atribución y conexión OAuth 2.0 de OpenStreetMap en `docs/OPENSTREETMAP.md`.
 - Plantillas de variables de entorno para desarrollo, Cloudflare y distribución móvil.
+- Estructura del monorepo y responsabilidades de las ramas documentadas en `AGENTS.md` y `estructura-esmeraldas-resiliente.md`.
 
 ### Planned
 
