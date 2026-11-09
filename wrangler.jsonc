@@ -1,12 +1,6 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "esmeraldas-resiliente",
-  "account_id": "69fb571647331069906ad2b89188deec",
   "compatibility_date": "2026-11-04",
-  "observability": {
-    "enabled": true
-  },
-  "assets": {
-    "directory": "apps/web/dist"
-  }
+  "pages_build_output_dir": "apps/web/dist"
 }
