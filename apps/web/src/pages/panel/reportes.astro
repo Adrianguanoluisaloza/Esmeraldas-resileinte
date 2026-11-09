@@ -1,0 +1,11 @@
+---
+import PanelLayout from '../../layouts/PanelLayout.astro';
+import { TablaReportes } from '../../components/TablaReportes';
+---
+
+<PanelLayout titulo="Reportes" roles={['operador_911', 'admin']}>
+  <div class="pn-encabezado">
+    <p>Todos los reportes recibidos: ciudadanos, simulados del escenario y oficiales. Ordenados del más reciente al más antiguo.</p>
+  </div>
+  <TablaReportes client:only="react" modo="coe" />
+</PanelLayout>

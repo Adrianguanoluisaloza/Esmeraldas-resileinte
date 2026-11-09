@@ -1,0 +1,11 @@
+---
+import PanelLayout from '../../layouts/PanelLayout.astro';
+import { PanelOperaciones } from '../../components/PanelOperaciones';
+import '../../styles/operaciones.css';
+---
+
+<PanelLayout titulo="Mapa operativo" roles={['operador_911', 'admin']} completo>
+  <PanelOperaciones client:only="react">
+    <div slot="fallback" class="er-cargando"><div class="er-giro"></div>Cargando mapa operativo...</div>
+  </PanelOperaciones>
+</PanelLayout>
