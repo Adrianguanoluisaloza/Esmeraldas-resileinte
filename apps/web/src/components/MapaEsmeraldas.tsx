@@ -1,238 +1,198 @@
-import React, { useEffect, useRef } from 'react';
-import type { ReporteMapa, PuntoServicioMapa } from '../types/mapa';
+import { useEffect, useRef } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+import type { PuntoServicioMapa, ReporteMapa } from '../types/mapa';
+import {
+  COLOR_CUPO,
+  COLOR_GRAVEDAD,
+  COLOR_RIESGO,
+  COLOR_VIA,
+  ETIQUETA_CUPO,
+  ETIQUETA_ESTADO,
+  ETIQUETA_GRAVEDAD,
+  ETIQUETA_ORIGEN,
+  ETIQUETA_PUNTO,
+  tituloReporte,
+} from '../lib/catalogos';
+import { escaparHtml as e } from '../lib/escapar';
+
+/**
+ * Mapa Leaflet + OpenStreetMap centrado en Esmeraldas. Solo dibuja: no pide datos ni guarda estado de negocio.
+ * Todo texto que viene de la API pasa por escaparHtml antes de entrar a un popup (los reportes los escriben
+ * ciudadanos). Estilos de marcadores y popups en src/styles/operaciones.css.
+ */
 
 interface Props {
   reportes: ReporteMapa[];
   puntosServicio: PuntoServicioMapa[];
+  zonas?: GeoJSON.FeatureCollection | null;
+  vias?: GeoJSON.FeatureCollection | null;
   reporteSeleccionadoId?: string | null;
   onSeleccionarReporte: (reporte: ReporteMapa) => void;
   mostrarAlbergues?: boolean;
   mostrarCentrosSalud?: boolean;
+  mostrarZonas?: boolean;
+  mostrarVias?: boolean;
 }
 
-// Bounding box para mantener la cámara dentro de Esmeraldas
-const ESMERALDAS_BOUNDS: L.LatLngBoundsExpression = [
-  [0.85, -79.78],
-  [1.05, -79.55],
-];
+// Caja amplia: ciudad y parroquias cercanas (Tachina, Tabiazo, Vuelta Larga).
+const LIMITES: L.LatLngBoundsExpression = [[0.80, -79.85], [1.10, -79.50]];
+// Centro indicado por el reto.
+const CENTRO: L.LatLngExpression = [0.9592, -79.6539];
+const TESELAS = (import.meta.env.PUBLIC_MAP_TILE_URL as string | undefined) ?? 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
 
-const ESMERALDAS_CENTER: L.LatLngExpression = [0.9681, -79.6517];
-
-function obtenerColorGravedad(gravedad: string): string {
-  switch (gravedad) {
-    case 'critica':
-      return '#dc2626'; // Rojo intenso
-    case 'alta':
-      return '#ea580c'; // Naranja
-    case 'media':
-      return '#eab308'; // Amarillo
-    case 'baja':
-    default:
-      return '#2563eb'; // Azul
-  }
-}
-
-function crearIconoReporte(gravedad: string, isSelected: boolean): L.DivIcon {
-  const color = obtenerColorGravedad(gravedad);
-  const size = isSelected ? 34 : 28;
-  const pulseClass = gravedad === 'critica' ? 'map-marker-pulse' : '';
-  const selectedBorder = isSelected ? 'border-2 border-white shadow-lg ring-2 ring-red-400' : 'border border-white/80 shadow-md';
-
+function iconoReporte(r: ReporteMapa, seleccionado: boolean): L.DivIcon {
+  const tam = seleccionado ? 30 : 24;
+  const clases = ['mk-reporte', `mk-reporte--${r.gravedad}`, seleccionado && 'mk-reporte--sel', r.origen === 'simulado' && 'mk-reporte--sim']
+    .filter(Boolean)
+    .join(' ');
   return L.divIcon({
-    className: 'custom-leaflet-marker',
-    html: `
-      <div style="position: relative; display: flex; align-items: center; justify-content: center; width: ${size}px; height: ${size}px;">
-        ${gravedad === 'critica' ? `<div style="position: absolute; inset: -4px; border-radius: 9999px; background-color: ${color}; opacity: 0.4;" class="${pulseClass}"></div>` : ''}
-        <div style="background-color: ${color}; width: ${size}px; height: ${size}px; border-radius: 9999px; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 11px; ${selectedBorder}">
-          !
-        </div>
-      </div>
-    `,
-    iconSize: [size, size],
-    iconAnchor: [size / 2, size / 2],
+    className: 'mk-contenedor',
+    html: `<span class="${clases}" style="--mk-color:${COLOR_GRAVEDAD[r.gravedad]};width:${tam}px;height:${tam}px" aria-hidden="true">!</span>`,
+    iconSize: [tam, tam],
+    iconAnchor: [tam / 2, tam / 2],
   });
 }
 
-function crearIconoServicio(tipo: 'albergue' | 'centro_salud', estadoCupo: 'verde' | 'ambar' | 'rojo'): L.DivIcon {
-  const isAlbergue = tipo === 'albergue';
-  const colorCupo = estadoCupo === 'verde' ? '#16a34a' : estadoCupo === 'ambar' ? '#d97706' : '#dc2626';
-  const iconoTexto = isAlbergue ? 'Albergue' : 'Salud';
-
+function iconoPunto(p: PuntoServicioMapa): L.DivIcon {
+  const sigla = p.tipo === 'albergue' ? 'A' : 'S';
   return L.divIcon({
-    className: 'custom-service-marker',
-    html: `
-      <div style="display: flex; flex-direction: column; align-items: center; cursor: pointer;">
-        <div style="background-color: #0f172a; border: 2px solid ${colorCupo}; border-radius: 8px; padding: 3px 6px; display: flex; align-items: center; gap: 4px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.4); color: white; font-size: 11px; font-weight: 600;">
-          <span>${iconoTexto}</span>
-          <span style="font-size: 9px; text-transform: uppercase; color: ${colorCupo};">${estadoCupo}</span>
-        </div>
-        <div style="width: 0; height: 0; border-left: 5px solid transparent; border-right: 5px solid transparent; border-top: 6px solid #0f172a; margin-top: -1px;"></div>
-      </div>
-    `,
-    iconSize: [36, 32],
-    iconAnchor: [18, 32],
+    className: 'mk-contenedor',
+    html: `<span class="mk-punto" style="--mk-color:${COLOR_CUPO[p.estado_cupo]}"><b>${sigla}</b>${p.ocupacion}/${p.capacidad}</span>`,
+    iconSize: [64, 24],
+    iconAnchor: [32, 12],
   });
 }
 
-export const MapaEsmeraldas: React.FC<Props> = ({
+function popupReporte(r: ReporteMapa): string {
+  return `
+    <div class="mk-popup">
+      <div class="mk-popup__meta">
+        <span style="color:${COLOR_GRAVEDAD[r.gravedad]}">${e(ETIQUETA_GRAVEDAD[r.gravedad])}</span>
+        <span>${e(ETIQUETA_ESTADO[r.estado])}</span>
+        ${r.origen ? `<span>${e(ETIQUETA_ORIGEN[r.origen])}</span>` : ''}
+      </div>
+      <strong>${e(tituloReporte(r))}</strong>
+      <p>${e(r.descripcion)}</p>
+      ${r.personas_afectadas > 0 ? `<div class="mk-popup__dato">${e(r.personas_afectadas)} personas afectadas</div>` : ''}
+    </div>`;
+}
+
+function popupPunto(p: PuntoServicioMapa): string {
+  const pct = p.capacidad > 0 ? Math.round((p.ocupacion / p.capacidad) * 100) : 100;
+  return `
+    <div class="mk-popup">
+      <div class="mk-popup__meta"><span>${e(ETIQUETA_PUNTO[p.tipo])}</span><span style="color:${COLOR_CUPO[p.estado_cupo]}">${e(ETIQUETA_CUPO[p.estado_cupo])}</span></div>
+      <strong>${e(p.nombre)}</strong>
+      ${p.direccion ? `<p>${e(p.direccion)}</p>` : ''}
+      <div class="mk-popup__dato">${e(p.ocupacion)} de ${e(p.capacidad)} ocupados (${pct} %)</div>
+      ${p.telefono ? `<div class="mk-popup__dato">Teléfono: ${e(p.telefono)}</div>` : ''}
+    </div>`;
+}
+
+export function MapaEsmeraldas({
   reportes,
   puntosServicio,
+  zonas,
+  vias,
   reporteSeleccionadoId,
   onSeleccionarReporte,
   mostrarAlbergues = true,
   mostrarCentrosSalud = true,
-}) => {
-  const mapContainerRef = useRef<HTMLDivElement>(null);
-  const mapInstanceRef = useRef<L.Map | null>(null);
-  const markersLayerRef = useRef<L.LayerGroup | null>(null);
-  const servicesLayerRef = useRef<L.LayerGroup | null>(null);
+  mostrarZonas = true,
+  mostrarVias = true,
+}: Props) {
+  const contenedor = useRef<HTMLDivElement>(null);
+  const mapa = useRef<L.Map | null>(null);
+  const capas = useRef<{ reportes: L.LayerGroup; puntos: L.LayerGroup; zonas: L.LayerGroup; vias: L.LayerGroup } | null>(null);
 
-  // Inicialización del mapa Leaflet
   useEffect(() => {
-    if (!mapContainerRef.current) return;
-
-    if (!mapInstanceRef.current) {
-      const map = L.map(mapContainerRef.current, {
-        center: ESMERALDAS_CENTER,
-        zoom: 13,
-        minZoom: 11,
-        maxZoom: 18,
-        maxBounds: ESMERALDAS_BOUNDS,
-        maxBoundsViscosity: 0.8,
-        zoomControl: false,
-      });
-
-      // Capa de teselas OpenStreetMap oficial con atribución legal
-      L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        maxZoom: 19,
-        attribution:
-          '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap</a> contributors',
-      }).addTo(map);
-
-      // Control de zoom en esquina superior derecha para no chocar con leyendas
-      L.control.zoom({ position: 'topright' }).addTo(map);
-
-      // Grupos de capas
-      const markersLayer = L.layerGroup().addTo(map);
-      const servicesLayer = L.layerGroup().addTo(map);
-
-      markersLayerRef.current = markersLayer;
-      servicesLayerRef.current = servicesLayer;
-      mapInstanceRef.current = map;
-    }
-
+    if (!contenedor.current || mapa.current) return;
+    const m = L.map(contenedor.current, { center: CENTRO, zoom: 13, minZoom: 11, maxZoom: 18, maxBounds: LIMITES, maxBoundsViscosity: 0.8, zoomControl: false });
+    L.tileLayer(TESELAS, {
+      maxZoom: 19,
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap</a>',
+    }).addTo(m);
+    L.control.zoom({ position: 'topright' }).addTo(m);
+    L.control.scale({ imperial: false, position: 'bottomleft' }).addTo(m);
+    // Orden de dibujo: zonas abajo, luego vías, puntos y reportes arriba.
+    capas.current = {
+      zonas: L.layerGroup().addTo(m),
+      vias: L.layerGroup().addTo(m),
+      puntos: L.layerGroup().addTo(m),
+      reportes: L.layerGroup().addTo(m),
+    };
+    mapa.current = m;
     return () => {
-      if (mapInstanceRef.current) {
-        mapInstanceRef.current.remove();
-        mapInstanceRef.current = null;
-      }
+      m.remove();
+      mapa.current = null;
+      capas.current = null;
     };
   }, []);
 
-  // Actualización de marcadores de reportes
   useEffect(() => {
-    const map = mapInstanceRef.current;
-    const layer = markersLayerRef.current;
-    if (!map || !layer) return;
+    const capa = capas.current?.zonas;
+    if (!capa) return;
+    capa.clearLayers();
+    if (!zonas || !mostrarZonas) return;
+    L.geoJSON(zonas, {
+      style: (f) => {
+        const color = COLOR_RIESGO[(f?.properties?.nivel_riesgo as keyof typeof COLOR_RIESGO) ?? 'medio'] ?? COLOR_RIESGO.medio;
+        return { color, weight: 1.5, fillColor: color, fillOpacity: 0.18, dashArray: f?.properties?.origen === 'simulado' ? '4 4' : undefined };
+      },
+      onEachFeature: (f, l) =>
+        l.bindTooltip(`${e(f.properties?.nombre_sector)} · riesgo ${e(f.properties?.nivel_riesgo)}`, { sticky: true }),
+    }).addTo(capa);
+  }, [zonas, mostrarZonas]);
 
-    layer.clearLayers();
-
-    reportes.forEach((rep) => {
-      const isSelected = rep.id === reporteSeleccionadoId;
-      const marker = L.marker([rep.latitud, rep.longitud], {
-        icon: crearIconoReporte(rep.gravedad, isSelected),
-        zIndexOffset: isSelected ? 1000 : rep.gravedad === 'critica' ? 500 : 100,
-      });
-
-      const popupContent = `
-        <div style="font-family: inherit; font-size: 13px; line-height: 1.4; min-width: 200px;">
-          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;">
-            <span style="font-size: 10px; font-weight: bold; text-transform: uppercase; padding: 2px 6px; border-radius: 4px; background: ${obtenerColorGravedad(rep.gravedad)}; color: white;">
-              ${rep.gravedad}
-            </span>
-            <span style="font-size: 10px; color: #64748b; font-weight: 600;">
-              ${rep.estado.toUpperCase()}
-            </span>
-          </div>
-          <strong style="color: #0f172a; font-size: 14px; display: block; margin-bottom: 4px;">${rep.titulo}</strong>
-          <div style="color: #475569; font-size: 11px; margin-bottom: 6px;">Sector: ${rep.sector}</div>
-          <p style="margin: 0 0 6px 0; color: #334155; font-size: 12px;">${rep.descripcion}</p>
-          ${rep.personas_afectadas > 0 ? `<div style="font-size: 11px; background: #f1f5f9; padding: 4px 6px; border-radius: 4px; color: #1e293b;"><strong>${rep.personas_afectadas} personas afectadas</strong> (Niños: ${rep.ninos})</div>` : ''}
-        </div>
-      `;
-
-      marker.bindPopup(popupContent, { offset: [0, -10] });
-
-      marker.on('click', () => {
-        onSeleccionarReporte(rep);
-      });
-
-      marker.addTo(layer);
-
-      if (isSelected) {
-        map.flyTo([rep.latitud, rep.longitud], Math.max(map.getZoom(), 14), { duration: 0.8 });
-        marker.openPopup();
-      }
-    });
-  }, [reportes, reporteSeleccionadoId, onSeleccionarReporte]);
-
-  // Actualización de marcadores de puntos de servicio (Albergues y Centros de Salud)
   useEffect(() => {
-    const layer = servicesLayerRef.current;
-    if (!layer) return;
+    const capa = capas.current?.vias;
+    if (!capa) return;
+    capa.clearLayers();
+    if (!vias || !mostrarVias) return;
+    L.geoJSON(vias, {
+      style: (f) => {
+        const estado = (f?.properties?.estado as keyof typeof COLOR_VIA) ?? 'habilitada';
+        return { color: COLOR_VIA[estado] ?? COLOR_VIA.habilitada, weight: estado === 'habilitada' ? 3 : 5, dashArray: estado === 'bloqueada' ? '2 8' : undefined, lineCap: 'round' };
+      },
+      onEachFeature: (f, l) => l.bindTooltip(`${e(f.properties?.nombre)} · ${e(f.properties?.estado)}`, { sticky: true }),
+    }).addTo(capa);
+  }, [vias, mostrarVias]);
 
-    layer.clearLayers();
-
-    puntosServicio.forEach((pto) => {
-      if (pto.tipo === 'albergue' && !mostrarAlbergues) return;
-      if (pto.tipo === 'centro_salud' && !mostrarCentrosSalud) return;
-
-      const marker = L.marker([pto.latitud, pto.longitud], {
-        icon: crearIconoServicio(pto.tipo, pto.estado_cupo),
-        zIndexOffset: 300,
-      });
-
-      const porcentaje = Math.round((pto.ocupacion / pto.capacidad) * 100);
-      const tipoTexto = pto.tipo === 'albergue' ? 'Albergue Temporal' : 'Centro de Salud';
-
-      const popupContent = `
-        <div style="font-family: inherit; font-size: 13px; line-height: 1.4; min-width: 220px;">
-          <div style="color: #0284c7; font-size: 10px; font-weight: bold; text-transform: uppercase; margin-bottom: 2px;">${tipoTexto}</div>
-          <strong style="color: #0f172a; font-size: 13px; display: block; margin-bottom: 4px;">${pto.nombre}</strong>
-          <div style="font-size: 11px; color: #475569; margin-bottom: 6px;">${pto.direccion}</div>
-          <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 6px; margin-bottom: 6px;">
-            <div style="display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 3px;">
-              <span style="color: #64748b;">Capacidad ocupada:</span>
-              <strong style="color: #0f172a;">${pto.ocupacion} / ${pto.capacidad} (${porcentaje}%)</strong>
-            </div>
-            <div style="width: 100%; height: 6px; background: #e2e8f0; border-radius: 9999px; overflow: hidden;">
-              <div style="width: ${Math.min(porcentaje, 100)}%; height: 100%; background: ${pto.estado_cupo === 'verde' ? '#16a34a' : pto.estado_cupo === 'ambar' ? '#d97706' : '#dc2626'};"></div>
-            </div>
-          </div>
-          <div style="font-size: 11px; color: #334155;">Teléfono: <strong>${pto.telefono}</strong></div>
-        </div>
-      `;
-
-      marker.bindPopup(popupContent, { offset: [0, -20] });
-      marker.addTo(layer);
-    });
+  useEffect(() => {
+    const capa = capas.current?.puntos;
+    if (!capa) return;
+    capa.clearLayers();
+    for (const p of puntosServicio) {
+      if ((p.tipo === 'albergue' && !mostrarAlbergues) || (p.tipo === 'centro_salud' && !mostrarCentrosSalud)) continue;
+      L.marker([p.latitud, p.longitud], { icon: iconoPunto(p), zIndexOffset: 300, title: p.nombre })
+        .bindPopup(popupPunto(p), { offset: [0, -8] })
+        .addTo(capa);
+    }
   }, [puntosServicio, mostrarAlbergues, mostrarCentrosSalud]);
 
-  return (
-    <div style={{ position: 'relative', width: '100%', height: '100%', minHeight: '520px' }}>
-      <div
-        ref={mapContainerRef}
-        style={{
-          width: '100%',
-          height: '100%',
-          borderRadius: '12px',
-          overflow: 'hidden',
-          backgroundColor: '#0f172a',
-        }}
-      />
-    </div>
-  );
-};
+  useEffect(() => {
+    const m = mapa.current;
+    const capa = capas.current?.reportes;
+    if (!m || !capa) return;
+    capa.clearLayers();
+    for (const r of reportes) {
+      const sel = r.id === reporteSeleccionadoId;
+      const marcador = L.marker([r.latitud, r.longitud], {
+        icon: iconoReporte(r, sel),
+        zIndexOffset: sel ? 1000 : r.gravedad === 'critica' ? 500 : 100,
+        title: tituloReporte(r),
+        keyboard: true,
+      })
+        .bindPopup(popupReporte(r), { offset: [0, -8] })
+        .on('click', () => onSeleccionarReporte(r))
+        .addTo(capa);
+      if (sel) {
+        m.flyTo([r.latitud, r.longitud], Math.max(m.getZoom(), 14), { duration: 0.6 });
+        marcador.openPopup();
+      }
+    }
+  }, [reportes, reporteSeleccionadoId, onSeleccionarReporte]);
 
+  return <div ref={contenedor} className="op-mapa" role="region" aria-label="Mapa de Esmeraldas con incidentes, zonas de riesgo, vías y albergues" />;
+}
