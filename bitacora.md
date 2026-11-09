@@ -205,3 +205,14 @@ Este documento registra decisiones, avances, bloqueos y pendientes importantes. 
   - Túnel y salud: `GET /salud` y `GET /alertas` respondiendo HTTP 200 en local y túnel público.
 - **Pendientes:** Preparar la presentación y guion de demostración ante el jurado del Hackathon.
 
+## 2026-11-09 — Persistencia de Datos de Prueba en Vivo (Final de Sesión)
+- **Área:** backend | base de datos | memoria
+- **Cambio:** Se persistieron en `database/02_seed_escenario_06am.sql` y en `apps/api/src/infraestructura/memoria/semilla.ts` los 3 reportes ciudadanos reales generados durante las pruebas en vivo entre Adrian y Franco a través del túnel Cloudflare:
+  1. `3b4e75ec-669e-4bbd-80b4-1c44bae604f7`: `personas_atrapadas` ("prueba6", Barrio Caliente, crítica).
+  2. `cc230d23-318b-47c0-b5e4-5e57d43c253d`: `dano_vivienda` ("pruebasininternet", Centro / Malecón, sincronizado offline con Hive).
+  3. `9e5a76ac-5e79-43d1-ba5e-438d7afc6059`: `deslizamiento` ("rrrrrrrrrr", Centro / Malecón, con foto adjunta).
+- **Validación:**
+  - `apps/api`: suite `npm run ci` ejecutada exitosamente (30 pruebas passing).
+  - Base de datos PostGIS y memoria sincronizadas como espejos exactos.
+- **Estado final:** Sesión concluida y lista para la defensa del proyecto.
+

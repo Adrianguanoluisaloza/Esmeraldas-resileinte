@@ -68,7 +68,20 @@ INSERT INTO reportes (id, usuario_id, origen, tipo, descripcion, gravedad, estad
 ('a4000000-0000-4000-8000-000000000006', NULL, 'simulado', 'otro',
   'Solicitud urgente de agua potable, alimentos y medicamentos.', 'alta', 'pendiente',
   ST_SetSRID(ST_MakePoint(-79.6490, 0.9700), 4326), 10, 'El Arenal',
-  '2026-11-12T11:10:00Z', '2026-11-12T11:11:00Z', false, 22, 8, 4, ARRAY['agua', 'alimentos', 'medicinas']);
+  '2026-11-12T11:10:00Z', '2026-11-12T11:11:00Z', false, 22, 8, 4, ARRAY['agua', 'alimentos', 'medicinas']),
+-- Reportes ciudadanos de prueba generados en vivo durante la prueba integrada
+('3b4e75ec-669e-4bbd-80b4-1c44bae604f7', NULL, 'ciudadano', 'personas_atrapadas',
+  'prueba6', 'critica', 'pendiente',
+  ST_SetSRID(ST_MakePoint(-79.66822318499793, 0.9613845857587157), 4326), 10, 'Barrio Caliente (zona alta)',
+  '2026-11-09T20:38:14.380Z', '2026-11-09T20:38:15.819Z', false, 0, 0, 0, ARRAY[]::TEXT[]),
+('cc230d23-318b-47c0-b5e4-5e57d43c253d', NULL, 'ciudadano', 'dano_vivienda',
+  'pruebasininternet', 'critica', 'pendiente',
+  ST_SetSRID(ST_MakePoint(-79.66629187416659, 0.9725452421305314), 4326), 94, 'Centro / Malecón',
+  '2026-11-09T20:30:58.099Z', '2026-11-09T20:32:29.230Z', false, 0, 0, 0, ARRAY[]::TEXT[]),
+('9e5a76ac-5e79-43d1-ba5e-438d7afc6059', NULL, 'ciudadano', 'deslizamiento',
+  'rrrrrrrrrr', 'alta', 'pendiente',
+  ST_SetSRID(ST_MakePoint(-79.66610764278175, 0.972640436488756), 4326), 82, 'Centro / Malecón',
+  '2026-11-09T20:28:19.706Z', '2026-11-09T20:28:19.725Z', false, 0, 0, 0, ARRAY[]::TEXT[]);
 
 -- Alertas del escenario (todas simuladas: las oficiales las emite el COE en vivo; no reemplaza canales oficiales) -------------------
 INSERT INTO alertas (id, sector, mensaje, nivel, origen, vigente) VALUES
