@@ -3,12 +3,16 @@ import { Hono } from "hono";
 import { bodyLimit } from "hono/body-limit";
 import { cors } from "hono/cors";
 import { secureHeaders } from "hono/secure-headers";
+import { limitePorIp } from "./limites.js";
 import { ErrorDominio, type CodigoError } from "../dominio/errores.js";
 import type { Dependencias, Entorno } from "./contexto.js";
 import { rutasAuth } from "./rutas/auth.js";
+import { rutasOperacion } from "./rutas/operacion.js";
 import { rutasPendientes } from "./rutas/pendientes.js";
 import { rutasReportes } from "./rutas/reportes.js";
 import { rutasTerritorio } from "./rutas/territorio.js";
+
+const LOCALHOST = /^http:\/\/(localhost|127\.0\.0\.1)(:\d{1,5})?$/;
 
 const ESTADO_HTTP: Record<CodigoError, 400 | 401 | 403 | 404 | 409 | 422 | 501> = {
   VALIDACION: 400,
@@ -35,15 +39,15 @@ export function crearApp(deps: Dependencias) {
     // Registro mínimo: sin cuerpo, sin query (puede llevar coordenadas), sin IP.
     console.log(JSON.stringify({ id: c.get("idPeticion"), metodo: c.req.method, ruta: c.req.routePath, estado: c.res.status, ms: Math.round(performance.now() - inicio) }));
   });
-  app.use("*", secureHeaders());
+  // Las fotos se muestran desde la web (otro dominio): se permite incrustarlas. El acceso a datos sigue limitado por CORS.
+  app.use("*", secureHeaders({ crossOriginResourcePolicy: "cross-origin" }));
   app.use("*", cors({
-    origin: (origen) => (
-      deps.corsOrigenes.includes(origen) || /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origen)
-        ? origen
-        : null
-    ),
-    allowHeaders: ["Authorization", "Content-Type"],
+    // Lista exacta de CORS_ORIGENES (ahí va la URL del túnel). Fuera de producción también localhost con cualquier
+    // puerto, para Astro y Flutter web. Nunca "contiene": "https://localhost.atacante.com" no debe pasar.
+    origin: (origen) => (deps.corsOrigenes.includes(origen) || (deps.permitirLocalhost && LOCALHOST.test(origen)) ? origen : null),
+    allowHeaders: ["Authorization", "Content-Type", "Accept", "X-Requested-With"],
     allowMethods: ["GET", "POST", "PATCH", "OPTIONS"],
+    credentials: false,
     maxAge: 600,
   }));
   // Tope general; la foto tiene su propio límite de 2 MB dentro de su ruta.
@@ -52,6 +56,26 @@ export function crearApp(deps: Dependencias) {
     await next();
     if (!c.res.headers.has("Cache-Control")) c.header("Cache-Control", "no-store");
   });
+  // Escrituras limitadas por IP; login y registro con un tope mucho más bajo (fuerza bruta).
+  const limiteEscrituras = limitePorIp({ maximo: deps.limiteEscriturasMinuto, ventanaMs: 60_000, confiarEnProxy: deps.confiarEnProxy });
+  const limiteAuth = limitePorIp({ maximo: 20, ventanaMs: 10 * 60_000, confiarEnProxy: deps.confiarEnProxy });
+  app.use("/auth/*", limiteAuth);
+  app.use("*", async (c, next) => (c.req.method === "GET" || c.req.method === "OPTIONS" ? next() : limiteEscrituras(c, next)));
+
+  app.get("/", (c) => c.json({
+    nombre: "Esmeraldas Resiliente API",
+    estado: "ok",
+    version: "0.1.0",
+    escenario: "Jueves 06:00 AM",
+    endpoints: {
+      salud: "/salud",
+      zonas: "/zonas",
+      vias: "/vias",
+      albergues: "/puntos-servicio",
+      reportes: "/reportes",
+      login: "/auth/login"
+    }
+  }));
 
   app.get("/salud", async (c) => {
     const almacen = await deps.comprobarAlmacen().catch(() => false);
@@ -61,6 +85,7 @@ export function crearApp(deps: Dependencias) {
   app.route("/auth", rutasAuth(deps));
   app.route("/reportes", rutasReportes(deps));
   app.route("/", rutasTerritorio(deps));
+  app.route("/", rutasOperacion(deps));
   app.route("/", rutasPendientes(deps));
 
   app.notFound((c) => c.json({ codigo: "NO_ENCONTRADO", mensaje: "Ruta no existe" }, 404));

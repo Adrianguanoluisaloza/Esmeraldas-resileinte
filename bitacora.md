@@ -54,6 +54,7 @@ Este documento registra decisiones, avances, bloqueos y pendientes importantes. 
 - **Pendientes:** Integrar componentes interactivos React y mapa Leaflet en la web.
 
 ## 2026-11-09
+<<<<<<< HEAD
 - **Área:** mobile
 - **Cambio:** Se armó el esqueleto completo del proyecto Flutter en `mobile/` siguiendo Clean Architecture y `indicaciones-flutter-franco.md` (`core/`, `data/`, `features/auth`, `features/reporte`, `features/mis_reportes`, `features/sync`) e instalando las dependencias aprobadas (`hive_ce`, `hive_ce_flutter`, `flutter_map`, `latlong2`, `geolocator`, `connectivity_plus`, `image_picker`, `flutter_image_compress`, `path_provider`, `dio`, `uuid`, `flutter_secure_storage`, `flutter_appauth`).
 - **Decisión:** Todo el acceso a las cajas locales de Hive (`cola_reportes_box` y `directorio_puntos_servicio_box`) se encapsuló en una única clase (`HiveColaReportesRepository`) y la pantalla de albergues usa respaldo en lista cuando no hay conexión real.
@@ -65,6 +66,13 @@ Este documento registra decisiones, avances, bloqueos y pendientes importantes. 
 - **Cambio:** Se implementaron las tareas M1–M5 de `docs/orquestacion/TAREAS_MOVIL_FRANCO.md` en `mobile/`: `DioApiClient` con interceptor Bearer y mapeo de errores (`400/409` a `error`, `401` a re-login sin borrar la cola), login/registro con validación y botón de Google (`flutter_appauth` PKCE), `MapaFondoEsmeraldas` centrado en Esmeraldas (`0.9592, -79.6539`) con respaldo vectorial offline, barra de navegación por rol (ciudadano, operador 911 y admin), paleta de `docs/DISENO.md` sin emojis e insignia de origen con borde discontinuo, y directorio de albergues con semáforo textual y consulta `/puntos-servicio/cercanos`.
 - **Validación:** `dart format --set-exit-if-changed lib test`, `flutter analyze` (0 issues) y `flutter test` (100% pass).
 - **Pendientes:** Probar el APK generado en dispositivo físico Android en modo avión.
+=======
+- **Área:** arquitectura | documentación | git
+- **Cambio:** Se actualizó la estructura documentada para reflejar `apps/web`, `apps/mobile`, `backend`, `frontend`, `mobile` y `contrato`.
+- **Decisión:** `backend`, `desarrollo-adrian` y `desarrollofranco` funcionan como espacios de trabajo por rama; el código ejecutable permanece en `apps/` hasta su revisión.
+- **Validación:** Revisados `AGENTS.md` y `estructura-esmeraldas-resiliente.md` contra el árbol actual del repositorio.
+- **Pendientes:** Completar la implementación de cada módulo y mantener los contratos OpenAPI sincronizados antes de integrar a `main`.
+>>>>>>> origin/backend
 
 ## 2026-11-09
 - **Área:** web | mapas | UI
@@ -99,6 +107,13 @@ Este documento registra decisiones, avances, bloqueos y pendientes importantes. 
 - **Pendientes:** B1 a B8 en `docs/orquestacion/TAREAS_BACKEND.md`.
 
 ## 2026-11-09
+- **Área:** web | diseño | orquestación
+- **Cambio:** Sistema de diseño con la paleta de la app de Franco (verde `#0B6E4F` y semáforo), claro y oscuro. Componentes reutilizables y `PanelLayout` con barra lateral por rol: COE (mapa operativo, reportes, alertas, estadísticas) y las 4 pantallas ciudadanas del prototipo móvil. Cliente API único con respaldo a datos simulados. Mapa con capas de zonas y vías desde PostGIS. Login contra la API real.
+- **Decisión:** Rojo solo para emergencia y peligro. Origen del dato con color y texto propios (simulado con borde discontinuo). Cuentas demo con dominio propio, no `.gob.ec`. Se corrigió un riesgo de XSS en los popups del mapa y el YAML inválido del contrato. `wrangler.jsonc` usa `/` para que funcione fuera de Windows.
+- **Validación:** `astro build` (11 páginas) y typecheck sin errores. Recorrido con Playwright contra la API con PostGIS: login operador, despachar unidad (cambio guardado), tabla, albergues, modo oscuro, ciudadano en móvil y bloqueo del ciudadano en pantallas del COE.
+- **Pendientes:** Portada y login todavía con su CSS antiguo (tarea W1). Tareas W1 a W5 para Gemini y M1 a M5 para Franco en `docs/orquestacion/`.
+
+## 2026-11-09
 - **Área:** backend | web | integración local
 - **Cambio:** Se configuró y levantó localmente la API en Node 22 (`apps/api`) en modo memoria con soporte para cuentas demo y el escenario simulado "Jueves 06:00 AM" (los 6 eventos oficiales del reto). Se conectó el frontend Astro (`http://localhost:4321`) con la API (`http://localhost:3000`).
 - **Decisión:** Debido a que las llaves SSH de la VM de Oracle Cloud se encuentran en la máquina de casa de Adrian, se priorizó habilitar la API localmente para iteración y pruebas inmedias en el laboratorio sin bloqueos.
@@ -110,8 +125,7 @@ Este documento registra decisiones, avances, bloqueos y pendientes importantes. 
 - **Cambio:** Se expuso la API local mediante Cloudflare Tunnel (`cloudflared`) generando la URL pública HTTPS `https://seasonal-acceptable-crimes-remember.trycloudflare.com`. Se documentó en `docs/orquestacion/TAREAS_MOVIL_FRANCO.md` para que Franco pueda conectar la app móvil desde su propia computadora y celular mediante `--dart-define=API_BASE_URL=...`.
 - **Validación:** Comprobado `curl https://seasonal-acceptable-crimes-remember.trycloudflare.com/salud` respondiendo `{"estado":"ok"}` a través de la red global de Cloudflare.
 
-
-
+## 2026-11-09
 - **Área:** mobile | seguridad | infraestructura
 - **Cambio:** Se instalaron Android SDK (`cmdline-tools`, `platform-tools`, `platforms;android-36`, `build-tools;36.0.0`, NDK `28.2.13676358`, CMake `3.22.1`) en `C:\src\android-sdk` y OpenJDK 21 (`21.0.13 LTS`) en `C:\src\jdk21`, generando `mobile/build/app/outputs/flutter-apk/app-release.apk`. Se ajustó el inicio del ciudadano (`CrearReportePage`) al flujo en 3 pasos sobre el mapa de Esmeraldas (mapa despejado y seleccionable con botón flotante lateral de GPS y botón inferior "Reportar emergencia" -> confirmación de ubicación -> formulario). Se integró `google-services.json` en `mobile/android/app/google-services.json`, se configuraron `googleClientId` y `appAuthRedirectScheme`, y se añadió `**/google-services.json` a `.gitignore`.
 - **Decisión:** Se fijó OpenJDK 21 para las compilaciones de Android porque el JDK 26 preinstalado en el equipo rompe `JdkImageTransform` de Android Gradle Plugin.
@@ -119,15 +133,8 @@ Este documento registra decisiones, avances, bloqueos y pendientes importantes. 
 - **Pendientes:** Registrar la huella SHA-1 del equipo en Firebase Console si se requiere el selector nativo de cliente Android tipo 1 y continuar con los ajustes de las vistas de operador 911 y administrador.
 
 ## 2026-11-09
-- **Área:** backend | base de datos | infraestructura
-- **Cambio:** Se integró la API TypeScript en `apps/api/` con autenticación, reportes, territorio, pendientes y tiempo real; se añadieron persistencia en memoria/PostGIS, esquema y semilla PostGIS en `database/`, y orquestación local mediante `docker-compose.yml`.
-- **Decisión:** El backend mantiene Clean Architecture y usa memoria como respaldo de desarrollo cuando PostgreSQL no está disponible; los secretos se suministran mediante variables de entorno.
-- **Validación:** Se añadieron pruebas de API y dominio en `apps/api/test/`; queda pendiente ejecutarlas con las dependencias instaladas y validar la conexión real a PostGIS.
-- **Pendientes:** Configurar las variables de entorno del backend, levantar PostgreSQL con Docker y probar los endpoints contra la base de datos.
-
-## 2026-11-09
 - **Área:** mobile | backend | base de datos
-- **Cambio:** Se corrigió la sincronización automática de la cola en `HomeShellPage` al guardar un reporte y al iniciar la app, se agregaron los pines interactivos de reportes en el mapa inicial del ciudadano (`CrearReportePage` y `MapaFondoEsmeraldas` tanto en `FlutterMap` como en el mapa vectorial offline) y se unió la cola local de Hive con `OperacionesRepository`. Se implementó `PhotoCaptureService` para pedir permisos nativos de cámara/galería en Android e iOS, comprimir las fotos a máximo 1280 px (calidad 75%) y guardarlas en la carpeta de documentos de la app fuera de Hive. En `apps/api` se añadió `asegurarEsquemaPostgres` con soporte automático para PostGIS y PostgreSQL 18 local, junto con la creación automática de cuentas demo en `ALMACEN=postgres`.
-- **Decisión:** El backend verifica e inicializa automáticamente `01_schema_postgis.sql` y `02_seed_escenario_06am.sql` al arrancar en modo `postgres`, y la app móvil ejecuta la sincronización en dos pasos de inmediato cuando hay conexión activa.
-- **Validación:** `npm run test:db` en `apps/api` (14/14 pruebas pasadas contra PostgreSQL 18), `GET /salud` respondiendo `200 {"estado":"ok"}`, `dart format --set-exit-if-changed lib test`, `flutter analyze` (0 issues) y `flutter test` (100% pass).
+- **Cambio:** Se corrigió la sincronización automática de la cola en `HomeShellPage` al guardar un reporte y al iniciar la app, se agregaron los pines interactivos de reportes en el mapa inicial del ciudadano (`CrearReportePage` y `MapaFondoEsmeraldas` tanto en `FlutterMap` como en el mapa vectorial offline) y se unió la cola local de Hive con `OperacionesRepository`. Se implementó `PhotoCaptureService` para pedir permisos nativos de cámara/galería en Android e iOS, comprimir las fotos a máximo 1280 px (calidad 75%) y guardarlas en la carpeta de documentos de la app fuera de Hive. Se integró `origin/backend` (`650a94b`) conservando la versión oficial de `apps/api` y `database/` según M8.
+- **Decisión:** Conservar `apps/api` y `database/` de la rama `backend` según M8 de `TAREAS_MOVIL_FRANCO.md` y sincronizar los reportes ciudadanos en dos pasos al guardar.
+- **Validación:** `dart format --set-exit-if-changed lib test`, `flutter analyze` (0 issues) y `flutter test` (100% pass).
 - **Pendientes:** Probar el flujo de cámara y sincronización en dispositivo físico Android conectado al backend.

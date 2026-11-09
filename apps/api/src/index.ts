@@ -10,12 +10,10 @@ import { crearApp } from "./http/app.js";
 import { montarTiempoReal } from "./http/tiempoReal.js";
 
 const config = leerConfig();
-const { deps, bus, cerrar, usuarios, claves, inicializarAlmacen } = componer(config);
+const { deps, bus, cerrar, usuarios, claves } = componer(config);
 
-await inicializarAlmacen();
-
-// Asegura las cuentas demo tanto en memoria como en PostgreSQL para que web y app móvil puedan autenticar.
-if (config.APP_ENV !== "production" || process.env.DEMO_PASSWORD) {
+// En modo memoria (demo sin base) las cuentas se pierden al reiniciar: se recrean si hay DEMO_PASSWORD.
+if (config.ALMACEN === "memoria" && process.env.DEMO_PASSWORD) {
   await asegurarCuentasDemo(usuarios, claves, process.env.DEMO_PASSWORD);
 }
 const app = crearApp(deps);
