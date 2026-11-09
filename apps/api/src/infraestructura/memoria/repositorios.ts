@@ -53,14 +53,14 @@ export class ReportesEnMemoria implements RepositorioReportes {
     const inicio = (f.pagina - 1) * f.limite;
     return { total: todos.length, items: todos.slice(inicio, inicio + f.limite).map(copia) };
   }
-  async actualizarEstado(id: string, cambios: Pick<Reporte, "estado" | "verificado">, nota: string | null, operadorId: string) {
+  async actualizarEstado(id: string, cambios: Pick<Reporte, "estado" | "verificado">, nota: string | null, operador: { id: string; nombre: string }) {
     const r = this.datos.get(id);
     if (!r) return null;
     const previo = r.estado;
     Object.assign(r, cambios);
     this.cambios.set(id, [
       ...(this.cambios.get(id) ?? []),
-      { id: randomUUID(), estado_anterior: previo, estado_nuevo: cambios.estado, operador_nombre: operadorId, nota, fecha: new Date().toISOString() },
+      { id: randomUUID(), estado_anterior: previo, estado_nuevo: cambios.estado, operador_nombre: operador.nombre, nota, fecha: new Date().toISOString() },
     ]);
     return copia(r);
   }

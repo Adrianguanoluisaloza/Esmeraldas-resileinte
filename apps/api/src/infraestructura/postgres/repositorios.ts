@@ -110,7 +110,7 @@ export class ReportesPg implements RepositorioReportes {
   }
 
   /** Cambio de estado + historial en una sola transacción (ACID). */
-  async actualizarEstado(id: string, c: Pick<Reporte, "estado" | "verificado">, nota: string | null, operadorId: string) {
+  async actualizarEstado(id: string, c: Pick<Reporte, "estado" | "verificado">, nota: string | null, operador: { id: string; nombre: string }) {
     const cliente = await this.db.connect();
     try {
       await cliente.query("BEGIN");
@@ -123,7 +123,7 @@ export class ReportesPg implements RepositorioReportes {
       await cliente.query(
         `INSERT INTO reportes_historial (reporte_id, estado_anterior, estado_nuevo, operador_id, nota)
          VALUES ($1, $2, $3, $4, $5)`,
-        [id, previo.rows[0].estado, c.estado, operadorId, nota],
+        [id, previo.rows[0].estado, c.estado, operador.id, nota],
       );
       const r = await cliente.query(`SELECT ${COLUMNAS_REPORTE} FROM reportes WHERE id = $1`, [id]);
       await cliente.query("COMMIT");

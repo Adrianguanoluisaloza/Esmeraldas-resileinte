@@ -37,7 +37,8 @@ export function crearApp(deps: Dependencias) {
     // Registro mínimo: sin cuerpo, sin query (puede llevar coordenadas), sin IP.
     console.log(JSON.stringify({ id: c.get("idPeticion"), metodo: c.req.method, ruta: c.req.routePath, estado: c.res.status, ms: Math.round(performance.now() - inicio) }));
   });
-  app.use("*", secureHeaders());
+  // Las fotos se muestran desde la web (otro dominio): se permite incrustarlas. El acceso a datos sigue limitado por CORS.
+  app.use("*", secureHeaders({ crossOriginResourcePolicy: "cross-origin" }));
   app.use("*", cors({
     origin: (origen) => (deps.corsOrigenes.includes(origen) ? origen : null),
     allowHeaders: ["Authorization", "Content-Type"],

@@ -43,7 +43,7 @@ export interface RepositorioReportes {
   insertar(reporte: Reporte): Promise<boolean>;
   buscar(id: string): Promise<Reporte | null>;
   listar(filtro: FiltroReportes): Promise<{ total: number; items: Reporte[] }>;
-  actualizarEstado(id: string, cambios: Pick<Reporte, "estado" | "verificado">, nota: string | null, operadorId: string): Promise<Reporte | null>;
+  actualizarEstado(id: string, cambios: Pick<Reporte, "estado" | "verificado">, nota: string | null, operador: { id: string; nombre: string }): Promise<Reporte | null>;
   guardarFoto(id: string, url: string, miniaturaUrl: string): Promise<Reporte | null>;
   historial(id: string): Promise<HistorialEstado[]>;
 }
