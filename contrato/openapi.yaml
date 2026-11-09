@@ -1,0 +1,811 @@
+openapi: 3.0.3
+info:
+  title: Esmeraldas Resiliente API
+  version: 1.0.0
+  description: >-
+    API oficial y única fuente de verdad para la plataforma de reporte y gestión
+    de emergencias por el fenómeno de El Niño en Esmeraldas (Ecuador).
+    Diseñada con arquitectura offline-first para sincronización resiliente.
+
+servers:
+  - url: http://localhost:3000
+    description: Servidor de desarrollo local
+  - url: https://api.esmeraldas-resiliente.org
+    description: Servidor de producción / Cloudflare
+
+paths:
+  /auth/registro:
+    post:
+      summary: Registro de nuevo ciudadano u operador
+      tags: [Autenticación]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [nombre, correo, password]
+              properties:
+                nombre:
+                  type: string
+                  example: Juan Pérez
+                correo:
+                  type: string
+                  format: email
+                  example: juan.perez@example.com
+                password:
+                  type: string
+                  format: password
+                  minLength: 8
+      responses:
+        '201':
+          description: Usuario registrado exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '400':
+          $ref: '#/components/responses/ErrorValidacion'
+        '409':
+          description: Correo ya registrado
+
+  /auth/login:
+    post:
+      summary: Iniciar sesión y obtener token JWT
+      tags: [Autenticación]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [correo, password]
+              properties:
+                correo:
+                  type: string
+                  format: email
+                password:
+                  type: string
+                  format: password
+      responses:
+        '200':
+          description: Sesión iniciada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '401':
+          description: Credenciales inválidas
+
+  /salud:
+    get:
+      summary: Endpoint liviano de verificación de conectividad
+      description: Usado por la app móvil antes de sincronizar la cola offline.
+      tags: [Utilidades]
+      responses:
+        '200':
+          description: Servicio disponible
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  estado:
+                    type: string
+                    example: ok
+                  timestamp:
+                    type: string
+                    format: date-time
+
+  /reportes:
+    post:
+      summary: Crear reporte ciudadano (Paso 1 offline: datos livianos)
+      description: >-
+        Idempotente mediante UUID v4 generado en el celular. Si el reporte ya fue
+        recibido, retorna 200/201 sin duplicar registros.
+      tags: [Reportes]
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReporteCrearInput'
+      responses:
+        '201':
+          description: Reporte creado o recibido previamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Reporte'
+        '400':
+          $ref: '#/components/responses/ErrorValidacion'
+
+    get:
+      summary: Listar reportes con filtros
+      tags: [Reportes]
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: estado
+          in: query
+          schema:
+            $ref: '#/components/schemas/EstadoReporte'
+        - name: tipo
+          in: query
+          schema:
+            $ref: '#/components/schemas/TipoIncidente'
+        - name: gravedad
+          in: query
+          schema:
+            $ref: '#/components/schemas/Gravedad'
+        - name: verificado
+          in: query
+          schema:
+            type: boolean
+        - name: limite
+          in: query
+          schema:
+            type: integer
+            default: 50
+        - name: pagina
+          in: query
+          schema:
+            type: integer
+            default: 1
+      responses:
+        '200':
+          description: Lista paginada de reportes
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  total:
+                    type: integer
+                  pagina:
+                    type: integer
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Reporte'
+
+  /reportes/{id}:
+    get:
+      summary: Obtener detalle de un reporte por ID
+      tags: [Reportes]
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Detalle del reporte con historial de estados y fotos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReporteDetalle'
+        '404':
+          description: Reporte no encontrado
+
+  /reportes/{id}/estado:
+    patch:
+      summary: Actualizar estado de atención de un reporte (Solo Operador 911 / Admin)
+      tags: [Reportes]
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [estado]
+              properties:
+                estado:
+                  $ref: '#/components/schemas/EstadoReporte'
+                nota:
+                  type: string
+                  example: Unidad de bomberos despachada al sector.
+                verificado:
+                  type: boolean
+                  default: true
+      responses:
+        '200':
+          description: Estado actualizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Reporte'
+        '403':
+          description: No autorizado (requiere rol operador_911 o admin)
+
+  /reportes/{id}/foto:
+    post:
+      summary: Subir foto comprimida asociada al reporte (Paso 2 offline)
+      description: >-
+        Sube el archivo JPEG/PNG (máx 2MB, recomendado 150-400 KB).
+        El servidor genera automáticamente una miniatura (20-40 KB).
+      tags: [Fotos]
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [foto]
+              properties:
+                foto:
+                  type: string
+                  format: binary
+                  description: Archivo de foto comprimida
+      responses:
+        '201':
+          description: Foto recibida y procesada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Foto'
+        '400':
+          description: Archivo no válido o tamaño excedido
+        '404':
+          description: Reporte no encontrado
+
+  /reportes/{id}/clasificar:
+    post:
+      summary: Sugerencia de tipo y gravedad con IA (Asistente no oficial)
+      description: >-
+        Analiza la foto del reporte y devuelve sugerencia de tipo, gravedad,
+        confianza y explicación en palabras. Marcada como sugerencia no vinculante.
+      tags: [IA]
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Clasificación sugerida
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SugerenciaIA'
+
+  /zonas:
+    get:
+      summary: Obtener zonas de riesgo de Esmeraldas
+      tags: [Zonas de Riesgo]
+      responses:
+        '200':
+          description: Zonas en formato GeoJSON FeatureCollection
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  type:
+                    type: string
+                    example: FeatureCollection
+                  features:
+                    type: array
+                    items:
+                      type: object
+
+  /puntos-servicio:
+    get:
+      summary: Listar albergues y centros de salud
+      tags: [Puntos de Servicio]
+      parameters:
+        - name: tipo
+          in: query
+          schema:
+            $ref: '#/components/schemas/TipoPuntoServicio'
+        - name: solo_activos
+          in: query
+          schema:
+            type: boolean
+            default: true
+      responses:
+        '200':
+          description: Lista de puntos de servicio
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PuntoServicio'
+
+  /puntos-servicio/{id}/ocupacion:
+    patch:
+      summary: Actualizar ocupación/cupo de un albergue o centro de salud
+      tags: [Puntos de Servicio]
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [ocupacion]
+              properties:
+                ocupacion:
+                  type: integer
+                  minimum: 0
+                  example: 45
+      responses:
+        '200':
+          description: Ocupación actualizada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PuntoServicio'
+
+  /alertas:
+    get:
+      summary: Listar alertas activas por sector
+      tags: [Alertas]
+      responses:
+        '200':
+          description: Lista de alertas
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Alerta'
+
+    post:
+      summary: Emitir una nueva alerta por sector (Operador 911 / Admin)
+      tags: [Alertas]
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [sector, mensaje, nivel]
+              properties:
+                sector:
+                  type: string
+                  example: Sector Isla Piedad
+                mensaje:
+                  type: string
+                  example: Crecida inminente del río Teaone. Evacuar a zonas altas.
+                nivel:
+                  $ref: '#/components/schemas/Gravedad'
+                origen:
+                  type: string
+                  enum: [oficial, simulada]
+                  default: oficial
+      responses:
+        '201':
+          description: Alerta emitida
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Alerta'
+
+  /estadisticas:
+    get:
+      summary: Obtener contadores del centro de operaciones (Panel 911)
+      description: Responde a las preguntas clave del dashboard (sección 7.2 de las bases).
+      tags: [Estadísticas]
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Estadísticas consolidadas
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EstadisticasDashboard'
+
+  /estadisticas/recurrencia:
+    get:
+      summary: Eventos repetidos por sector para priorización
+      tags: [Estadísticas]
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Recurrencia por sector
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    sector:
+                      type: string
+                    cantidad:
+                      type: integer
+                    gravedad_promedio:
+                      type: string
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    Rol:
+      type: string
+      enum: [ciudadano, operador_911, admin]
+
+    TipoIncidente:
+      type: string
+      enum:
+        - inundacion
+        - deslizamiento
+        - via_bloqueada
+        - personas_atrapadas
+        - dano_vivienda
+        - otro
+
+    EstadoReporte:
+      type: string
+      enum: [pendiente, en_proceso, atendido, descartado]
+
+    Gravedad:
+      type: string
+      enum: [baja, media, alta, critica]
+
+    TipoPuntoServicio:
+      type: string
+      enum: [albergue, centro_salud]
+
+    Necesidad:
+      type: string
+      enum: [agua, alimentos, medicinas, rescate]
+
+    Usuario:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        nombre:
+          type: string
+        correo:
+          type: string
+          format: email
+        rol:
+          $ref: '#/components/schemas/Rol'
+        creado_en:
+          type: string
+          format: date-time
+
+    AuthResponse:
+      type: object
+      properties:
+        token:
+          type: string
+          description: JWT Bearer token
+        usuario:
+          $ref: '#/components/schemas/Usuario'
+
+    ReporteCrearInput:
+      type: object
+      required:
+        - id
+        - tipo
+        - descripcion
+        - gravedad
+        - latitud
+        - longitud
+        - capturado_en
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: UUID v4 creado en el celular
+        tipo:
+          $ref: '#/components/schemas/TipoIncidente'
+        descripcion:
+          type: string
+          example: Nivel de agua subiendo rápidamente, vía principal cortada.
+        gravedad:
+          $ref: '#/components/schemas/Gravedad'
+        latitud:
+          type: number
+          format: double
+          example: 0.9681789
+        longitud:
+          type: number
+          format: double
+          example: -79.6517202
+        precision_m:
+          type: number
+          description: Precisión del GPS en metros
+          example: 8.5
+        ubicacion_aproximada:
+          type: boolean
+          default: false
+        capturado_en:
+          type: string
+          format: date-time
+          description: Marca de tiempo UTC del momento de captura en el celular
+        personas_afectadas:
+          type: integer
+          minimum: 0
+          default: 0
+        ninos:
+          type: integer
+          minimum: 0
+          default: 0
+        adultos_mayores:
+          type: integer
+          minimum: 0
+          default: 0
+        necesidades:
+          type: array
+          items:
+            $ref: '#/components/schemas/Necesidad'
+
+    Reporte:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        usuario_id:
+          type: string
+          format: uuid
+        tipo:
+          $ref: '#/components/schemas/TipoIncidente'
+        descripcion:
+          type: string
+        gravedad:
+          $ref: '#/components/schemas/Gravedad'
+        estado:
+          $ref: '#/components/schemas/EstadoReporte'
+        latitud:
+          type: number
+        longitud:
+          type: number
+        precision_m:
+          type: number
+        ubicacion_aproximada:
+          type: boolean
+        capturado_en:
+          type: string
+          format: date-time
+        recibido_en:
+          type: string
+          format: date-time
+        verificado:
+          type: boolean
+        personas_afectadas:
+          type: integer
+        ninos:
+          type: integer
+        adultos_mayores:
+          type: integer
+        necesidades:
+          type: array
+          items:
+            $ref: '#/components/schemas/Necesidad'
+        foto_url:
+          type: string
+          nullable: true
+        foto_miniatura_url:
+          type: string
+          nullable: true
+        ia_tipo_sugerido:
+          type: string
+          nullable: true
+        ia_gravedad_sugerida:
+          type: string
+          nullable: true
+        ia_explicacion:
+          type: string
+          nullable: true
+        ia_confianza:
+          type: number
+          nullable: true
+
+    Foto:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        reporte_id:
+          type: string
+          format: uuid
+        ruta:
+          type: string
+        ruta_miniatura:
+          type: string
+        tamano_bytes:
+          type: integer
+        subida_en:
+          type: string
+          format: date-time
+
+    SugerenciaIA:
+      type: object
+      properties:
+        reporte_id:
+          type: string
+          format: uuid
+        tipo_sugerido:
+          $ref: '#/components/schemas/TipoIncidente'
+        gravedad_sugerida:
+          $ref: '#/components/schemas/Gravedad'
+        explicacion:
+          type: string
+          example: Se detecta acumulación significativa de agua sobre calzada y vehículos semihundidos.
+        confianza:
+          type: number
+          minimum: 0
+          maximum: 1
+          example: 0.88
+        aviso:
+          type: string
+          example: Sugerencia de apoyo, no oficial. Requiere confirmación humana.
+
+    PuntoServicio:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        nombre:
+          type: string
+        tipo:
+          $ref: '#/components/schemas/TipoPuntoServicio'
+        latitud:
+          type: number
+        longitud:
+          type: number
+        telefono:
+          type: string
+        capacidad:
+          type: integer
+        ocupacion:
+          type: integer
+        porcentaje_ocupacion:
+          type: number
+          example: 75.0
+        estado_cupo:
+          type: string
+          enum: [verde, ambar, rojo]
+          description: Semáforo de capacidad (verde < 70%, ámbar 70-90%, rojo > 90%)
+        activo:
+          type: boolean
+
+    Alerta:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        sector:
+          type: string
+        mensaje:
+          type: string
+        nivel:
+          $ref: '#/components/schemas/Gravedad'
+        creado_por:
+          type: string
+        creado_en:
+          type: string
+          format: date-time
+        origen:
+          type: string
+          enum: [oficial, simulada]
+
+    ReporteDetalle:
+      allOf:
+        - $ref: '#/components/schemas/Reporte'
+        - type: object
+          properties:
+            historial:
+              type: array
+              items:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    format: uuid
+                  estado_anterior:
+                    $ref: '#/components/schemas/EstadoReporte'
+                  estado_nuevo:
+                    $ref: '#/components/schemas/EstadoReporte'
+                  operador_nombre:
+                    type: string
+                  fecha:
+                    type: string
+                    format: date-time
+                  nota:
+                    type: string
+
+    EstadisticasDashboard:
+      type: object
+      properties:
+        total_reportes:
+          type: integer
+        pendientes:
+          type: integer
+        en_proceso:
+          type: integer
+        atendidos:
+          type: integer
+        criticos:
+          type: integer
+        personas_afectadas_total:
+          type: integer
+        ninos_total:
+          type: integer
+        adultos_mayores_total:
+          type: integer
+        vias_bloqueadas_total:
+          type: integer
+        albergues_disponibles:
+          type: integer
+        necesidades_acumuladas:
+          type: object
+          properties:
+            agua:
+              type: integer
+            alimentos:
+              type: integer
+            medicinas:
+              type: integer
+            rescate:
+              type: integer
+
+  responses:
+    ErrorValidacion:
+      description: Error en validación de datos de entrada
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              mensaje:
+                type: string
+              errores:
+                type: array
+                items:
+                  type: string
