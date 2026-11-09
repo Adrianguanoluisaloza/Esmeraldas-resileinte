@@ -1,0 +1,9 @@
+---
+import PanelLayout from '../../layouts/PanelLayout.astro';
+import { InicioCiudadano } from '../../components/InicioCiudadano';
+import '../../styles/operaciones.css';
+---
+
+<PanelLayout titulo="Inicio y mapa" roles={['ciudadano']}>
+  <InicioCiudadano client:only="react" />
+</PanelLayout>

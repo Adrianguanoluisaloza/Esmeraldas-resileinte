@@ -3,6 +3,7 @@ import type { ReporteMapa, PuntoServicioMapa } from '../types/mapa';
 export const REPORTES_INICIALES: ReporteMapa[] = [
   {
     id: 'rep-001',
+    origen: 'simulado',
     tipo: 'inundacion',
     titulo: 'Desborde de río en Isla Piedad',
     descripcion: 'Nivel del agua subiendo rápido por marea alta y lluvias. Vía de acceso intransitable.',
@@ -22,6 +23,7 @@ export const REPORTES_INICIALES: ReporteMapa[] = [
   },
   {
     id: 'rep-002',
+    origen: 'simulado',
     tipo: 'deslizamiento',
     titulo: 'Deslizamiento en Barrio Caliente',
     descripcion: 'Pared de ladera cedió cerca de dos viviendas. Riesgo inminente de colapso.',
@@ -41,6 +43,7 @@ export const REPORTES_INICIALES: ReporteMapa[] = [
   },
   {
     id: 'rep-003',
+    origen: 'simulado',
     tipo: 'via_bloqueada',
     titulo: 'Vía a Tachina cortada por socavón',
     descripcion: 'Tramo de asfalto erosionado por corriente de agua. Paso suspendido para todo vehículo.',
@@ -60,6 +63,7 @@ export const REPORTES_INICIALES: ReporteMapa[] = [
   },
   {
     id: 'rep-004',
+    origen: 'simulado',
     tipo: 'personas_atrapadas',
     titulo: 'Familia aislada en 20 de Noviembre',
     descripcion: 'Agua supera 1.20m en planta baja. Requieren evacuación con bote liviano.',
@@ -79,6 +83,7 @@ export const REPORTES_INICIALES: ReporteMapa[] = [
   },
   {
     id: 'rep-005',
+    origen: 'simulado',
     tipo: 'dano_vivienda',
     titulo: 'Techo colapsado en El Arenal',
     descripcion: 'Fuertes vientos y lluvia provocaron caída de cubierta de zinc.',

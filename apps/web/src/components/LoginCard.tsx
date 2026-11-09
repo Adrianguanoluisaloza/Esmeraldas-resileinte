@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { ErrorApi, login as loginApi, registro as registroApi } from '../lib/api';
+import { inicioSegunRol } from '../config/navegacion';
 import {
   ArrowRight,
   Eye,
@@ -26,8 +28,8 @@ interface Props {
 export const LoginCard: React.FC<Props> = ({ redirectUrl = '/' }) => {
   const [esRegistro, setEsRegistro] = useState(false);
   const [nombre, setNombre] = useState('');
-  const [correo, setCorreo] = useState('operador@coe911.gob.ec');
-  const [password, setPassword] = useState('operador2026');
+  const [correo, setCorreo] = useState(USUARIOS_DEMO.operador_911.correo);
+  const [password, setPassword] = useState(USUARIOS_DEMO.operador_911.pass);
   const [rolSeleccionado, setRolSeleccionado] = useState<RolUsuario>('operador_911');
   const [mostrarPassword, setMostrarPassword] = useState(false);
   const [cargando, setCargando] = useState(false);
@@ -56,30 +58,27 @@ export const LoginCard: React.FC<Props> = ({ redirectUrl = '/' }) => {
     setCargando(true);
 
     try {
-      // Simulación de respuesta inmediata o llamada a API
-      await new Promise((resolve) => setTimeout(resolve, 600));
+      let respuesta;
+      try {
+        // API real (POST /auth/login o /auth/registro). El rol lo decide el servidor, nunca el formulario.
+        respuesta = esRegistro ? await registroApi(nombre, correo, password) : await loginApi(correo, password);
+      } catch (e) {
+        // Solo si el servidor no responde se usa la sesión de demostración local (modo sin backend).
+        if (!(e instanceof ErrorApi) || e.codigo !== 'SIN_CONEXION') throw e;
+        const demo = USUARIOS_DEMO[rolSeleccionado];
+        if (esRegistro || demo.correo !== correo || demo.pass !== password) throw e;
+        respuesta = { token: `demo-sin-servidor-${Date.now()}`, usuario: demo.usuario };
+      }
 
-      const usuarioFinal: UsuarioSesion = {
-        id: `usr-${Date.now()}`,
-        nombre: esRegistro ? nombre || 'Usuario Nuevo' : USUARIOS_DEMO[rolSeleccionado]?.usuario.nombre || correo.split('@')[0],
-        correo: correo,
-        rol: rolSeleccionado,
-        creado_en: new Date().toISOString(),
-      };
+      guardarSesion(respuesta);
+      setSesionActiva(respuesta.usuario);
 
-      guardarSesion({
-        token: `mock-jwt-token-${Date.now()}`,
-        usuario: usuarioFinal,
-      });
-
-      setSesionActiva(usuarioFinal);
-
-      // Redirigir al panel de operaciones
-      setTimeout(() => {
-        window.location.href = redirectUrl;
-      }, 500);
-    } catch (err: any) {
-      setError(err?.message || 'Error al autenticar. Verifique credenciales.');
+      // Vuelve a la página que pidió el login, o al inicio según el rol.
+      const volver = new URLSearchParams(window.location.search).get('volver');
+      const destino = volver && volver.startsWith('/') && !volver.startsWith('//') ? volver : inicioSegunRol(respuesta.usuario.rol);
+      window.location.href = redirectUrl !== '/' ? redirectUrl : destino;
+    } catch (err) {
+      setError(err instanceof ErrorApi ? err.message : 'Error al autenticar. Verifica tus datos.');
     } finally {
       setCargando(false);
     }
@@ -220,7 +219,7 @@ export const LoginCard: React.FC<Props> = ({ redirectUrl = '/' }) => {
                 <input
                   type="text"
                   required
-                  placeholder="Ej: Adrian Guanoluisa"
+                  placeholder="Tu nombre completo"
                   value={nombre}
                   onChange={(e) => setNombre(e.target.value)}
                   className="form-input"
@@ -236,7 +235,7 @@ export const LoginCard: React.FC<Props> = ({ redirectUrl = '/' }) => {
               <input
                 type="email"
                 required
-                placeholder="operador@coe911.gob.ec"
+                placeholder="tu.correo@ejemplo.com"
                 value={correo}
                 onChange={(e) => setCorreo(e.target.value)}
                 className="form-input"
