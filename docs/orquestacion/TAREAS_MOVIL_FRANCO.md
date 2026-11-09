@@ -1,4 +1,4 @@
-# Tareas móvil para Franco y su IA
+# Tareas móvil
 
 Carril: app Flutter (rama `desarrollofranco`). Complementa `indicaciones-flutter-franco.md` y
 `decision-mapas-hive-postgis.md`. La API ya responde de verdad: estas tareas conectan la app.

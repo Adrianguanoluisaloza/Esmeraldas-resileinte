@@ -1,4 +1,4 @@
-# Tareas web para Gemini (PC de Adrian)
+# Tareas web
 
 Carril: `apps/web`. Leer antes `docs/DISENO.md`. Todas las tareas usan lo que ya existe:
 `PanelLayout`, `src/lib/api.ts`, `src/lib/catalogos.ts`, `src/components/ui/*`, clases `er-*`.
@@ -6,7 +6,7 @@ Carril: `apps/web`. Leer antes `docs/DISENO.md`. Todas las tareas usan lo que ya
 ## Lo que NO se toca (para no romper nada)
 
 - `src/styles/tokens.css` (paleta), `src/lib/api.ts`, `src/config/navegacion.ts`, `src/layouts/*`,
-  `contrato/openapi.yaml`, `apps/api/**`, `database/**`. Si hace falta cambiarlos, se pide a Claude.
+  `contrato/openapi.yaml`, `apps/api/**`, `database/**`. Si hace falta cambiarlos, se coordina con el carril backend.
 - No instalar librerías nuevas (ni Tailwind, ni UI kits). Con lo que hay alcanza.
 - No usar `fetch` directo: siempre funciones de `api.ts`.
 - No escribir textos de catálogo a mano: `ETIQUETA_*` de `catalogos.ts`.
@@ -53,7 +53,7 @@ nuevo `src/styles/sitio.css` (prefijo `st-`).
 **Archivos:** `src/components/TablaReportes.tsx`, nuevo `src/components/DetalleReporte.tsx`.
 **Pasos:** fila clicable (botón accesible) -> `DetalleReporte` con insignias, datos, foto (`foto_url` si existe,
 `<img loading="lazy">` con texto alternativo) y botones de estado reutilizando la lógica de `PanelOperaciones`.
-Pedir a Claude la función `api.obtenerReporte(id)` si hace falta.
+Agregar `api.obtenerReporte(id)` en coordinación con backend.
 **Hecho cuando:** se puede despachar y marcar atendido desde la tabla, y el teclado (Tab/Enter/Escape) funciona.
 
 ## W3. Ajustar ocupación de albergues (COE)
@@ -71,7 +71,7 @@ que llaman `api.actualizarOcupacion`. Mostrar el semáforo actualizado. Aviso á
 **Pasos:** rejilla de 6 tipos (botones con icono Lucide + `ETIQUETA_TIPO`), gravedad, descripción, ubicación con
 `navigator.geolocation` (mostrar latitud, longitud y ± metros), bloque opcional de familia (personas, niños, adultos
 mayores, necesidades como casillas). `id = crypto.randomUUID()`. Enviar con una función nueva `api.crearReporte`
-(pedirla a Claude). Botón `er-btn--emergencia` "Enviar reporte".
+(coordinar con backend). Botón `er-btn--emergencia` "Enviar reporte".
 **Hecho cuando:** el reporte aparece en el mapa del COE en otra pestaña al instante, y en "Mis reportes".
 
 ## W5. Revisión de accesibilidad

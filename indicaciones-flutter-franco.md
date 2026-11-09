@@ -19,7 +19,7 @@ Paquetes sin versión fijada (instalar con `flutter pub add` y dejar que resuelv
 
 Reglas:
 - **No mezclar** el paquete original `hive` con `hive_ce`. Solo `hive_ce`, y los imports van como `hive_ce/hive.dart` y `hive_ce_flutter/hive_flutter.dart`.
-- Instalar con `flutter pub add <paquete>` y **subir `pubspec.lock` al repositorio**, para que Adrián y las IAs usen exactamente las mismas versiones.
+- Instalar con `flutter pub add <paquete>` y **subir `pubspec.lock` al repositorio**, para que todo el equipo use exactamente las mismas versiones.
 - Usar Flutter en canal estable y que todos tengan la misma versión (`flutter --version`).
 - Evitar versiones prerelease y paquetes con alertas de abandono.
 
