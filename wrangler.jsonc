@@ -6,6 +6,6 @@
     "enabled": true
   },
   "assets": {
-    "directory": "apps\\web\\dist"
+    "directory": "apps/web/dist"
   }
 }
