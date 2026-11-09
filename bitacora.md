@@ -61,6 +61,19 @@ Este documento registra decisiones, avances, bloqueos y pendientes importantes. 
 - **Pendientes:** Completar la implementación de cada módulo y mantener los contratos OpenAPI sincronizados antes de integrar a `main`.
 
 ## 2026-11-09
+- **Área:** mobile
+- **Cambio:** Se armó el esqueleto completo del proyecto Flutter en `mobile/` siguiendo Clean Architecture y `indicaciones-flutter-franco.md` (`core/`, `data/`, `features/auth`, `features/reporte`, `features/mis_reportes`, `features/sync`) e instalando las dependencias aprobadas (`hive_ce`, `hive_ce_flutter`, `flutter_map`, `latlong2`, `geolocator`, `connectivity_plus`, `image_picker`, `flutter_image_compress`, `path_provider`, `dio`, `uuid`, `flutter_secure_storage`, `flutter_appauth`).
+- **Decisión:** Todo el acceso a las cajas locales de Hive (`cola_reportes_box` y `directorio_puntos_servicio_box`) se encapsuló en una única clase (`HiveColaReportesRepository`) y la pantalla de albergues usa respaldo en lista cuando no hay conexión real.
+- **Validación:** Ejecutados `dart format`, `flutter analyze` y `flutter test` en `mobile/`.
+- **Pendientes:** Conectar la cámara/compresión física en dispositivo real y los endpoints definitivos del backend (`POST /reportes` y `POST /reportes/:id/foto`).
+
+## 2026-11-09
+- **Área:** mobile
+- **Cambio:** Se implementaron las tareas M1–M5 de `docs/orquestacion/TAREAS_MOVIL_FRANCO.md` en `mobile/`: `DioApiClient` con interceptor Bearer y mapeo de errores (`400/409` a `error`, `401` a re-login sin borrar la cola), login/registro con validación y botón de Google (`flutter_appauth` PKCE), `MapaFondoEsmeraldas` centrado en Esmeraldas (`0.9592, -79.6539`) con respaldo vectorial offline, barra de navegación por rol (ciudadano, operador 911 y admin), paleta de `docs/DISENO.md` sin emojis e insignia de origen con borde discontinuo, y directorio de albergues con semáforo textual y consulta `/puntos-servicio/cercanos`.
+- **Validación:** `dart format --set-exit-if-changed lib test`, `flutter analyze` (0 issues) y `flutter test` (100% pass).
+- **Pendientes:** Probar el APK generado en dispositivo físico Android en modo avión.
+
+## 2026-11-09
 - **Área:** web | mapas | UI
 - **Cambio:** Se implementó el Centro de Operaciones 911 en `apps/web`: componente de mapa interactivo con Leaflet y OpenStreetMap enfocado en Esmeraldas (`MapaEsmeraldas.tsx`), pines por gravedad con `L.divIcon`, semáforo de albergues y centros de salud, panel de detalle y métricas clave en tiempo real (`PanelOperaciones.tsx`).
 - **Validación:** Compilación `npm run build` exitosa en 1.01s. Despliegue en vivo en Cloudflare: `https://esmeraldas-resiliente.eliasadrianlozadaguanoluisa.workers.dev` respondiendo 200 OK.
