@@ -306,3 +306,13 @@ export function inventario() {
 export function ajustarInventario(necesidad: ItemInventario['necesidad'], delta: number) {
   return pedir<ItemInventario>(`/asistencia/inventario/${necesidad}`, { method: 'PATCH', body: JSON.stringify({ delta }) });
 }
+
+// ── Firebase Auth ────────────────────────────────────────────────────────────────────────────────
+
+/** Intercambia un idToken de Firebase por el JWT propio del backend. */
+export function loginFirebase(idToken: string) {
+  return pedir<{ token: string; usuario: import('./auth').UsuarioSesion }>('/auth/firebase', {
+    method: 'POST',
+    body: JSON.stringify({ idToken }),
+  });
+}

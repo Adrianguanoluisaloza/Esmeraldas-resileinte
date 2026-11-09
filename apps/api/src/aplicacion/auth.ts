@@ -28,4 +28,27 @@ export class CasosAuth {
     const { clave_hash: _omitir, ...usuario } = encontrado;
     return { token: await this.tokens.emitir(usuario), usuario };
   }
+
+  /**
+   * Login via Firebase: el token ya fue verificado por TokensFirebase/TokensDual.
+   * Si el usuario no existe en la base local lo crea como ciudadano (sin clave, usa Firebase como proveedor).
+   */
+  async iniciarSesionFirebase(sesion: Pick<Usuario, "id" | "nombre" | "rol"> & { correo?: string }) {
+    const correo = (sesion.correo ?? `${sesion.id}@firebase.local`).toLowerCase();
+    let encontrado = await this.usuarios.buscarPorCorreo(correo);
+    if (!encontrado) {
+      const nuevoUsuario: Usuario = {
+        id: sesion.id,
+        nombre: sesion.nombre,
+        correo,
+        rol: sesion.rol ?? "ciudadano",
+        creado_en: this.reloj.ahora().toISOString(),
+      };
+      // clave_hash vacío: este usuario no puede iniciar sesión con correo+clave
+      await this.usuarios.crear({ ...nuevoUsuario, clave_hash: "" });
+      return { token: await this.tokens.emitir(nuevoUsuario), usuario: nuevoUsuario };
+    }
+    const { clave_hash: _omitir, ...usuario } = encontrado;
+    return { token: await this.tokens.emitir(usuario), usuario };
+  }
 }

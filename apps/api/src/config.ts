@@ -12,6 +12,8 @@ const Esquema = z.object({
   DATABASE_URL: z.string().optional(),
   JWT_SECRET: z.string().min(32, "JWT_SECRET debe tener al menos 32 caracteres"),
   JWT_MINUTOS: z.coerce.number().int().min(5).max(24 * 60).default(12 * 60),
+  /** ID del proyecto Firebase para verificar tokens de Google Sign-In (opcional). */
+  FIREBASE_PROJECT_ID: z.string().optional(),
   /** Orígenes permitidos separados por coma (la web de Astro y el preview de Cloudflare). */
   CORS_ORIGENES: z.string().default("http://localhost:4321"),
   /** true solo si la API está detrás de Cloudflare o un proxy propio (para leer la IP real). */

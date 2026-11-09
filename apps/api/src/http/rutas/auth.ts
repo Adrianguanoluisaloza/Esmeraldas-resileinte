@@ -1,4 +1,5 @@
 import { Hono } from "hono";
+import { z } from "zod";
 import { ErrorDominio } from "../../dominio/errores.js";
 import { leerJson, type Dependencias, type Entorno } from "../contexto.js";
 import { LoginEntrada, RegistroEntrada } from "../esquemas.js";
@@ -32,6 +33,21 @@ export function rutasAuth(deps: Dependencias) {
   r.post("/registro", async (c) => {
     const { nombre, correo, password } = await leerJson(c, RegistroEntrada);
     return c.json(await deps.auth.registrar(nombre, correo, password), 201);
+  });
+
+  /**
+   * POST /auth/firebase
+   * Recibe un idToken de Firebase (emitido por el cliente tras Google Sign-In u otro proveedor).
+   * Lo verifica con Firebase Admin, busca o crea el usuario en la base propia,
+   * y devuelve un JWT propio para todas las llamadas REST posteriores.
+   */
+  r.post("/firebase", async (c) => {
+    const { idToken } = await leerJson(c, z.object({ idToken: z.string().min(10) }));
+    const sesionFirebase = await deps.tokens.verificar(idToken);
+    if (!sesionFirebase) throw new ErrorDominio("NO_AUTENTICADO", "Token de Firebase inválido o vencido");
+    // Si el usuario no existe en la base local, lo creamos sin clave (usa Firebase como proveedor)
+    const resultado = await deps.auth.iniciarSesionFirebase(sesionFirebase);
+    return c.json(resultado);
   });
 
   return r;

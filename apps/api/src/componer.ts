@@ -1,3 +1,4 @@
+import { initializeApp, cert, getApps } from "firebase-admin/app";
 import { CasosAuth } from "./aplicacion/auth.js";
 import { CasosOperacion } from "./aplicacion/operacion.js";
 import { CasosReportes } from "./aplicacion/reportes.js";
@@ -9,6 +10,8 @@ import { FotosEnDisco } from "./infraestructura/fotosDisco.js";
 import { AlertasEnMemoria, AsistenciaEnMemoria, ReportesEnMemoria, TerritorioEnMemoria, UsuariosEnMemoria } from "./infraestructura/memoria/repositorios.js";
 import { AlertasPg, AsistenciaPg, ReportesPg, TerritorioPg, UsuariosPg, crearPool } from "./infraestructura/postgres/repositorios.js";
 import { ClavesScrypt } from "./infraestructura/seguridad/claves.js";
+import { TokensDual } from "./infraestructura/seguridad/tokensDual.js";
+import { TokensFirebase } from "./infraestructura/seguridad/tokensFirebase.js";
 import { TokensJwt } from "./infraestructura/seguridad/tokens.js";
 import { BusEventos, relojSistema } from "./infraestructura/sistema.js";
 
@@ -21,7 +24,16 @@ export const CARPETA_FOTOS = process.env.CARPETA_FOTOS ?? "almacen/fotos";
 export function componer(config: Config) {
   const bus = new BusEventos();
   const claves = new ClavesScrypt();
-  const tokens = new TokensJwt(config.JWT_SECRET, config.JWT_MINUTOS);
+  const tokensJwt = new TokensJwt(config.JWT_SECRET, config.JWT_MINUTOS);
+
+  // Firebase Admin: solo si se configura FIREBASE_PROJECT_ID (opcional en desarrollo sin base)
+  let tokens: TokensJwt | TokensDual = tokensJwt;
+  if (config.FIREBASE_PROJECT_ID) {
+    const firebaseApp = getApps().length === 0
+      ? initializeApp({ projectId: config.FIREBASE_PROJECT_ID }, "esmeraldas")
+      : getApps()[0]!;
+    tokens = new TokensDual(tokensJwt, new TokensFirebase(firebaseApp));
+  }
 
   let usuarios: RepositorioUsuarios;
   let reportes: RepositorioReportes;
