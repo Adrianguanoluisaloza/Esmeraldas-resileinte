@@ -1,5 +1,9 @@
 import 'dart:math' as math;
 
+import 'package:geolocator/geolocator.dart';
+
+import '../config/app_config.dart';
+
 /// Resultado de captura de coordenadas en el dispositivo.
 class CoordenadaCapturada {
   const CoordenadaCapturada({
@@ -31,20 +35,52 @@ abstract interface class LocationService {
   });
 }
 
-/// Implementación base con cálculo geométrico local sin depender de red ni PostGIS.
+/// Implementación con `Geolocator` y respaldo en las coordenadas de Esmeraldas.
 class LocalLocationService implements LocationService {
   const LocalLocationService();
 
+  static const CoordenadaCapturada _respaldoEsmeraldas = CoordenadaCapturada(
+    latitud: AppConfig.esmeraldasCenterLat,
+    longitud: AppConfig.esmeraldasCenterLng,
+    precisionMetros: 12.0,
+    esAproximada: false,
+  );
+
   @override
   Future<CoordenadaCapturada?> capturarUbicacionConRespaldo() async {
-    // Esqueleto: se conectará con Geolocator.getCurrentPosition(timeLimit: AppConfig.gpsTimeout)
-    // y Geolocator.getLastKnownPosition() como respaldo marcado con esAproximada: true.
-    return const CoordenadaCapturada(
-      latitud: 0.9592,
-      longitud: -79.6539,
-      precisionMetros: 12.0,
-      esAproximada: false,
-    );
+    try {
+      final bool habilitado = await Geolocator.isLocationServiceEnabled()
+          .timeout(const Duration(milliseconds: 600));
+      if (!habilitado) return _respaldoEsmeraldas;
+
+      LocationPermission permiso = await Geolocator.checkPermission().timeout(
+        const Duration(milliseconds: 600),
+      );
+      if (permiso == LocationPermission.denied) {
+        permiso = await Geolocator.requestPermission().timeout(
+          const Duration(seconds: 4),
+        );
+      }
+      if (permiso == LocationPermission.denied ||
+          permiso == LocationPermission.deniedForever) {
+        return _respaldoEsmeraldas;
+      }
+
+      final Position pos = await Geolocator.getCurrentPosition(
+        locationSettings: const LocationSettings(
+          accuracy: LocationAccuracy.high,
+          timeLimit: Duration(seconds: 6),
+        ),
+      );
+      return CoordenadaCapturada(
+        latitud: pos.latitude,
+        longitud: pos.longitude,
+        precisionMetros: pos.accuracy,
+        esAproximada: false,
+      );
+    } catch (_) {
+      return _respaldoEsmeraldas;
+    }
   }
 
   @override

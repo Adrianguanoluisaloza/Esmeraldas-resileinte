@@ -1,13 +1,38 @@
 /// Configuración por entorno para la aplicación móvil Esmeraldas Resiliente.
 /// No almacena secretos ni claves privadas en el código fuente.
 class AppConfig {
-  const AppConfig._();
+  AppConfig._();
 
   /// URL base del backend configurada mediante `--dart-define=API_BASE_URL=...`
   static const String apiBaseUrl = String.fromEnvironment(
     'API_BASE_URL',
     defaultValue: 'http://10.0.2.2:3000',
   );
+
+  /// Modo demostración: usa cuentas y datos simulados en el dispositivo
+  /// mientras el backend no está listo. `--dart-define=MODO_DEMO=false` para usar la API.
+  static const bool modoDemo = bool.fromEnvironment(
+    'MODO_DEMO',
+    defaultValue: true,
+  );
+
+  /// OAuth de Google (cliente de tipo Android/iOS; nunca se incluye client secret).
+  static const String googleClientId = String.fromEnvironment(
+    'GOOGLE_CLIENT_ID',
+  );
+
+  /// Debe coincidir con `appAuthRedirectScheme` en `android/app/build.gradle.kts`
+  /// (para Google: el client ID invertido, ej. `com.googleusercontent.apps.XXXX:/oauthredirect`).
+  static const String googleRedirectUri = String.fromEnvironment(
+    'GOOGLE_REDIRECT_URI',
+    defaultValue: 'ec.esmeraldas.resiliente.mobile:/oauthredirect',
+  );
+
+  /// Seguridad de sesión.
+  static const Duration duracionSesion = Duration(minutes: 15);
+  static const Duration cierrePorInactividad = Duration(minutes: 5);
+  static const int maxIntentosLogin = 5;
+  static const Duration bloqueoLogin = Duration(seconds: 30);
 
   /// Identificador de paquete requerido por la política de uso de OpenStreetMap.
   static const String osmUserAgentPackageName =
