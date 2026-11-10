@@ -9,6 +9,8 @@ import '../../../../core/widgets/mapa_fondo_esmeraldas.dart';
 import '../../../../core/widgets/rejilla_adaptable.dart';
 import '../../../albergues/data/models/punto_servicio_model.dart';
 import '../../../albergues/presentation/widgets/tarjeta_albergue.dart';
+import '../../../ia/domain/sugerencia_ia.dart';
+import '../../../ia/presentation/panel_sugerencia_ia.dart';
 import '../../data/repositories/operaciones_repository.dart';
 import '../../../auth/domain/repositories/auth_repository.dart';
 
@@ -232,10 +234,12 @@ class IncidentesOperadorPage extends StatefulWidget {
     super.key,
     required this.repo,
     required this.sesion,
+    this.ia,
   });
 
   final OperacionesRepository repo;
   final UsuarioSesion sesion;
+  final SugerenciaIaRepository? ia;
 
   @override
   State<IncidentesOperadorPage> createState() => _IncidentesOperadorPageState();
@@ -375,6 +379,7 @@ class _IncidentesOperadorPageState extends State<IncidentesOperadorPage> {
                         repo: widget.repo,
                         sesion: widget.sesion,
                         reporte: r,
+                        ia: widget.ia,
                       ),
                     ),
                   )
@@ -496,6 +501,7 @@ void mostrarHojaGestionReporte(
   required OperacionesRepository repo,
   required UsuarioSesion sesion,
   required ReporteOperacion reporte,
+  SugerenciaIaRepository? ia,
 }) {
   EstadoReporte estado = reporte.estado;
   GravedadIncidente gravedad = reporte.gravedad;
@@ -592,6 +598,10 @@ void mostrarHojaGestionReporte(
                         style: const TextStyle(fontSize: 11.5),
                       ),
                     ),
+                  ],
+                  if (ia != null) ...<Widget>[
+                    const SizedBox(height: 10),
+                    PanelSugerenciaIa(repositorio: ia, reporteId: reporte.id),
                   ],
                   const SizedBox(height: 10),
                   Row(

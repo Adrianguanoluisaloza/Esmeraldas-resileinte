@@ -8,6 +8,7 @@ import '../../features/reporte/data/repositories/cola_reportes_repository.dart';
 import '../../features/operaciones/data/repositories/operaciones_repository.dart';
 import '../../features/admin/presentation/pages/admin_pages.dart';
 import '../../features/admin/presentation/pages/administracion_page.dart';
+import '../../features/ia/domain/sugerencia_ia.dart';
 import '../../features/vias/domain/vias.dart';
 import '../../features/vias/presentation/vias_section.dart';
 import '../../features/analisis/domain/repositories/analisis_repository.dart';
@@ -42,6 +43,7 @@ class HomeShellPage extends StatefulWidget {
     this.operacionesRepository,
     this.analisisRepository,
     this.viasRepository,
+    this.sugerenciaIaRepository,
   });
 
   final ColaReportesRepository colaRepository;
@@ -53,6 +55,7 @@ class HomeShellPage extends StatefulWidget {
   final OperacionesRepository? operacionesRepository;
   final AnalisisRepository? analisisRepository;
   final ViasRepository? viasRepository;
+  final SugerenciaIaRepository? sugerenciaIaRepository;
 
   @override
   State<HomeShellPage> createState() => _HomeShellPageState();
@@ -476,7 +479,11 @@ class _HomeShellPageState extends State<HomeShellPage> {
         return (
           <Widget>[
             _paginaSituacion(s),
-            IncidentesOperadorPage(repo: _ops, sesion: s),
+            IncidentesOperadorPage(
+              repo: _ops,
+              sesion: s,
+              ia: widget.sugerenciaIaRepository,
+            ),
             _paginaAnalisis(),
             _paginaTerritorio(s),
             SeguridadCuentaPage(
@@ -512,9 +519,14 @@ class _HomeShellPageState extends State<HomeShellPage> {
                     repo: _ops,
                     sesion: s,
                     reporte: r,
+                    ia: widget.sugerenciaIaRepository,
                   ),
             ),
-            IncidentesOperadorPage(repo: _ops, sesion: s),
+            IncidentesOperadorPage(
+              repo: _ops,
+              sesion: s,
+              ia: widget.sugerenciaIaRepository,
+            ),
             _paginaTerritorio(s),
             SeguridadCuentaPage(
               repo: _ops,
@@ -555,9 +567,14 @@ class _HomeShellPageState extends State<HomeShellPage> {
                     repo: _ops,
                     sesion: s,
                     reporte: r,
+                    ia: widget.sugerenciaIaRepository,
                   ),
             ),
-            IncidentesOperadorPage(repo: _ops, sesion: s),
+            IncidentesOperadorPage(
+              repo: _ops,
+              sesion: s,
+              ia: widget.sugerenciaIaRepository,
+            ),
             _paginaAnalisis(),
             _paginaTerritorio(s),
             AdministracionPage(
@@ -593,8 +610,13 @@ class _HomeShellPageState extends State<HomeShellPage> {
     repo: _ops,
     sesion: s,
     tieneConexion: !_modoOfflineSimulado,
-    onSeleccionarReporte: (ReporteOperacion r) =>
-        mostrarHojaGestionReporte(context, repo: _ops, sesion: s, reporte: r),
+    onSeleccionarReporte: (ReporteOperacion r) => mostrarHojaGestionReporte(
+      context,
+      repo: _ops,
+      sesion: s,
+      reporte: r,
+      ia: widget.sugerenciaIaRepository,
+    ),
   );
 
   /// Albergues, vías y alertas por sector ("Alertas y vías" + "Albergues" de la web).

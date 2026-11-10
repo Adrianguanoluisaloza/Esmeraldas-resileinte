@@ -21,6 +21,7 @@ export type CodigoApi =
   | 'CONFLICTO'
   | 'TRANSICION_INVALIDA'
   | 'NO_IMPLEMENTADO'
+  | 'NO_DISPONIBLE'
   | 'DEMASIADAS_PETICIONES'
   | 'ERROR_INTERNO'
   | 'SIN_CONEXION';
@@ -40,6 +41,7 @@ export const MENSAJE_ERROR: Record<CodigoApi, string> = {
   CONFLICTO: 'Ese registro ya existe.',
   TRANSICION_INVALIDA: 'Ese cambio de estado no está permitido.',
   NO_IMPLEMENTADO: 'Función no disponible.',
+  NO_DISPONIBLE: 'El servicio no respondió. Intenta otra vez.',
   DEMASIADAS_PETICIONES: 'Demasiados intentos. Espera un momento.',
   ERROR_INTERNO: 'El servidor tuvo un problema. Intenta otra vez.',
   SIN_CONEXION: 'Sin conexión con el servidor.',
@@ -191,6 +193,21 @@ export interface CambioHistorial {
   operador_nombre: string | null;
   nota: string | null;
   fecha: string;
+}
+
+/** Sugerencia del asistente de IA (POST /reportes/{id}/clasificar). Nunca es oficial. */
+export interface SugerenciaIA {
+  reporte_id: string;
+  tipo_sugerido: TipoIncidente;
+  gravedad_sugerida: Gravedad;
+  explicacion: string;
+  confianza: number;
+  analizo_foto: boolean;
+  aviso: string;
+}
+
+export function clasificarReporte(id: string) {
+  return pedir<SugerenciaIA>(`/reportes/${encodeURIComponent(id)}/clasificar`, { method: 'POST' });
 }
 
 export function obtenerReporte(id: string) {

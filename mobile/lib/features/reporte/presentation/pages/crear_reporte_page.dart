@@ -609,9 +609,11 @@ class _CrearReportePageState extends State<CrearReportePage> {
   }
 
   Widget _construirVistaMapaInicial() {
+    // En pantallas bajas (celular acostado) los controles se desplazan en vez de desbordar.
     return Align(
       alignment: Alignment.bottomCenter,
-      child: Padding(
+      child: SingleChildScrollView(
+        reverse: true,
         padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -681,7 +683,8 @@ class _CrearReportePageState extends State<CrearReportePage> {
     final LatLng c = _coordenadaActiva;
     return Align(
       alignment: Alignment.bottomCenter,
-      child: Padding(
+      child: SingleChildScrollView(
+        reverse: true,
         padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
         child: Column(
           mainAxisSize: MainAxisSize.min,

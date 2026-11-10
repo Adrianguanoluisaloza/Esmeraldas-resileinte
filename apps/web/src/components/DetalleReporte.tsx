@@ -5,6 +5,7 @@ import * as api from '../lib/api';
 import { ETIQUETA_ESTADO, ETIQUETA_NECESIDAD, ETIQUETA_TIPO, fechaHoraLocal, tituloReporte } from '../lib/catalogos';
 import { Aviso, Boton, Cargando } from './ui/Basicos';
 import { EditarReporte } from './EditarReporte';
+import { SugerenciaIa } from './SugerenciaIa';
 import { InsigniaEstado, InsigniaGravedad, InsigniaOrigen } from './ui/Insignias';
 
 const BASE_API = (import.meta.env.PUBLIC_API_URL as string | undefined)?.replace(/\/+$/, '') ?? 'http://localhost:3000';
@@ -100,6 +101,8 @@ export function DetalleReporte({ id, puedeGestionar, alCerrar, alCambiar }: {
                   {r.necesidades.map((n) => <span key={n} className="er-insignia">{ETIQUETA_NECESIDAD[n]}</span>)}
                 </div>
               )}
+
+              {puedeGestionar && <SugerenciaIa key={r.id} reporteId={r.id} />}
 
               {puedeGestionar && (
                 <div className="op-acciones">

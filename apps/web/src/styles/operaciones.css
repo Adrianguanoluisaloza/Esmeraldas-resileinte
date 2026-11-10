@@ -57,6 +57,14 @@
 .op-datos dd { margin: 0; font-weight: 600; color: var(--er-text); font-size: 13px; }
 .op-necesidades { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px; }
 .op-acciones { display: grid; gap: 6px; padding-top: var(--er-s3); border-top: 1px solid var(--er-border); }
+/* Asistente de IA: mismo color que "Dato simulado" para que nunca parezca oficial. */
+.op-ia {
+  display: grid; gap: var(--er-s2); padding: var(--er-s3); border-radius: var(--er-r-sm);
+  background: var(--er-origen-simulado-soft); border: 1px solid var(--er-origen-simulado);
+}
+.op-ia__cabecera { display: flex; align-items: center; gap: var(--er-s2); color: var(--er-origen-simulado); }
+.op-ia__cabecera .er-rotulo { flex: 1; margin: 0; }
+.op-ia__resultado { font-weight: 700; }
 
 /* Marcadores Leaflet ---------------------------------------------------------------------------------- */
 .mk-contenedor { background: none; border: 0; }
