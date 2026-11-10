@@ -1,3 +1,4 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 
 import 'core/location/location_service.dart';
@@ -13,6 +14,8 @@ import 'features/sync/data/services/sync_worker_service.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  await Firebase.initializeApp();
 
   // Inicialización de Hive y del paquete offline MBTiles de la Provincia de Esmeraldas
   final ColaReportesRepository colaRepository = HiveColaReportesRepository();

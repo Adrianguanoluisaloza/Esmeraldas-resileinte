@@ -45,6 +45,9 @@ env
 .env.production
 .env.local
 .env.*.local
+*.env
+franco.env
+mobile/franco.env
 *.pem
 *.key
 **/google-services.json
