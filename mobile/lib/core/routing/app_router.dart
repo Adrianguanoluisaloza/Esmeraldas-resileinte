@@ -7,10 +7,14 @@ import '../../features/reporte/data/models/reporte_cola_model.dart';
 import '../../features/reporte/data/repositories/cola_reportes_repository.dart';
 import '../../features/operaciones/data/repositories/operaciones_repository.dart';
 import '../../features/admin/presentation/pages/admin_pages.dart';
+import '../../features/admin/presentation/pages/administracion_page.dart';
+import '../../features/vias/domain/vias.dart';
+import '../../features/vias/presentation/vias_section.dart';
 import '../../features/analisis/domain/repositories/analisis_repository.dart';
 import '../../features/analisis/presentation/pages/analisis_page.dart';
 import '../../features/auth/domain/repositories/auth_repository.dart';
 import '../../features/auth/presentation/pages/login_page.dart';
+import '../../features/autoproteccion/presentation/pages/cuenta_ciudadano_page.dart';
 import '../../features/albergues/presentation/pages/directorio_albergues_page.dart';
 import '../../features/mis_reportes/presentation/pages/mis_reportes_page.dart';
 import '../../features/operaciones/presentation/pages/operaciones_pages.dart';
@@ -37,6 +41,7 @@ class HomeShellPage extends StatefulWidget {
     this.apiClient,
     this.operacionesRepository,
     this.analisisRepository,
+    this.viasRepository,
   });
 
   final ColaReportesRepository colaRepository;
@@ -47,6 +52,7 @@ class HomeShellPage extends StatefulWidget {
   final ApiClient? apiClient;
   final OperacionesRepository? operacionesRepository;
   final AnalisisRepository? analisisRepository;
+  final ViasRepository? viasRepository;
 
   @override
   State<HomeShellPage> createState() => _HomeShellPageState();
@@ -432,9 +438,9 @@ class _HomeShellPageState extends State<HomeShellPage> {
               apiClient: widget.apiClient,
               colaRepository: widget.colaRepository,
             ),
-            SeguridadCuentaPage(
-              repo: _ops,
+            CuentaCiudadanoPage(
               sesion: s,
+              sinCuenta: _sesion == null,
               onCerrarSesion: _cerrarSesion,
             ),
           ],
@@ -472,7 +478,7 @@ class _HomeShellPageState extends State<HomeShellPage> {
             _paginaSituacion(s),
             IncidentesOperadorPage(repo: _ops, sesion: s),
             _paginaAnalisis(),
-            PuntosAlertasOperadorPage(repo: _ops, sesion: s),
+            _paginaTerritorio(s),
             SeguridadCuentaPage(
               repo: _ops,
               sesion: s,
@@ -483,11 +489,7 @@ class _HomeShellPageState extends State<HomeShellPage> {
             _destinoSituacion,
             _destinoIncidentes,
             _destinoAnalisis,
-            NavigationDestination(
-              icon: Icon(Icons.campaign_outlined),
-              selectedIcon: Icon(Icons.campaign),
-              label: 'Albergues',
-            ),
+            _destinoTerritorio,
             NavigationDestination(
               icon: Icon(Icons.shield_outlined),
               selectedIcon: Icon(Icons.shield),
@@ -513,7 +515,7 @@ class _HomeShellPageState extends State<HomeShellPage> {
                   ),
             ),
             IncidentesOperadorPage(repo: _ops, sesion: s),
-            PuntosAlertasOperadorPage(repo: _ops, sesion: s),
+            _paginaTerritorio(s),
             SeguridadCuentaPage(
               repo: _ops,
               sesion: s,
@@ -531,11 +533,7 @@ class _HomeShellPageState extends State<HomeShellPage> {
               selectedIcon: Icon(Icons.emergency),
               label: 'Incidentes',
             ),
-            NavigationDestination(
-              icon: Icon(Icons.campaign_outlined),
-              selectedIcon: Icon(Icons.campaign),
-              label: 'Albergues/Alertas',
-            ),
+            _destinoTerritorio,
             NavigationDestination(
               icon: Icon(Icons.shield_outlined),
               selectedIcon: Icon(Icons.shield),
@@ -561,9 +559,8 @@ class _HomeShellPageState extends State<HomeShellPage> {
             ),
             IncidentesOperadorPage(repo: _ops, sesion: s),
             _paginaAnalisis(),
-            PuntosAlertasOperadorPage(repo: _ops, sesion: s),
-            UsuariosAdminPage(repo: _ops, sesion: s),
-            SeguridadCuentaPage(
+            _paginaTerritorio(s),
+            AdministracionPage(
               repo: _ops,
               sesion: s,
               onCerrarSesion: _cerrarSesion,
@@ -581,20 +578,11 @@ class _HomeShellPageState extends State<HomeShellPage> {
               label: 'Incidentes',
             ),
             _destinoAnalisis,
+            _destinoTerritorio,
             NavigationDestination(
-              icon: Icon(Icons.campaign_outlined),
-              selectedIcon: Icon(Icons.campaign),
-              label: 'Albergues',
-            ),
-            NavigationDestination(
-              icon: Icon(Icons.group_outlined),
-              selectedIcon: Icon(Icons.group),
-              label: 'Usuarios',
-            ),
-            NavigationDestination(
-              icon: Icon(Icons.policy_outlined),
-              selectedIcon: Icon(Icons.policy),
-              label: 'Auditoría',
+              icon: Icon(Icons.admin_panel_settings_outlined),
+              selectedIcon: Icon(Icons.admin_panel_settings),
+              label: 'Administración',
             ),
           ],
         );
@@ -607,6 +595,27 @@ class _HomeShellPageState extends State<HomeShellPage> {
     tieneConexion: !_modoOfflineSimulado,
     onSeleccionarReporte: (ReporteOperacion r) =>
         mostrarHojaGestionReporte(context, repo: _ops, sesion: s, reporte: r),
+  );
+
+  /// Albergues, vías y alertas por sector ("Alertas y vías" + "Albergues" de la web).
+  Widget _paginaTerritorio(UsuarioSesion s) => PuntosAlertasOperadorPage(
+    repo: _ops,
+    sesion: s,
+    seccionVias: ViasSection(
+      repositorio: widget.viasRepository,
+      puedeEditar: const <RolUsuario>{
+        RolUsuario.operador911,
+        RolUsuario.policia,
+        RolUsuario.admin,
+      }.contains(s.rol),
+      tieneConexion: !_modoOfflineSimulado,
+    ),
+  );
+
+  static const NavigationDestination _destinoTerritorio = NavigationDestination(
+    icon: Icon(Icons.campaign_outlined),
+    selectedIcon: Icon(Icons.campaign),
+    label: 'Territorio',
   );
 
   Widget _paginaAnalisis() => AnalisisPage(

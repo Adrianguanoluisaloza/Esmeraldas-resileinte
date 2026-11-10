@@ -109,182 +109,203 @@ class _LoginPageState extends State<LoginPage> {
           const Positioned.fill(
             child: MapaFondoEsmeraldas(tieneConexion: false),
           ),
+          // Tarjeta centrada en cualquier pantalla; si no cabe (teclado abierto), se desplaza.
           SafeArea(
-            child: ListView(
-              padding: const EdgeInsets.all(18),
-              children: <Widget>[
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 14,
-                    vertical: 10,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: AppTheme.colorBorde),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
+            child: Center(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(18),
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 440),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: <Widget>[
-                      Image.asset('assets/logo.png', width: 20, height: 23),
-                      const SizedBox(width: 6),
-                      const Text(
-                        'ESMERALDAS ',
-                        style: TextStyle(
-                          fontWeight: FontWeight.w800,
-                          letterSpacing: 1.2,
-                          fontSize: 14,
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 10,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: AppTheme.colorBorde),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: <Widget>[
+                            Image.asset(
+                              'assets/logo.png',
+                              width: 20,
+                              height: 23,
+                            ),
+                            const SizedBox(width: 6),
+                            const Text(
+                              'ESMERALDAS ',
+                              style: TextStyle(
+                                fontWeight: FontWeight.w800,
+                                letterSpacing: 1.2,
+                                fontSize: 14,
+                              ),
+                            ),
+                            const Text(
+                              'RESILIENTE',
+                              style: TextStyle(
+                                fontWeight: FontWeight.w800,
+                                letterSpacing: 1.2,
+                                fontSize: 14,
+                                color: AppTheme.colorPrimario,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
-                      const Text(
-                        'RESILIENTE',
-                        style: TextStyle(
-                          fontWeight: FontWeight.w800,
-                          letterSpacing: 1.2,
-                          fontSize: 14,
-                          color: AppTheme.colorPrimario,
+                      const SizedBox(height: 14),
+                      Card(
+                        child: Padding(
+                          padding: const EdgeInsets.all(18),
+                          child: Form(
+                            key: _formKey,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: <Widget>[
+                                const Text(
+                                  'Iniciar sesión',
+                                  style: TextStyle(
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                const Text(
+                                  'Reporta y gestiona emergencias por El Niño en Esmeraldas. Tus reportes en la cola offline nunca se pierden.',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: AppTheme.colorTextoSecundario,
+                                  ),
+                                ),
+                                const SizedBox(height: 14),
+                                TextFormField(
+                                  controller: _correoCtrl,
+                                  keyboardType: TextInputType.emailAddress,
+                                  autofillHints: const <String>[
+                                    AutofillHints.email,
+                                  ],
+                                  validator: Validadores.correo,
+                                  decoration: const InputDecoration(
+                                    hintText: 'Correo electrónico',
+                                    prefixIcon: Icon(Icons.alternate_email),
+                                  ),
+                                ),
+                                const SizedBox(height: 10),
+                                TextFormField(
+                                  controller: _passCtrl,
+                                  obscureText: _ocultarPass,
+                                  autofillHints: const <String>[
+                                    AutofillHints.password,
+                                  ],
+                                  validator: Validadores.passwordLogin,
+                                  decoration: InputDecoration(
+                                    hintText: 'Contraseña',
+                                    prefixIcon: const Icon(Icons.lock_outline),
+                                    suffixIcon: IconButton(
+                                      onPressed: () => setState(
+                                        () => _ocultarPass = !_ocultarPass,
+                                      ),
+                                      icon: Icon(
+                                        _ocultarPass
+                                            ? Icons.visibility_outlined
+                                            : Icons.visibility_off_outlined,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                Align(
+                                  alignment: Alignment.centerRight,
+                                  child: TextButton(
+                                    onPressed: _cargando
+                                        ? null
+                                        : _mostrarDialogoRecuperarPassword,
+                                    child: const Text(
+                                      'Olvidé mi contraseña',
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color: AppTheme.colorPrimario,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                if (_error != null) ...<Widget>[
+                                  const SizedBox(height: 10),
+                                  Text(
+                                    _error!,
+                                    style: const TextStyle(
+                                      color: AppTheme.colorSemaforoRojo,
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ],
+                                const SizedBox(height: 14),
+                                FilledButton.icon(
+                                  style: FilledButton.styleFrom(
+                                    backgroundColor: AppTheme.colorSemaforoRojo,
+                                  ),
+                                  onPressed: _cargando ? null : _iniciarSesion,
+                                  icon: const Icon(Icons.login),
+                                  label: Text(
+                                    _cargando ? 'Entrando...' : 'Entrar',
+                                  ),
+                                ),
+                                const SizedBox(height: 10),
+                                GoogleSignInButton(
+                                  cargando: _cargando,
+                                  onPressed: _conGoogle,
+                                ),
+                                const SizedBox(height: 6),
+                                TextButton(
+                                  onPressed: _cargando
+                                      ? null
+                                      : () {
+                                          Navigator.of(context).push(
+                                            MaterialPageRoute<void>(
+                                              builder: (_) => RegistroPage(
+                                                authRepository:
+                                                    widget.authRepository,
+                                                onRegistroExitoso:
+                                                    (UsuarioSesion s) {
+                                                      Navigator.of(context)
+                                                          .pop();
+                                                      widget.onLoginSuccess(s);
+                                                    },
+                                              ),
+                                            ),
+                                          );
+                                        },
+                                  child: const Text(
+                                    '¿No tienes cuenta? Crear cuenta ciudadana',
+                                  ),
+                                ),
+                                if (widget.onContinuarSinCuenta != null)
+                                  TextButton.icon(
+                                    onPressed: widget.onContinuarSinCuenta,
+                                    icon: const Icon(
+                                      Icons.airplanemode_active,
+                                      size: 16,
+                                    ),
+                                    label: const Text(
+                                      'Emergencia sin internet: reportar ahora',
+                                      style: TextStyle(fontSize: 12),
+                                    ),
+                                  ),
+                              ],
+                            ),
+                          ),
                         ),
                       ),
                     ],
                   ),
                 ),
-                const SizedBox(height: 14),
-                Card(
-                  child: Padding(
-                    padding: const EdgeInsets.all(18),
-                    child: Form(
-                      key: _formKey,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: <Widget>[
-                          const Text(
-                            'Iniciar sesión',
-                            style: TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          const Text(
-                            'Reporta y gestiona emergencias por El Niño en Esmeraldas. Tus reportes en la cola offline nunca se pierden.',
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: AppTheme.colorTextoSecundario,
-                            ),
-                          ),
-                          const SizedBox(height: 14),
-                          TextFormField(
-                            controller: _correoCtrl,
-                            keyboardType: TextInputType.emailAddress,
-                            autofillHints: const <String>[AutofillHints.email],
-                            validator: Validadores.correo,
-                            decoration: const InputDecoration(
-                              hintText: 'Correo electrónico',
-                              prefixIcon: Icon(Icons.alternate_email),
-                            ),
-                          ),
-                          const SizedBox(height: 10),
-                          TextFormField(
-                            controller: _passCtrl,
-                            obscureText: _ocultarPass,
-                            autofillHints: const <String>[
-                              AutofillHints.password,
-                            ],
-                            validator: Validadores.passwordLogin,
-                            decoration: InputDecoration(
-                              hintText: 'Contraseña',
-                              prefixIcon: const Icon(Icons.lock_outline),
-                              suffixIcon: IconButton(
-                                onPressed: () => setState(
-                                  () => _ocultarPass = !_ocultarPass,
-                                ),
-                                icon: Icon(
-                                  _ocultarPass
-                                      ? Icons.visibility_outlined
-                                      : Icons.visibility_off_outlined,
-                                ),
-                              ),
-                            ),
-                          ),
-                          Align(
-                            alignment: Alignment.centerRight,
-                            child: TextButton(
-                              onPressed: _cargando
-                                  ? null
-                                  : _mostrarDialogoRecuperarPassword,
-                              child: const Text(
-                                'Olvidé mi contraseña',
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: AppTheme.colorPrimario,
-                                ),
-                              ),
-                            ),
-                          ),
-                          if (_error != null) ...<Widget>[
-                            const SizedBox(height: 10),
-                            Text(
-                              _error!,
-                              style: const TextStyle(
-                                color: AppTheme.colorSemaforoRojo,
-                                fontSize: 12,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ],
-                          const SizedBox(height: 14),
-                          FilledButton.icon(
-                            style: FilledButton.styleFrom(
-                              backgroundColor: AppTheme.colorSemaforoRojo,
-                            ),
-                            onPressed: _cargando ? null : _iniciarSesion,
-                            icon: const Icon(Icons.login),
-                            label: Text(_cargando ? 'Entrando...' : 'Entrar'),
-                          ),
-                          const SizedBox(height: 10),
-                          GoogleSignInButton(
-                            cargando: _cargando,
-                            onPressed: _conGoogle,
-                          ),
-                          const SizedBox(height: 6),
-                          TextButton(
-                            onPressed: _cargando
-                                ? null
-                                : () {
-                                    Navigator.of(context).push(
-                                      MaterialPageRoute<void>(
-                                        builder: (_) => RegistroPage(
-                                          authRepository: widget.authRepository,
-                                          onRegistroExitoso: (UsuarioSesion s) {
-                                            Navigator.of(context).pop();
-                                            widget.onLoginSuccess(s);
-                                          },
-                                        ),
-                                      ),
-                                    );
-                                  },
-                            child: const Text(
-                              '¿No tienes cuenta? Crear cuenta ciudadana',
-                            ),
-                          ),
-                          if (widget.onContinuarSinCuenta != null)
-                            TextButton.icon(
-                              onPressed: widget.onContinuarSinCuenta,
-                              icon: const Icon(
-                                Icons.airplanemode_active,
-                                size: 16,
-                              ),
-                              label: const Text(
-                                'Emergencia sin internet: reportar ahora',
-                                style: TextStyle(fontSize: 12),
-                              ),
-                            ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-              ],
+              ),
             ),
           ),
         ],

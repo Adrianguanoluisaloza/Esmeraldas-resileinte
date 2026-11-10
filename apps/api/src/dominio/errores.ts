@@ -9,7 +9,8 @@ export type CodigoError =
   | "NO_ENCONTRADO"
   | "CONFLICTO"
   | "TRANSICION_INVALIDA"
-  | "NO_IMPLEMENTADO";
+  | "NO_IMPLEMENTADO"
+  | "NO_DISPONIBLE";
 
 export class ErrorDominio extends Error {
   readonly codigo: CodigoError;

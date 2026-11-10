@@ -343,3 +343,10 @@ Este documento registra decisiones, avances, bloqueos y pendientes importantes. 
 - **Decisión:** Bomberos y Policía no ven "Análisis" porque la API solo da esos datos al COE (`ROLES_COE`). El clasificador de IA queda a cargo del agente "Vigía Esmeraldas" en Google Cloud.
 - **Validación:** `flutter analyze` sin problemas y `flutter test` con 20 pruebas en verde. Por SSH a la VM de Oracle (llave del USB) se revisó la base: 12 reportes, 5 puntos de servicio, inventario de agua, alimentos y medicinas, 0 entregas. La API responde `/salud` y pide sesión en `/estadisticas`.
 - **Pendientes:** Probar el panel en un teléfono con una cuenta de ECU 911.
+
+## 2026-11-10
+- **Área:** mobile | web | infraestructura | producto
+- **Cambio:** IA conectada: `POST /reportes/{id}/clasificar` llama a Gemini (`gemini-3.8-flash`, razonamiento bajo) con las instrucciones del agente "Vigía Esmeraldas" exportado de Agent Studio (copia en `docs/ia/`). Web: mapa más grande y pin rojo en Nuevo reporte. App: login centrado, tarjetas adaptables, Cuenta del ciudadano con contactos y guía de autoprotección, estado de vías y admin en 5 pestañas.
+- **Decisión:** Solo 911 se muestra con botón de llamada; 101, 102, el fijo de Bomberos y Cruz Roja no tienen fuente oficial confirmada y quedan "por confirmar" (regla 6). La sugerencia de IA no modifica el reporte y es solo para el personal. La clave de Gemini va solo en el `.env` del servidor.
+- **Validación:** API `npm run ci` con 61 pruebas en verde; Flutter `analyze` sin problemas y 24 pruebas en verde; web compila y pasa `tsc`. APK de `2f608a2` compilada por GitHub Actions y subida al release `app-movil` y al USB.
+- **Pendientes:** Poner `GEMINI_API_KEY` en el `.env` de Oracle y reconstruir la API. Publicar la web en producción. Confirmar los teléfonos de Bomberos, Policía y Cruz Roja. Nueva APK con estos cambios.

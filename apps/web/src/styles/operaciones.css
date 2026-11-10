@@ -67,6 +67,11 @@
 /* Datos simulados con anillo discontinuo: el jurado debe distinguirlos de un reporte real. */
 .mk-reporte--sim { outline: 1.5px solid #5b4bc4; outline-offset: 2px; }
 .mk-reporte--sel { border-width: 3px; box-shadow: 0 0 0 3px var(--mk-color); }
+/* Punto que la persona marca al reportar: rojo sólido con borde blanco. */
+.mk-marcado {
+  display: block; width: 22px; height: 22px; border-radius: 50%; background: var(--er-grav-critica);
+  border: 3px solid #ffffff; box-shadow: 0 0 0 2px var(--er-grav-critica), 0 2px 6px #00000066;
+}
 
 .mk-punto {
   display: inline-flex; align-items: center; gap: 4px; padding: 1px 5px; border-radius: 5px; white-space: nowrap;

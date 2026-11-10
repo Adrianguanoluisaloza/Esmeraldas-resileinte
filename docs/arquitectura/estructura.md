@@ -51,7 +51,7 @@ esmeraldas-resiliente/
 │   │   └── src/
 │   │       ├── dominio/        # entidades, catálogos, puertos, errores
 │   │       ├── aplicacion/     # casos de uso: auth, reportes, territorio, operación
-│   │       ├── infraestructura/  # postgres, memoria, fotos, correo, seguridad
+│   │       ├── infraestructura/  # postgres, memoria, fotos, correo, seguridad, ia (Gemini)
 │   │       └── http/           # rutas, esquemas zod, límites, WebSocket
 │   └── web/                    # Astro + islas React + Leaflet
 │       └── src/                # pages, components, layouts, lib, styles
@@ -64,10 +64,12 @@ esmeraldas-resiliente/
 │           ├── reporte/        # domain (casos de uso) · data (cola Hive, modelos) · presentation
 │           ├── sync/           # data (envío en 2 pasos) · presentation (banner)
 │           ├── mis_reportes/   # presentation
-│           ├── albergues/      # data (modelo) · presentation (directorio, más cercano)
+│           ├── albergues/      # data (modelo) · presentation (directorio, tarjeta compartida)
+│           ├── vias/           # domain · data · presentation (estado de vías)
+│           ├── autoproteccion/ # domain · data · presentation (contactos y guía del ciudadano)
 │           ├── operaciones/    # data (repositorio) · presentation (situación, incidentes, alertas)
 │           ├── analisis/       # domain · data · presentation (indicadores, sectores, asistencia)
-│           └── admin/          # presentation (usuarios y auditoría)
+│           └── admin/          # presentation (usuarios, auditoría y cuenta)
 └── docs/
     ├── ARQUITECTURA.md         # componentes y flujo (Mermaid)
     ├── MODELO_DATOS.md         # diagrama ER (Mermaid)

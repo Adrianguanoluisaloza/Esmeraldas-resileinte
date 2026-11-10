@@ -2,6 +2,7 @@ import type { Context, MiddlewareHandler } from "hono";
 import type { z } from "zod";
 import type { CasosAuth } from "../aplicacion/auth.js";
 import type { CasosOperacion } from "../aplicacion/operacion.js";
+import type { CasosClasificacion } from "../aplicacion/clasificacion.js";
 import type { CasosReportes } from "../aplicacion/reportes.js";
 import type { CasosTerritorio } from "../aplicacion/territorio.js";
 import type { Rol } from "../dominio/catalogos.js";
@@ -14,6 +15,7 @@ export interface Dependencias {
   reportes: CasosReportes;
   territorio: CasosTerritorio;
   operacion: CasosOperacion;
+  clasificacion: CasosClasificacion;
   repoReportes: RepositorioReportes;
   fotos: AlmacenFotos;
   tokens: ServicioTokens;

@@ -111,7 +111,7 @@
   border: 1px solid var(--er-border); background: var(--er-surface); color: var(--er-text); font-size: 13px; font-weight: 500; cursor: pointer;
 }
 .pn-tipo svg { width: 16px; height: 16px; color: var(--er-muted); }
-.pn-mapa-marcar { height: 240px; min-height: 0; cursor: crosshair; }
+.pn-mapa-marcar { height: clamp(320px, 52dvh, 560px); min-height: 0; cursor: crosshair; }
 .pn-mapa-marcar .op-mapa { height: 100%; }
 .pn-tipo:hover { border-color: var(--er-border-strong); }
 .pn-tipo[aria-pressed="true"] { border-color: var(--er-text); box-shadow: inset 0 0 0 1px var(--er-text); }

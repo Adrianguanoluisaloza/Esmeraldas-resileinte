@@ -10,13 +10,13 @@ import { ErrorDominio, type CodigoError } from "../dominio/errores.js";
 import type { Dependencias, Entorno } from "./contexto.js";
 import { rutasAuth } from "./rutas/auth.js";
 import { rutasOperacion } from "./rutas/operacion.js";
-import { rutasPendientes } from "./rutas/pendientes.js";
+import { rutasIa } from "./rutas/ia.js";
 import { rutasReportes } from "./rutas/reportes.js";
 import { rutasTerritorio } from "./rutas/territorio.js";
 
 const LOCALHOST = /^http:\/\/(localhost|127\.0\.0\.1)(:\d{1,5})?$/;
 
-const ESTADO_HTTP: Record<CodigoError, 400 | 401 | 403 | 404 | 409 | 422 | 501> = {
+const ESTADO_HTTP: Record<CodigoError, 400 | 401 | 403 | 404 | 409 | 422 | 501 | 503> = {
   VALIDACION: 400,
   NO_AUTENTICADO: 401,
   SIN_PERMISO: 403,
@@ -24,6 +24,7 @@ const ESTADO_HTTP: Record<CodigoError, 400 | 401 | 403 | 404 | 409 | 422 | 501> 
   CONFLICTO: 409,
   TRANSICION_INVALIDA: 422,
   NO_IMPLEMENTADO: 501,
+  NO_DISPONIBLE: 503,
 };
 
 /**
@@ -90,7 +91,7 @@ export function crearApp(deps: Dependencias) {
   app.route("/usuarios", rutasUsuarios(deps));
   app.route("/fotos", rutasFotos(deps));
   app.route("/", rutasOperacion(deps));
-  app.route("/", rutasPendientes(deps));
+  app.route("/", rutasIa(deps));
 
   app.notFound((c) => c.json({ codigo: "NO_ENCONTRADO", mensaje: "Ruta no existe" }, 404));
 

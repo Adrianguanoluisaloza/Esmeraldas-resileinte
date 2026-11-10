@@ -5,7 +5,7 @@ import * as api from '../lib/api';
 import { ETIQUETA_GRAVEDAD, ETIQUETA_NECESIDAD, ETIQUETA_TIPO } from '../lib/catalogos';
 import { Aviso, Boton } from './ui/Basicos';
 import { MapaEsmeraldas } from './MapaEsmeraldas';
-import { marcadorUbicacion, obtenerUbicacion } from '../lib/ubicacion';
+import { obtenerUbicacion } from '../lib/ubicacion';
 
 const TIPOS: Array<[TipoIncidente, typeof Waves]> = [
   ['inundacion', Waves],
@@ -172,7 +172,8 @@ export function FormularioReporte() {
 
       <div className="er-tarjeta op-mapa-tarjeta pn-mapa-marcar">
         <MapaEsmeraldas
-          reportes={ubicacion ? [marcadorUbicacion(ubicacion, 'Ubicación del reporte')] : []}
+          reportes={[]}
+          puntoMarcado={ubicacion}
           puntosServicio={[]}
           onSeleccionarReporte={() => {}}
           alTocarMapa={(latitud, longitud) => setUbicacion({ latitud, longitud, precision: 0, esAproximada: true })}

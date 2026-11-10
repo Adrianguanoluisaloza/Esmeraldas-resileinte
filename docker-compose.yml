@@ -65,6 +65,9 @@ services:
       CORREO_REMITENTE: ${CORREO_REMITENTE:-}
       # Detrás de Cloudflare Tunnel: usar CF-Connecting-IP para el límite de peticiones.
       CONFIAR_EN_PROXY: ${CONFIAR_EN_PROXY:-true}
+      # Opcional: asistente de IA Vigia Esmeraldas. Sin clave, /clasificar responde 501.
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      GEMINI_MODELO: ${GEMINI_MODELO:-gemini-3.8-flash}
     # Contenedor endurecido: sin privilegios extra y sistema de archivos de solo lectura (fotos en volumen).
     read_only: true
     tmpfs:

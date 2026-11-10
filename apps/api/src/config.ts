@@ -28,6 +28,10 @@ const Esquema = z.object({
   CONFIAR_EN_PROXY: z.enum(["true", "false"]).default("false").transform((v) => v === "true"),
   /** Peticiones de escritura permitidas por IP y minuto. */
   LIMITE_ESCRITURAS_MINUTO: z.coerce.number().int().min(10).max(10_000).default(120),
+  /** Clave de API de Vertex AI (Gemini) para el asistente Vigía Esmeraldas. Sin ella, /clasificar responde 501. */
+  GEMINI_API_KEY: z.preprocess((v) => (v === "" ? undefined : v), z.string().min(10).optional()),
+  /** Modelo del agente exportado de Agent Studio. */
+  GEMINI_MODELO: z.string().regex(/^[a-z0-9.-]+$/).default("gemini-3.8-flash"),
 });
 
 export type Config = z.infer<typeof Esquema> & { corsOrigenes: string[] };

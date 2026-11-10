@@ -1,5 +1,6 @@
 import { initializeApp, cert, getApps } from "firebase-admin/app";
 import { CasosAuth } from "./aplicacion/auth.js";
+import { CasosClasificacion } from "./aplicacion/clasificacion.js";
 import { CasosOperacion } from "./aplicacion/operacion.js";
 import { CasosReportes } from "./aplicacion/reportes.js";
 import { CasosTerritorio } from "./aplicacion/territorio.js";
@@ -8,6 +9,7 @@ import type { RepositorioAlertas, RepositorioAsistencia, RepositorioReportes, Re
 import type { Dependencias } from "./http/contexto.js";
 import { CorreoSinConfigurar, CorreoSmtp } from "./infraestructura/correo.js";
 import { FotosEnDisco } from "./infraestructura/fotosDisco.js";
+import { ClasificadorGemini } from "./infraestructura/ia/clasificadorGemini.js";
 import { AlertasEnMemoria, AsistenciaEnMemoria, ReportesEnMemoria, RestablecimientosEnMemoria, TerritorioEnMemoria, UsuariosEnMemoria } from "./infraestructura/memoria/repositorios.js";
 import { AlertasPg, AsistenciaPg, ReportesPg, RestablecimientosPg, TerritorioPg, UsuariosPg, crearPool } from "./infraestructura/postgres/repositorios.js";
 import { ClavesScrypt } from "./infraestructura/seguridad/claves.js";
@@ -71,13 +73,18 @@ export function componer(config: Config) {
     cerrar = async () => {};
   }
 
+  const casosReportes = new CasosReportes(reportes, territorio, bus, relojSistema);
+  const fotos = new FotosEnDisco(CARPETA_FOTOS, "/fotos");
+  const clasificador = config.GEMINI_API_KEY ? new ClasificadorGemini(config.GEMINI_API_KEY, config.GEMINI_MODELO) : null;
+
   const deps: Dependencias = {
     auth: new CasosAuth(usuarios, claves, tokens, relojSistema, restablecimientos, correo, config.URL_WEB),
-    reportes: new CasosReportes(reportes, territorio, bus, relojSistema),
+    reportes: casosReportes,
+    clasificacion: new CasosClasificacion(casosReportes, fotos, clasificador),
     territorio: new CasosTerritorio(territorio, bus),
     operacion: new CasosOperacion(reportes, territorio, alertas, asistencia, bus, relojSistema),
     repoReportes: reportes,
-    fotos: new FotosEnDisco(CARPETA_FOTOS, "/fotos"),
+    fotos,
     tokens,
     corsOrigenes: config.corsOrigenes,
     confiarEnProxy: config.CONFIAR_EN_PROXY,

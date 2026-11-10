@@ -6,6 +6,12 @@ Todos los cambios relevantes del proyecto se registran aquí. Se sigue una estru
 
 ### Added
 
+- API: `POST /reportes/{id}/clasificar` conectado al asistente "Vigía Esmeraldas" (Gemini en Vertex AI, razonamiento bajo). Sugiere tipo y gravedad con explicación y confianza, siempre con aviso de no oficial. Sin `GEMINI_API_KEY` responde 501.
+- Web: en Nuevo reporte el mapa es más grande y el punto marcado se ve como un pin rojo.
+- App móvil: Cuenta del ciudadano con números de emergencia (911 con botón de llamada; el resto marcado "por confirmar") y guía de autoprotección antes, durante y después.
+- App móvil: estado de vías en la pestaña Territorio (ECU 911, Policía y admin pueden cambiarlo).
+- App móvil: el admin queda con 5 pestañas: Situación, Incidentes, Análisis, Territorio y Administración (usuarios, auditoría y cuenta).
+- App móvil: login centrado en cualquier pantalla y tarjetas de incidentes y albergues en 1, 2 o 3 columnas según el ancho.
 - App móvil: panel "Análisis" para ECU 911 y administrador con indicadores, sectores prioritarios, inventario y registro de entregas (igual que Estadísticas y Asistencia de la web).
 - App móvil: en "Situación" el mapa ahora ocupa el centro de la pantalla, con los contadores arriba y las necesidades abajo.
 - App móvil ordenada por capas: cada función en `features/<función>/{domain,data,presentation}`; se eliminó la carpeta suelta `lib/data`.

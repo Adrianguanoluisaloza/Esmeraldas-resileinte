@@ -390,8 +390,10 @@ paths:
     post:
       summary: Sugerencia de tipo y gravedad con IA (Asistente no oficial)
       description: >-
-        Analiza la foto del reporte y devuelve sugerencia de tipo, gravedad,
-        confianza y explicación en palabras. Marcada como sugerencia no vinculante.
+        Asistente "Vigía Esmeraldas" (Gemini en Vertex AI, razonamiento bajo). Analiza el texto,
+        los datos de la familia y la foto si existe, y devuelve tipo, gravedad, confianza y
+        explicación en palabras. No cambia el reporte: es sugerencia no vinculante para el personal
+        (ECU 911, Bomberos, Policía, admin) sobre reportes que ya puede ver.
       tags: [IA]
       security:
         - BearerAuth: []
@@ -409,6 +411,14 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/SugerenciaIA'
+        '403':
+          description: El ciudadano no puede pedir la sugerencia
+        '404':
+          description: Reporte no encontrado o fuera de la competencia del rol
+        '501':
+          description: La IA no está configurada en este servidor (falta GEMINI_API_KEY)
+        '503':
+          description: El servicio de IA no respondió o devolvió algo no válido (código NO_DISPONIBLE)
 
   /vias:
     get:
@@ -1103,6 +1113,9 @@ components:
           minimum: 0
           maximum: 1
           example: 0.88
+        analizo_foto:
+          type: boolean
+          description: true si el modelo recibió la foto del reporte
         aviso:
           type: string
           example: Sugerencia de apoyo, no oficial. Requiere confirmación humana.

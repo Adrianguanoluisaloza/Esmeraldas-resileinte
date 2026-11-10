@@ -15,6 +15,8 @@ import 'features/auth/data/repositories/auth_repository_impl.dart';
 import 'features/auth/domain/repositories/auth_repository.dart';
 import 'features/reporte/domain/usecases/crear_reporte_offline_usecase.dart';
 import 'features/sync/data/services/sync_worker_service.dart';
+import 'features/vias/data/vias_repository_impl.dart';
+import 'features/vias/domain/vias.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -57,6 +59,7 @@ class _EsmeraldasResilienteAppState extends State<EsmeraldasResilienteApp> {
   late final CrearReporteOfflineUseCase _crearReporteUseCase;
   late final SyncWorkerService _syncWorkerService;
   late final AnalisisRepository _analisisRepository;
+  late final ViasRepository _viasRepository;
 
   @override
   void initState() {
@@ -75,6 +78,7 @@ class _EsmeraldasResilienteAppState extends State<EsmeraldasResilienteApp> {
     _analisisRepository = AnalisisRepositoryImpl(
       authRepository: _authRepository,
     );
+    _viasRepository = ViasRepositoryImpl(authRepository: _authRepository);
   }
 
   @override
@@ -91,6 +95,7 @@ class _EsmeraldasResilienteAppState extends State<EsmeraldasResilienteApp> {
         crearReporteUseCase: _crearReporteUseCase,
         syncWorkerService: _syncWorkerService,
         analisisRepository: _analisisRepository,
+        viasRepository: _viasRepository,
       ),
     );
   }

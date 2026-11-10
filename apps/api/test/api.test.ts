@@ -184,14 +184,14 @@ test("ocupación: solo COE la cambia y emite evento en tiempo real", async () =>
   assert.equal(eventos.at(-1)?.tipo, "punto.ocupacion");
 });
 
-test("capas GeoJSON públicas y ruta fuera de alcance con 501", async () => {
+test("capas GeoJSON públicas y la IA no es para el ciudadano", async () => {
   const zonas = await pedir("GET", "/zonas");
   assert.equal(zonas.json.type, "FeatureCollection");
   assert.equal(zonas.json.features[0].geometry.type, "Polygon");
   assert.equal((await pedir("GET", "/vias")).json.features.length, 4);
   const { token } = await cuenta();
   const clasificar = await pedir("POST", `/reportes/${randomUUID()}/clasificar`, { token });
-  assert.equal(clasificar.json.codigo, "NO_IMPLEMENTADO");
+  assert.equal(clasificar.json.codigo, "SIN_PERMISO");
 });
 
 test("CORS solo responde al origen permitido", async () => {

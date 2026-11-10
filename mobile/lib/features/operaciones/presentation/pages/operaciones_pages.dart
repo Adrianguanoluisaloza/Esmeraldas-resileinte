@@ -6,7 +6,9 @@ import '../../../../core/enums/app_enums.dart';
 import '../../../../core/security/permisos.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/mapa_fondo_esmeraldas.dart';
+import '../../../../core/widgets/rejilla_adaptable.dart';
 import '../../../albergues/data/models/punto_servicio_model.dart';
+import '../../../albergues/presentation/widgets/tarjeta_albergue.dart';
 import '../../data/repositories/operaciones_repository.dart';
 import '../../../auth/domain/repositories/auth_repository.dart';
 
@@ -353,76 +355,138 @@ class _IncidentesOperadorPageState extends State<IncidentesOperadorPage> {
               ],
             ),
             const SizedBox(height: 10),
-            ...lista.map((ReporteOperacion r) {
-              final (Color bg, Color fg) = AppTheme.colorEstado(r.estado);
-              final Color cGrav = AppTheme.colorGravedad(r.gravedad);
-              return Padding(
-                padding: const EdgeInsets.only(bottom: 8),
-                child: Card(
-                  child: ListTile(
-                    onTap: () => mostrarHojaGestionReporte(
-                      context,
-                      repo: widget.repo,
-                      sesion: widget.sesion,
-                      reporte: r,
-                    ),
-                    leading: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 6,
-                        vertical: 3,
-                      ),
-                      decoration: BoxDecoration(
-                        color: cGrav.withValues(alpha: 0.14),
-                        borderRadius: BorderRadius.circular(5),
-                        border: Border.all(color: cGrav),
-                      ),
-                      child: Text(
-                        r.gravedad.etiqueta,
-                        style: TextStyle(
-                          fontSize: 10,
-                          fontWeight: FontWeight.w700,
-                          color: cGrav,
-                        ),
-                      ),
-                    ),
-                    title: Text(
-                      '${r.tipo.etiqueta} · ${r.sector}',
-                      style: const TextStyle(
-                        fontWeight: FontWeight.w700,
-                        fontSize: 13.5,
-                      ),
-                    ),
-                    subtitle: Text(
-                      '${r.descripcion}\n'
-                      '${r.personas} personas · ${r.verificado ? "Verificado por 911" : "Reporte ciudadano sin verificar"}',
-                      style: const TextStyle(fontSize: 11.5),
-                    ),
-                    isThreeLine: true,
-                    trailing: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 3,
-                      ),
-                      decoration: BoxDecoration(
-                        color: bg,
-                        borderRadius: BorderRadius.circular(5),
-                      ),
-                      child: Text(
-                        r.estado.etiqueta,
-                        style: TextStyle(
-                          fontSize: 10.5,
-                          fontWeight: FontWeight.w700,
-                          color: fg,
-                        ),
-                      ),
-                    ),
+            if (lista.isEmpty)
+              const Padding(
+                padding: EdgeInsets.symmetric(vertical: 24),
+                child: Center(
+                  child: Text(
+                    'No hay incidentes con esos filtros.',
+                    style: TextStyle(color: AppTheme.colorTextoApagado),
                   ),
                 ),
-              );
-            }),
+              ),
+            RejillaAdaptable(
+              children: lista
+                  .map(
+                    (ReporteOperacion r) => _TarjetaIncidente(
+                      reporte: r,
+                      onTap: () => mostrarHojaGestionReporte(
+                        context,
+                        repo: widget.repo,
+                        sesion: widget.sesion,
+                        reporte: r,
+                      ),
+                    ),
+                  )
+                  .toList(),
+            ),
           ],
         );
       },
+    );
+  }
+}
+
+/// Tarjeta de incidente: el texto nunca queda apretado entre dos insignias.
+class _TarjetaIncidente extends StatelessWidget {
+  const _TarjetaIncidente({required this.reporte, required this.onTap});
+
+  final ReporteOperacion reporte;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final ReporteOperacion r = reporte;
+    final (Color bg, Color fg) = AppTheme.colorEstado(r.estado);
+    final Color cGrav = AppTheme.colorGravedad(r.gravedad);
+    return Card(
+      margin: EdgeInsets.zero,
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: onTap,
+        child: Container(
+          decoration: BoxDecoration(
+            border: Border(left: BorderSide(color: cGrav, width: 4)),
+          ),
+          padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              Text(
+                '${r.tipo.etiqueta} · ${r.sector}',
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  fontWeight: FontWeight.w700,
+                  fontSize: 13.5,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                r.descripcion,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  fontSize: 12,
+                  color: AppTheme.colorTextoSecundario,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Wrap(
+                spacing: 6,
+                runSpacing: 6,
+                crossAxisAlignment: WrapCrossAlignment.center,
+                children: <Widget>[
+                  _Insignia(
+                    texto: r.gravedad.etiqueta,
+                    fondo: cGrav.withValues(alpha: 0.14),
+                    color: cGrav,
+                  ),
+                  _Insignia(texto: r.estado.etiqueta, fondo: bg, color: fg),
+                  Text(
+                    '${r.personas} personas · ${r.verificado ? "Verificado por 911" : "Sin verificar"}',
+                    style: const TextStyle(
+                      fontSize: 11,
+                      color: AppTheme.colorTextoApagado,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _Insignia extends StatelessWidget {
+  const _Insignia({
+    required this.texto,
+    required this.fondo,
+    required this.color,
+  });
+
+  final String texto;
+  final Color fondo;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+      decoration: BoxDecoration(
+        color: fondo,
+        borderRadius: BorderRadius.circular(5),
+      ),
+      child: Text(
+        texto,
+        style: TextStyle(
+          fontSize: 10.5,
+          fontWeight: FontWeight.w700,
+          color: color,
+        ),
+      ),
     );
   }
 }
@@ -647,10 +711,14 @@ class PuntosAlertasOperadorPage extends StatefulWidget {
     super.key,
     required this.repo,
     required this.sesion,
+    this.seccionVias,
   });
 
   final OperacionesRepository repo;
   final UsuarioSesion sesion;
+
+  /// Estado de vías (como "Alertas y vías" de la web). Lo arma el router.
+  final Widget? seccionVias;
 
   @override
   State<PuntosAlertasOperadorPage> createState() =>
@@ -691,68 +759,43 @@ class _PuntosAlertasOperadorPageState extends State<PuntosAlertasOperadorPage> {
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
             ),
             const SizedBox(height: 8),
-            Card(
-              child: Column(
-                children: widget.repo.puntos.map((PuntoServicioModel p) {
-                  final Color c = AppTheme.colorCupo(p.ratioOcupacion);
-                  final String txt = AppTheme.etiquetaCupo(p.ratioOcupacion);
-                  return ListTile(
-                    leading: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 6,
-                        vertical: 3,
-                      ),
-                      decoration: BoxDecoration(
-                        color: c.withValues(alpha: 0.14),
-                        borderRadius: BorderRadius.circular(5),
-                        border: Border.all(color: c),
-                      ),
-                      child: Text(
-                        txt,
-                        style: TextStyle(
-                          fontSize: 10,
-                          fontWeight: FontWeight.w700,
-                          color: c,
-                        ),
-                      ),
-                    ),
-                    title: Text(
-                      p.nombre,
-                      style: const TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    subtitle: Text(
-                      '${p.ocupacion}/${p.capacidad}${p.telefono.trim().isNotEmpty ? ' · Tel: ${p.telefono.trim()}' : ''}',
-                      style: const TextStyle(fontSize: 11.5),
-                    ),
-                    trailing: editaCupo
-                        ? Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: <Widget>[
-                              IconButton(
-                                onPressed: () => widget.repo.ajustarOcupacion(
-                                  widget.sesion,
-                                  p,
-                                  -10,
+            RejillaAdaptable(
+              children: widget.repo.puntos
+                  .map(
+                    (PuntoServicioModel p) => TarjetaAlbergue(
+                      punto: p,
+                      acciones: editaCupo
+                          ? Row(
+                              mainAxisAlignment: MainAxisAlignment.end,
+                              children: <Widget>[
+                                const Text(
+                                  'Ocupación',
+                                  style: TextStyle(fontSize: 11.5),
                                 ),
-                                icon: const Icon(Icons.remove_circle_outline),
-                              ),
-                              IconButton(
-                                onPressed: () => widget.repo.ajustarOcupacion(
-                                  widget.sesion,
-                                  p,
-                                  10,
+                                IconButton(
+                                  tooltip: 'Restar 10',
+                                  onPressed: () => widget.repo.ajustarOcupacion(
+                                    widget.sesion,
+                                    p,
+                                    -10,
+                                  ),
+                                  icon: const Icon(Icons.remove_circle_outline),
                                 ),
-                                icon: const Icon(Icons.add_circle_outline),
-                              ),
-                            ],
-                          )
-                        : null,
-                  );
-                }).toList(),
-              ),
+                                IconButton(
+                                  tooltip: 'Sumar 10',
+                                  onPressed: () => widget.repo.ajustarOcupacion(
+                                    widget.sesion,
+                                    p,
+                                    10,
+                                  ),
+                                  icon: const Icon(Icons.add_circle_outline),
+                                ),
+                              ],
+                            )
+                          : null,
+                    ),
+                  )
+                  .toList(),
             ),
             if (creaPunto) ...<Widget>[
               const SizedBox(height: 10),
@@ -824,6 +867,10 @@ class _PuntosAlertasOperadorPageState extends State<PuntosAlertasOperadorPage> {
                   ),
                 ),
               ),
+            ],
+            if (widget.seccionVias != null) ...<Widget>[
+              const SizedBox(height: 16),
+              widget.seccionVias!,
             ],
             const SizedBox(height: 16),
             const Text(

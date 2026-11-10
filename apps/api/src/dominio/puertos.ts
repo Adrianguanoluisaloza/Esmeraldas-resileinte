@@ -152,3 +152,28 @@ export interface PublicadorEventos {
 export interface Reloj {
   ahora(): Date;
 }
+
+/** Datos del reporte que recibe el modelo de IA. Sin nombres ni correos de la persona. */
+export interface EntradaClasificacion {
+  tipo: TipoIncidente;
+  gravedad: Gravedad;
+  descripcion: string;
+  sector: string | null;
+  personas_afectadas: number;
+  ninos: number;
+  adultos_mayores: number;
+  necesidades: string[];
+  foto: { bytes: Uint8Array; tipo: string } | null;
+}
+
+export interface ResultadoClasificacion {
+  tipo_sugerido: TipoIncidente;
+  gravedad_sugerida: Gravedad;
+  explicacion: string;
+  confianza: number;
+}
+
+/** Modelo de IA que sugiere tipo y gravedad. Es apoyo al operador, nunca una alerta oficial. */
+export interface ClasificadorIa {
+  clasificar(entrada: EntradaClasificacion): Promise<ResultadoClasificacion>;
+}

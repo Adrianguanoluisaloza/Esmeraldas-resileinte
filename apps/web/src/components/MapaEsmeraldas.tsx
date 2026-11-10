@@ -37,6 +37,8 @@ interface Props {
   alTocarMapa?: (latitud: number, longitud: number) => void;
   /** Vista de presentación: no captura el desplazamiento de la página. */
   soloVista?: boolean;
+  /** Punto que la persona marcó al tocar el mapa (pin rojo). */
+  puntoMarcado?: { latitud: number; longitud: number } | null;
 }
 
 // Caja amplia: ciudad y parroquias cercanas (Tachina, Tabiazo, Vuelta Larga).
@@ -108,12 +110,13 @@ export function MapaEsmeraldas({
   mostrarVias = true,
   alTocarMapa,
   soloVista = false,
+  puntoMarcado = null,
 }: Props) {
   const tocarRef = useRef(alTocarMapa);
   tocarRef.current = alTocarMapa;
   const contenedor = useRef<HTMLDivElement>(null);
   const mapa = useRef<L.Map | null>(null);
-  const capas = useRef<{ reportes: L.LayerGroup; puntos: L.LayerGroup; zonas: L.LayerGroup; vias: L.LayerGroup } | null>(null);
+  const capas = useRef<{ reportes: L.LayerGroup; puntos: L.LayerGroup; zonas: L.LayerGroup; vias: L.LayerGroup; marcado: L.LayerGroup } | null>(null);
 
   useEffect(() => {
     if (!contenedor.current || mapa.current) return;
@@ -130,6 +133,7 @@ export function MapaEsmeraldas({
       vias: L.layerGroup().addTo(m),
       puntos: L.layerGroup().addTo(m),
       reportes: L.layerGroup().addTo(m),
+      marcado: L.layerGroup().addTo(m),
     };
     m.on('click', (e: L.LeafletMouseEvent) => tocarRef.current?.(e.latlng.lat, e.latlng.lng));
     mapa.current = m;
@@ -224,6 +228,23 @@ export function MapaEsmeraldas({
       }
     }
   }, [reportes, reporteSeleccionadoId, onSeleccionarReporte]);
+
+  const latMarcada = puntoMarcado?.latitud;
+  const lngMarcada = puntoMarcado?.longitud;
+  useEffect(() => {
+    const m = mapa.current;
+    const capa = capas.current?.marcado;
+    if (!m || !capa) return;
+    capa.clearLayers();
+    if (latMarcada === undefined || lngMarcada === undefined) return;
+    L.marker([latMarcada, lngMarcada], {
+      icon: L.divIcon({ className: 'mk-contenedor', html: '<span class="mk-marcado" aria-hidden="true"></span>', iconSize: [22, 22], iconAnchor: [11, 11] }),
+      zIndexOffset: 2000,
+      title: 'Punto marcado del reporte',
+      interactive: false,
+    }).addTo(capa);
+    if (!m.getBounds().contains([latMarcada, lngMarcada])) m.panTo([latMarcada, lngMarcada]);
+  }, [latMarcada, lngMarcada]);
 
   return <div ref={contenedor} className="op-mapa" role="region" aria-label="Mapa de Esmeraldas con incidentes, zonas de riesgo, vías y albergues" />;
 }

@@ -6,7 +6,9 @@ import '../../../../core/location/location_service.dart';
 import '../../../../core/network/api_client.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/mapa_fondo_esmeraldas.dart';
+import '../../../../core/widgets/rejilla_adaptable.dart';
 import '../../data/models/punto_servicio_model.dart';
+import '../widgets/tarjeta_albergue.dart';
 import '../../../reporte/data/repositories/cola_reportes_repository.dart';
 
 /// Pantalla de Albergues y Centros de Salud (M5 de `TAREAS_MOVIL_FRANCO.md`):
@@ -306,95 +308,21 @@ class _DirectorioAlberguesPageState extends State<DirectorioAlberguesPage> {
               ),
             ),
             const SizedBox(height: 10),
-            ...items.map((PuntoServicioModel p) {
-              final Color colorEstado = AppTheme.colorCupo(p.ratioOcupacion);
-              final String textoCupo = AppTheme.etiquetaCupo(p.ratioOcupacion);
-              final double distanciaKm = widget.locationService
-                  .calcularDistanciaKm(
-                    lat1: AppConfig.esmeraldasCenterLat,
-                    lon1: AppConfig.esmeraldasCenterLng,
-                    lat2: p.latitud,
-                    lon2: p.longitud,
-                  );
-
-              return Padding(
-                padding: const EdgeInsets.only(bottom: 8),
-                child: Card(
-                  child: ListTile(
-                    leading: CircleAvatar(
-                      backgroundColor: colorEstado.withValues(alpha: 0.14),
-                      child: Icon(
-                        p.tipo.valor == 'albergue'
-                            ? Icons.night_shelter
-                            : Icons.local_hospital,
-                        color: colorEstado,
+            RejillaAdaptable(
+              children: items
+                  .map(
+                    (PuntoServicioModel p) => TarjetaAlbergue(
+                      punto: p,
+                      distanciaKm: widget.locationService.calcularDistanciaKm(
+                        lat1: AppConfig.esmeraldasCenterLat,
+                        lon1: AppConfig.esmeraldasCenterLng,
+                        lat2: p.latitud,
+                        lon2: p.longitud,
                       ),
                     ),
-                    title: Text(
-                      p.nombre,
-                      style: const TextStyle(
-                        fontWeight: FontWeight.w700,
-                        fontSize: 13.5,
-                      ),
-                    ),
-                    subtitle: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: <Widget>[
-                        Text(
-                          '${p.tipo.etiqueta} · Libres: ${p.cuposDisponibles}/${p.capacidad}\n'
-                          'A ${distanciaKm.toStringAsFixed(1)} km${p.telefono.trim().isNotEmpty ? ' · Tel: ${p.telefono.trim()}' : ''}',
-                          style: const TextStyle(fontSize: 11.5),
-                        ),
-                        if (p.pasoBloqueado)
-                          const Padding(
-                            padding: EdgeInsets.only(top: 4),
-                            child: Row(
-                              children: <Widget>[
-                                Icon(
-                                  Icons.warning_amber_rounded,
-                                  size: 14,
-                                  color: AppTheme.colorSemaforoAmbar,
-                                ),
-                                SizedBox(width: 4),
-                                Flexible(
-                                  child: Text(
-                                    'El camino cruza una vía bloqueada',
-                                    style: TextStyle(
-                                      fontSize: 11,
-                                      fontWeight: FontWeight.w700,
-                                      color: AppTheme.colorSemaforoAmbar,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                      ],
-                    ),
-                    isThreeLine: true,
-                    trailing: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 4,
-                      ),
-                      decoration: BoxDecoration(
-                        color: colorEstado.withValues(alpha: 0.12),
-                        borderRadius: BorderRadius.circular(6),
-                        border: Border.all(color: colorEstado),
-                      ),
-                      child: Text(
-                        textoCupo,
-                        style: TextStyle(
-                          fontSize: 10.5,
-                          fontWeight: FontWeight.w700,
-                          color: colorEstado,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              );
-            }),
+                  )
+                  .toList(),
+            ),
           ],
         ),
       ],
