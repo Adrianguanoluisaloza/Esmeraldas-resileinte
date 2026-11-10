@@ -6,6 +6,7 @@ Todos los cambios relevantes del proyecto se registran aquí. Se sigue una estru
 
 ### Added
 
+- Documento de pruebas de carga y costos en `docs/PRUEBAS_Y_COSTOS.md`.
 - App móvil: semáforo "Casi sin cupo", alertas en bloques sólidos y formulario de reporte más compacto.
 - App móvil: inicio de sesión con Google también desde el navegador.
 - Documentación técnica consolidada en `docs/DOCUMENTACION_TECNICA.md`.

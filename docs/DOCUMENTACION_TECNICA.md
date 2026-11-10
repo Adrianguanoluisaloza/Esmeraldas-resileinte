@@ -125,3 +125,7 @@ La carga se midió con límite de 1.5 CPU por contenedor.
 ## Manual de usuario
 
 [MANUAL_USUARIO.md](MANUAL_USUARIO.md).
+
+## Pruebas de carga y costos
+
+Detalle por operación, límites de la prueba, costo actual y escenarios de piloto: [PRUEBAS_Y_COSTOS.md](PRUEBAS_Y_COSTOS.md).

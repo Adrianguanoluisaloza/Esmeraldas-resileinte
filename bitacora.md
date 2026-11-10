@@ -322,3 +322,10 @@ Este documento registra decisiones, avances, bloqueos y pendientes importantes. 
 - **Decisión:** La app se toma de `francopcontrol`. Web, API, base y documentación se quedan como están en `desarrollo-adrian`, que es la versión desplegada.
 - **Validación:** `flutter analyze` sin problemas y 18 pruebas en verde.
 - **Pendientes:** Revisar la app nueva en un teléfono.
+
+## 2026-11-10
+- **Área:** producto | infraestructura
+- **Cambio:** Documento `docs/PRUEBAS_Y_COSTOS.md` con la prueba de carga por operación, el costo actual y escenarios de piloto.
+- **Decisión:** No se afirma un punto de quiebre porque la prueba no llegó a él. Los precios sin fuente confirmada quedan como cotización pendiente.
+- **Validación:** Datos tomados de la salida original de la prueba, de los metadatos de la VM y de páginas de precios consultadas el 10 de noviembre.
+- **Pendientes:** Confirmar en Facturación de Oracle si la VM de 4 OCPU genera cobro, porque la cuota gratuita bajó a 2 OCPU en la documentación.
