@@ -6,6 +6,8 @@ Todos los cambios relevantes del proyecto se registran aquí. Se sigue una estru
 
 ### Added
 
+- API y PostGIS en Oracle Cloud con Docker aislado, imagen de base compatible con ARM (`database/Dockerfile`) y túnel propio.
+- Web publicada en producción en `esmeraldas-resiliente.pages.dev` y página `/legal` con licencias, atribución de OpenStreetMap y privacidad.
 - Firebase Auth integrado en backend, web y móvil: autenticación dual JWT propio + Firebase (Google Sign-In). El backend acepta ambos tokens; la web tiene botón "Ingresar con Google" con popup.
 - Nueva ruta `POST /auth/firebase` en el backend: intercambia idToken de Firebase por JWT propio; crea usuario local automáticamente si no existe.
 - `TokensFirebase` y `TokensDual` en la capa de infraestructura del backend (`apps/api`).
