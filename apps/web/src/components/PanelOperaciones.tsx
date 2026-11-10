@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { MapPin, Users } from 'lucide-react';
 import type { EstadoReporte, Gravedad, PuntoServicioMapa, ReporteMapa } from '../types/mapa';
 import * as api from '../lib/api';
-import { COLOR_GRAVEDAD, ETIQUETA_ESTADO, ETIQUETA_NECESIDAD, ETIQUETA_TIPO, PESO_GRAVEDAD, horaLocal, semaforoCupo, tituloReporte } from '../lib/catalogos';
+import { COLOR_GRAVEDAD, compararPorFeed, ETIQUETA_ESTADO, ETIQUETA_NECESIDAD, ETIQUETA_TIPO, PESO_GRAVEDAD, horaLocal, semaforoCupo, tituloReporte } from '../lib/catalogos';
 import { MapaEsmeraldas } from './MapaEsmeraldas';
 import { Aviso, AvisoRespaldo, Boton, Cargando } from './ui/Basicos';
 import { InsigniaEstado, InsigniaGravedad, InsigniaOrigen } from './ui/Insignias';
@@ -86,11 +86,21 @@ export function PanelOperaciones() {
     () =>
       reportes
         .filter((r) => (gravedad === 'todas' || r.gravedad === gravedad) && (estado === 'todos' || r.estado === estado))
-        .sort((a, b) => PESO_GRAVEDAD[b.gravedad] - PESO_GRAVEDAD[a.gravedad] || b.recibido_en.localeCompare(a.recibido_en)),
+        .sort((a, b) => PESO_GRAVEDAD[b.gravedad] - PESO_GRAVEDAD[a.gravedad] || compararPorFeed(a, b)),
     [reportes, gravedad, estado],
   );
 
   const seleccionado = reportes.find((r) => r.id === seleccionadoId) ?? null;
+
+  // La foto del celular llega después del reporte: al abrirlo se pide el dato completo.
+  useEffect(() => {
+    if (!seleccionadoId || respaldo) return;
+    let vigente = true;
+    api.obtenerReporte(seleccionadoId).then((d) => {
+      if (vigente) setReportes((prev) => prev.map((x) => (x.id === d.id ? { ...x, foto_url: d.foto_url, foto_miniatura_url: d.foto_miniatura_url } : x)));
+    }).catch(() => {});
+    return () => { vigente = false; };
+  }, [seleccionadoId, respaldo]);
 
   async function cambiarEstado(r: ReporteMapa, nuevo: EstadoReporte) {
     setGuardando(true);
@@ -201,6 +211,11 @@ export function PanelOperaciones() {
                 <MapPin size={14} aria-hidden="true" /> {seleccionado.sector ?? 'Fuera de zonas registradas'} · {ETIQUETA_TIPO[seleccionado.tipo]}
               </p>
               <p>{seleccionado.descripcion}</p>
+              {seleccionado.foto_url && (
+                <a href={`${api.BASE}${seleccionado.foto_url}`} target="_blank" rel="noopener noreferrer">
+                  <img className="pn-foto" src={`${api.BASE}${seleccionado.foto_miniatura_url ?? seleccionado.foto_url}`} alt={`Foto del reporte: ${tituloReporte(seleccionado)}`} loading="lazy" />
+                </a>
+              )}
 
               <dl className="op-datos">
                 <div><dt>Personas</dt><dd className="er-num">{seleccionado.personas_afectadas}</dd></div>
@@ -210,7 +225,7 @@ export function PanelOperaciones() {
                   <dt>GPS</dt>
                   <dd className="er-num">
                     {seleccionado.latitud.toFixed(4)}, {seleccionado.longitud.toFixed(4)}
-                    {seleccionado.precision_m ? ` ±${Math.round(seleccionado.precision_m)} m` : ''}
+                    {seleccionado.ubicacion_aproximada ? ' · aproximada' : seleccionado.precision_m ? ` ±${Math.round(seleccionado.precision_m)} m` : ''}
                   </dd>
                 </div>
               </dl>
