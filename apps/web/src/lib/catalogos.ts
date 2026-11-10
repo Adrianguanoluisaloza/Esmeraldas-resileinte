@@ -54,7 +54,7 @@ export const ETIQUETA_PUNTO: Record<TipoPuntoServicio, string> = {
 export const ETIQUETA_CUPO: Record<EstadoCupo, string> = {
   verde: 'Con cupo',
   ambar: 'Casi lleno',
-  rojo: 'Lleno',
+  rojo: 'Casi sin cupo',
 };
 
 /** Colores para Leaflet (que no lee variables CSS en SVG/HTML de marcadores). Mismos valores que tokens.css. */
@@ -99,6 +99,20 @@ const formatoFecha = new Intl.DateTimeFormat('es-EC', { day: '2-digit', month: '
 /** Hora de Ecuador continental, que es la que usa el COE. */
 export const horaLocal = (iso: string) => formatoHora.format(new Date(iso));
 export const fechaHoraLocal = (iso: string) => formatoFecha.format(new Date(iso));
+
+/** Tiempo transcurrido para reportes recientes. Las fechas del escenario son futuras y se muestran completas. */
+export function haceTiempo(iso: string): string {
+  const minutos = Math.round((Date.now() - new Date(iso).getTime()) / 60_000);
+  if (minutos < 0 || minutos >= 1440) return fechaHoraLocal(iso);
+  if (minutos < 1) return 'Ahora';
+  return minutos < 60 ? `Hace ${minutos} min` : `Hace ${Math.round(minutos / 60)} h`;
+}
+
+const esReal = (r: Pick<ReporteMapa, 'origen'>) => (r.origen === 'simulado' ? 0 : 1);
+
+/** Reportes reales primero y, dentro de cada grupo, el más reciente. */
+export const compararPorFeed = (a: ReporteMapa, b: ReporteMapa) =>
+  esReal(b) - esReal(a) || b.recibido_en.localeCompare(a.recibido_en);
 
 /** Título visible de un reporte: el de la demo si existe; si no, tipo y sector. */
 export function tituloReporte(r: Pick<ReporteMapa, 'titulo' | 'tipo' | 'sector'> & { descripcion?: string }): string {

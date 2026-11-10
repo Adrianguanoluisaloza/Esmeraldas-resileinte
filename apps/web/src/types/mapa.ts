@@ -40,6 +40,7 @@ export interface ReporteMapa {
   adultos_mayores: number;
   necesidades: Necesidad[];
   foto_url?: string | null;
+  foto_miniatura_url?: string | null;
   sector: string | null;
 }
 
@@ -56,6 +57,7 @@ export interface PuntoServicioMapa {
   estado_cupo: EstadoCupo;
   activo: boolean;
   direccion: string;
+  origen?: 'simulado' | 'coe';
 }
 
 export interface FiltrosMapa {

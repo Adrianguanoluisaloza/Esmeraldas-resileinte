@@ -11,6 +11,7 @@ import {
   Map,
   MapPinned,
   Tent,
+  UsersRound,
 } from 'lucide-react';
 import type { IconoNav } from '../../config/navegacion';
 
@@ -29,6 +30,7 @@ const ICONOS = {
   'mis-reportes': Inbox,
   zonas: MapPinned,
   asistencia: HandHeart,
+  usuarios: UsersRound,
 } as const;
 
 const Icono = ICONOS[Astro.props.nombre];

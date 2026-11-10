@@ -5,7 +5,7 @@ import * as api from '../lib/api';
 import { ETIQUETA_GRAVEDAD, ETIQUETA_NECESIDAD, ETIQUETA_TIPO } from '../lib/catalogos';
 import { Aviso, Boton } from './ui/Basicos';
 import { MapaEsmeraldas } from './MapaEsmeraldas';
-import type { ReporteMapa } from '../types/mapa';
+import { marcadorUbicacion, obtenerUbicacion } from '../lib/ubicacion';
 
 const TIPOS: Array<[TipoIncidente, typeof Waves]> = [
   ['inundacion', Waves],
@@ -15,13 +15,6 @@ const TIPOS: Array<[TipoIncidente, typeof Waves]> = [
   ['dano_vivienda', Home],
   ['otro', CircleHelp],
 ];
-
-/** Punto temporal para dibujar en el mapa dónde quedará el reporte. */
-const marcador = (u: { latitud: number; longitud: number }): ReporteMapa => ({
-  id: 'nuevo', tipo: 'otro', descripcion: 'Ubicación del reporte', gravedad: 'alta', estado: 'pendiente',
-  latitud: u.latitud, longitud: u.longitud, capturado_en: new Date().toISOString(), recibido_en: new Date().toISOString(),
-  verificado: false, personas_afectadas: 0, ninos: 0, adultos_mayores: 0, necesidades: [], sector: null,
-});
 
 /** Centros aproximados de sectores, para reportar sin GPS ni mapa (simulados, no son límites oficiales). */
 const SECTORES_ESMERALDAS: Record<string, { latitud: number; longitud: number }> = {
@@ -71,29 +64,17 @@ export function FormularioReporte() {
     setError(null);
   }
 
-  function obtenerUbicacion() {
-    if (!('geolocation' in navigator)) return setError('Este navegador no permite obtener la ubicación. Elige tu sector o toca el mapa.');
+  async function usarGps() {
     setBuscandoGps(true);
     setError(null);
-    const exito = ({ coords }: GeolocationPosition) => {
-      setUbicacion({ latitud: coords.latitude, longitud: coords.longitude, precision: coords.accuracy, esAproximada: false });
+    try {
+      const c = await obtenerUbicacion();
+      setUbicacion({ latitud: c.latitude, longitud: c.longitude, precision: c.accuracy, esAproximada: false });
+    } catch (e) {
+      setError((e as Error).message);
+    } finally {
       setBuscandoGps(false);
-    };
-    const fallo = (e: GeolocationPositionError) => {
-      setBuscandoGps(false);
-      setError(e.code === e.PERMISSION_DENIED
-        ? 'El navegador bloqueó la ubicación. Actívala en el candado de la barra de direcciones, elige tu sector o toca el mapa.'
-        : 'Este equipo no pudo dar su ubicación. Elige tu sector o toca el mapa.');
-    };
-    // Primero GPS preciso; si no hay señal, se reintenta con la ubicación aproximada de la red.
-    navigator.geolocation.getCurrentPosition(
-      exito,
-      (e) => {
-        if (e.code === e.PERMISSION_DENIED) return fallo(e);
-        navigator.geolocation.getCurrentPosition(exito, fallo, { enableHighAccuracy: false, timeout: 15000, maximumAge: 60000 });
-      },
-      { enableHighAccuracy: true, timeout: 10000, maximumAge: 30000 },
-    );
+    }
   }
 
   async function enviar(e: FormEvent) {
@@ -170,7 +151,7 @@ export function FormularioReporte() {
       </fieldset>
 
       <div className="pn-form__fila">
-        <Boton onClick={obtenerUbicacion} disabled={buscandoGps}>
+        <Boton onClick={usarGps} disabled={buscandoGps}>
           <LocateFixed aria-hidden="true" /> {buscandoGps ? 'Buscando GPS...' : ubicacion && !ubicacion.esAproximada ? 'Ubicación GPS fijada' : 'Obtener mi GPS'}
         </Boton>
         <label className="er-btn er-btn--secundario">
@@ -191,7 +172,7 @@ export function FormularioReporte() {
 
       <div className="er-tarjeta op-mapa-tarjeta pn-mapa-marcar">
         <MapaEsmeraldas
-          reportes={ubicacion ? [marcador(ubicacion)] : []}
+          reportes={ubicacion ? [marcadorUbicacion(ubicacion, 'Ubicación del reporte')] : []}
           puntosServicio={[]}
           onSeleccionarReporte={() => {}}
           alTocarMapa={(latitud, longitud) => setUbicacion({ latitud, longitud, precision: 0, esAproximada: true })}

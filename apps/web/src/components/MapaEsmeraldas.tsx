@@ -88,6 +88,7 @@ function popupPunto(p: PuntoServicioMapa): string {
       <strong>${e(p.nombre)}</strong>
       ${p.direccion ? `<p>${e(p.direccion)}</p>` : ''}
       <div class="mk-popup__dato">${e(p.ocupacion)} de ${e(p.capacidad)} ocupados (${pct} %)</div>
+      ${p.origen === 'simulado' ? '<div class="mk-popup__dato">Dato simulado</div>' : ''}
       ${p.telefono ? `<div class="mk-popup__dato">Teléfono: ${e(p.telefono)}</div>` : ''}
     </div>`;
 }

@@ -151,6 +151,18 @@ export function actualizarOcupacion(id: string, ocupacion: number) {
   });
 }
 
+export function crearPunto(datos: Pick<PuntoServicioMapa, 'nombre' | 'tipo' | 'direccion' | 'telefono' | 'capacidad' | 'ocupacion' | 'latitud' | 'longitud'>) {
+  return pedir<PuntoServicioMapa>('/puntos-servicio', { method: 'POST', body: JSON.stringify(datos) });
+}
+
+export function listarUsuarios() {
+  return pedir<import('./auth').UsuarioSesion[]>('/usuarios');
+}
+
+export function cambiarRol(id: string, rol: import('./auth').RolUsuario) {
+  return pedir<import('./auth').UsuarioSesion>(`/usuarios/${encodeURIComponent(id)}/rol`, { method: 'PATCH', body: JSON.stringify({ rol }) });
+}
+
 export function zonasGeoJson() {
   return pedir<GeoJSON.FeatureCollection>('/zonas');
 }

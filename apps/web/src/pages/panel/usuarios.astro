@@ -1,0 +1,11 @@
+---
+import PanelLayout from '../../layouts/PanelLayout.astro';
+import { GestionUsuarios } from '../../components/GestionUsuarios';
+import '../../styles/operaciones.css';
+---
+
+<PanelLayout titulo="Usuarios y roles" roles={['admin']}>
+  <GestionUsuarios client:only="react">
+    <div slot="fallback" class="er-cargando"><div class="er-giro"></div></div>
+  </GestionUsuarios>
+</PanelLayout>

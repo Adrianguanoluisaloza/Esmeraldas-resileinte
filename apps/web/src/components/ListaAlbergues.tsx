@@ -1,11 +1,13 @@
 import { useEffect, useState } from 'react';
 import { Minus, Navigation, Phone, Plus } from 'lucide-react';
+import { obtenerUbicacion } from '../lib/ubicacion';
+import { FormularioAlbergue } from './FormularioAlbergue';
 import { obtenerSesionActual } from '../lib/auth';
 import type { PuntoServicioMapa } from '../types/mapa';
 import * as api from '../lib/api';
 import { ETIQUETA_PUNTO, semaforoCupo } from '../lib/catalogos';
 import { Aviso, AvisoRespaldo, BarraCapacidad, Boton, Cargando } from './ui/Basicos';
-import { InsigniaCupo } from './ui/Insignias';
+import { InsigniaCupo, InsigniaOrigen } from './ui/Insignias';
 
 type Cercano = PuntoServicioMapa & { distancia_m?: number; paso_bloqueado?: boolean };
 
@@ -20,6 +22,7 @@ export function ListaAlbergues() {
   const [personas, setPersonas] = useState(1);
   const [buscando, setBuscando] = useState(false);
   const [esCoe, setEsCoe] = useState(false);
+  const [agregando, setAgregando] = useState(false);
 
   useEffect(() => {
     const rol = obtenerSesionActual()?.rol;
@@ -46,31 +49,21 @@ export function ListaAlbergues() {
       .catch((e) => setAviso(e instanceof api.ErrorApi ? e.message : 'No se pudieron cargar los albergues.'));
   }, []);
 
-  function buscarCercanos() {
-    if (!('geolocation' in navigator)) {
-      setAviso('Este navegador no permite obtener la ubicación.');
-      return;
-    }
+  async function buscarCercanos() {
     setBuscando(true);
     setAviso(null);
-    navigator.geolocation.getCurrentPosition(
-      async ({ coords }) => {
-        try {
-          setPuntos(await api.puntosCercanos(coords.latitude, coords.longitude, personas));
-        } catch (e) {
-          setAviso(e instanceof api.ErrorApi && e.codigo === 'VALIDACION'
-            ? 'Tu ubicación está fuera de la provincia de Esmeraldas.'
-            : e instanceof api.ErrorApi ? e.message : 'No se pudo buscar.');
-        } finally {
-          setBuscando(false);
-        }
-      },
-      () => {
-        setBuscando(false);
-        setAviso('No se pudo obtener tu ubicación. Revisa el permiso del navegador.');
-      },
-      { timeout: 15000, maximumAge: 60000 },
-    );
+    try {
+      const c = await obtenerUbicacion();
+      setPuntos(await api.puntosCercanos(c.latitude, c.longitude, personas));
+    } catch (e) {
+      if (e instanceof api.ErrorApi) {
+        setAviso(e.codigo === 'VALIDACION' ? 'Tu ubicación está fuera de la provincia de Esmeraldas.' : e.message);
+      } else {
+        setAviso((e as Error).message);
+      }
+    } finally {
+      setBuscando(false);
+    }
   }
 
   if (!puntos && !aviso) return <Cargando texto="Cargando albergues..." />;
@@ -89,7 +82,21 @@ export function ListaAlbergues() {
           <Navigation aria-hidden="true" />
           {buscando ? 'Buscando...' : 'Albergues cerca de mí'}
         </Boton>
+        {esCoe && !respaldo && !agregando && (
+          <Boton variante="secundario" onClick={() => setAgregando(true)}><Plus aria-hidden="true" /> Agregar punto</Boton>
+        )}
       </div>
+
+      {agregando && (
+        <FormularioAlbergue
+          alCancelar={() => setAgregando(false)}
+          alCrear={(p) => {
+            setPuntos((l) => [{ ...p, estado_cupo: semaforoCupo(p.capacidad, p.ocupacion) }, ...(l ?? [])]);
+            setAgregando(false);
+            setAviso(null);
+          }}
+        />
+      )}
 
       <ul className="pn-rejilla-tarjetas">
         {puntos?.map((p) => (
@@ -99,6 +106,8 @@ export function ListaAlbergues() {
               <InsigniaCupo valor={p.estado_cupo} />
             </div>
             <strong>{p.nombre}</strong>
+            {p.origen === 'simulado' && <span className="pn-izquierda"><InsigniaOrigen valor="simulado" /></span>}
+            {p.origen === 'coe' && <span className="pn-izquierda"><span className="er-insignia">Registrado por el COE</span></span>}
             {p.paso_bloqueado && <span className="er-insignia er-insignia--estado-pendiente" style={{ justifySelf: 'start' }}>El camino cruza una vía bloqueada</span>}
             {p.direccion && <span className="pn-sub">{p.direccion}</span>}
             <BarraCapacidad ocupacion={p.ocupacion} capacidad={p.capacidad} estado={p.estado_cupo} />

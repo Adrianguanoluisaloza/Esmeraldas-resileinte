@@ -17,7 +17,8 @@ export type IconoNav =
   | 'reportar'
   | 'mis-reportes'
   | 'zonas'
-  | 'asistencia';
+  | 'asistencia'
+  | 'usuarios';
 
 export interface ItemNav {
   ruta: string;
@@ -56,6 +57,10 @@ export const NAVEGACION: GrupoNav[] = [
   {
     titulo: 'Territorio',
     items: [{ ruta: '/panel/albergues', etiqueta: 'Albergues', icono: 'albergues', roles: TODOS }],
+  },
+  {
+    titulo: 'Administración',
+    items: [{ ruta: '/panel/usuarios', etiqueta: 'Usuarios y roles', icono: 'usuarios', roles: ['admin'] }],
   },
 ];
 
