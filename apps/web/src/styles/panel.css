@@ -115,6 +115,7 @@
 }
 .pn-tipo svg { width: 16px; height: 16px; color: var(--er-muted); }
 .pn-mapa-marcar { height: 240px; min-height: 0; cursor: crosshair; }
+.pn-mapa-marcar .op-mapa { height: 100%; }
 .pn-tipo:hover { border-color: var(--er-border-strong); }
 .pn-tipo[aria-pressed="true"] { border-color: var(--er-text); box-shadow: inset 0 0 0 1px var(--er-text); }
 .pn-tipo[aria-pressed="true"] svg { color: var(--er-text); }

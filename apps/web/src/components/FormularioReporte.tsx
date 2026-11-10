@@ -75,16 +75,24 @@ export function FormularioReporte() {
     if (!('geolocation' in navigator)) return setError('Este navegador no permite obtener la ubicación. Elige tu sector o toca el mapa.');
     setBuscandoGps(true);
     setError(null);
+    const exito = ({ coords }: GeolocationPosition) => {
+      setUbicacion({ latitud: coords.latitude, longitud: coords.longitude, precision: coords.accuracy, esAproximada: false });
+      setBuscandoGps(false);
+    };
+    const fallo = (e: GeolocationPositionError) => {
+      setBuscandoGps(false);
+      setError(e.code === e.PERMISSION_DENIED
+        ? 'El navegador bloqueó la ubicación. Actívala en el candado de la barra de direcciones, elige tu sector o toca el mapa.'
+        : 'Este equipo no pudo dar su ubicación. Elige tu sector o toca el mapa.');
+    };
+    // Primero GPS preciso; si no hay señal, se reintenta con la ubicación aproximada de la red.
     navigator.geolocation.getCurrentPosition(
-      ({ coords }) => {
-        setUbicacion({ latitud: coords.latitude, longitud: coords.longitude, precision: coords.accuracy, esAproximada: false });
-        setBuscandoGps(false);
+      exito,
+      (e) => {
+        if (e.code === e.PERMISSION_DENIED) return fallo(e);
+        navigator.geolocation.getCurrentPosition(exito, fallo, { enableHighAccuracy: false, timeout: 15000, maximumAge: 60000 });
       },
-      () => {
-        setBuscandoGps(false);
-        setError('Sin GPS. Elige tu sector o toca el mapa.');
-      },
-      { enableHighAccuracy: true, timeout: 20000, maximumAge: 30000 },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 30000 },
     );
   }
 
@@ -163,7 +171,7 @@ export function FormularioReporte() {
 
       <div className="pn-form__fila">
         <Boton onClick={obtenerUbicacion} disabled={buscandoGps}>
-          <LocateFixed aria-hidden="true" /> {buscandoGps ? 'Buscando GPS...' : ubicacion?.esAproximada ? 'GPS disponible' : ubicacion ? 'Ubicación GPS fijada' : 'Obtener mi GPS'}
+          <LocateFixed aria-hidden="true" /> {buscandoGps ? 'Buscando GPS...' : ubicacion && !ubicacion.esAproximada ? 'Ubicación GPS fijada' : 'Obtener mi GPS'}
         </Boton>
         <label className="er-btn er-btn--secundario">
           <Camera aria-hidden="true" /> {foto ? foto.name : 'Foto'}
