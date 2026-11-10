@@ -107,7 +107,7 @@ Los secretos viven en variables de entorno, fuera del repositorio. Pasos complet
 | Prueba | Resultado |
 | --- | --- |
 | API (`npm run ci`) | 54 pruebas en verde |
-| Flutter | 14 pruebas en verde |
+| Flutter | 18 pruebas en verde |
 | Auditoría de producción | 24 de 24 comprobaciones: rutas, roles, capas, PostGIS, fotos, restablecimiento, WebSocket, teselas y APK |
 | Carga, lecturas | Unas 1490 solicitudes por segundo con 1000 conexiones, 0 errores |
 | Carga, lecturas con token | Unas 850 solicitudes por segundo, 0 errores |
