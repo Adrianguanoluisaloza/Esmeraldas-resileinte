@@ -1,6 +1,7 @@
 ---
 /** Cabecera de las páginas públicas (portada y acceso). */
-const ruta = Astro.url.pathname;
+import { Download } from 'lucide-react';
+import { URL_APK } from '../../config/enlaces';
 ---
 
 <header class="st-cabecera">
@@ -13,5 +14,5 @@ const ruta = Astro.url.pathname;
     <a href="/#instituciones">Instituciones</a>
     <a href="/app">App móvil</a>
   </nav>
-  {ruta !== '/login' && <a class="er-btn st-btn-oscuro" href="/login">Ingresar</a>}
+  <a class="er-btn st-btn-oscuro" href={URL_APK}><Download size={15} aria-hidden="true" /> Descargar app</a>
 </header>
