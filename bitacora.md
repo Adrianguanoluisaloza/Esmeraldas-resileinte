@@ -295,3 +295,9 @@ Este documento registra decisiones, avances, bloqueos y pendientes importantes. 
 - **Decisión:** Enviar reportes sin datos móviles queda como propuesta: SMS con pasarela o canal satelital. La versión actual guarda y sincroniza al recuperar la conexión.
 - **Validación:** 24 comprobaciones en producción: web, login por rol, permisos, capas, PostGIS, fotos, recuperar contraseña, WebSocket, teselas y descarga del APK.
 - **Pendientes:** Presentación. Retirar el túnel temporal cuando todos usen el APK nuevo. Cambiar la clave demo después de la demo.
+
+## 2026-11-10 — Portada con video y página de la app
+- **Área:** web
+- **Cambio:** La portada muestra un video del panel real grabado en local con datos de prueba. Nueva página `/app` con capturas, funciones y pasos de instalación.
+- **Decisión:** De las capturas públicas se borró la ubicación real del celular y el botón flotante del sistema. No se usan imágenes de terceros.
+- **Validación:** Typecheck y build. Revisión de portada y `/app` en producción.

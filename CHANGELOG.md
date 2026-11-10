@@ -6,6 +6,7 @@ Todos los cambios relevantes del proyecto se registran aquí. Se sigue una estru
 
 ### Added
 
+- Portada con video del panel y página propia de la app móvil en `/app`.
 - Documento de propuestas: envío por SMS o satélite, rutas por la red vial, censo de familias e IA.
 - Lo atendido sale del mapa automáticamente, búsqueda de incidentes y edición de reportes con historial.
 - Mapa con vías reales de OpenStreetMap y zonas de forma natural. Menú lateral plegable y portada renovada.
