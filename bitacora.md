@@ -256,3 +256,10 @@ Este documento registra decisiones, avances, bloqueos y pendientes importantes. 
 - **Decisión:** La regla vive en el servidor (`COMPETENCIA_INSTITUCION`). La web solo oculta lo que el servidor ya rechaza. Las cuentas son de demostración: no implican convenio con esas instituciones.
 - **Validación:** 51 pruebas de API.
 - **Pendientes:** En la app móvil un rol desconocido entra como ciudadano: falta agregar Bomberos y Policía a `RolUsuario`.
+
+## 2026-11-10 — URL fija de la API
+- **Área:** infraestructura
+- **Cambio:** Túnel con nombre `esmeraldas-api` en `https://api-esmeraldas.cifralabapp.com`, en un contenedor propio. Web y APK apuntan a esa URL. Entregables de arquitectura, modelo de datos y manual en `docs/`.
+- **Decisión:** No se usa el túnel de otros proyectos de la VM. Se creó con la autorización oficial de Cloudflare porque el token disponible solo lee túneles.
+- **Validación:** `GET /salud`, login y WebSocket por la URL nueva. Latencia media 0,26 s, igual a la del túnel temporal.
+- **Pendientes:** Retirar `esmeraldas-tunel` cuando todos usen el APK nuevo.
