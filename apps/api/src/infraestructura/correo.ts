@@ -25,7 +25,7 @@ const html = (nombre: string, enlace: string) => `<!doctype html>
 <table role="presentation" cellpadding="0" cellspacing="0"><tr><td style="background:#0b6e4f;border-radius:6px"><a href="${escapar(enlace)}" style="display:inline-block;padding:12px 22px;font-size:15px;font-weight:700;color:#ffffff;text-decoration:none">Crear contraseña nueva</a></td></tr></table>
 <p style="margin:24px 0 0;font-size:13px;line-height:1.55;color:#71717a">El enlace vence en 30 minutos y solo funciona una vez. Si no la pediste, ignora este correo: tu contraseña no cambia.</p>
 </td></tr>
-<tr><td style="padding:16px 28px;border-top:1px solid #e4e4e7;font-size:12px;line-height:1.5;color:#71717a">Prototipo académico. No reemplaza al ECU 911. En una emergencia llama al 911.</td></tr>
+<tr><td style="padding:16px 28px;border-top:1px solid #e4e4e7;font-size:12px;line-height:1.5;color:#71717a">Esmeraldas Resiliente no reemplaza al ECU 911. En una emergencia llama al 911.</td></tr>
 </table>
 </td></tr></table>
 </body></html>`;

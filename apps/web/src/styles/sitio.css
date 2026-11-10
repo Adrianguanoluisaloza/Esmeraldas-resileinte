@@ -37,13 +37,6 @@
 .st-encabezado h2 { max-width: 18ch; font-size: clamp(24px, 2.6vw, 32px); font-weight: 600; letter-spacing: -0.025em; line-height: 1.14; text-wrap: balance; }
 .st-encabezado p { margin-top: var(--er-s3); max-width: 40ch; color: var(--er-text-2); text-wrap: pretty; }
 
-.st-indice { list-style: none; padding: 0; counter-reset: pregunta; }
-.st-indice li { counter-increment: pregunta; display: grid; grid-template-columns: 34px minmax(0, 1fr) auto; align-items: baseline; gap: var(--er-s3); padding: 13px 0; border-top: 1px solid var(--er-border); }
-.st-indice li:first-child { border-top: 0; padding-top: 0; }
-.st-indice li::before { content: counter(pregunta, decimal-leading-zero); font-family: var(--er-font-mono); font-size: 12.5px; color: var(--er-muted); }
-.st-indice__pregunta { font-weight: 500; }
-.st-indice__respuesta { font-size: var(--er-fs-sm); color: var(--er-muted); text-align: right; }
-
 .st-app { align-items: end; }
 .st-app__accion { justify-self: end; text-align: right; }
 
@@ -81,7 +74,5 @@
   .st-tablero__mapa { height: 340px; }
   .st-nav { display: none; }
   .st-cabecera { justify-content: space-between; }
-  .st-indice li { grid-template-columns: 34px minmax(0, 1fr); }
-  .st-indice__respuesta { grid-column: 2; text-align: left; }
   .st-app__accion { justify-self: start; text-align: left; }
 }

@@ -8,16 +8,6 @@ import '../styles/panel.css';
 import '../styles/operaciones.css';
 import '../styles/sitio.css';
 
-const preguntas = [
-  ['¿Qué está sucediendo en el territorio?', 'Mapa operativo'],
-  ['¿Dónde se producen las emergencias?', 'Reportes georreferenciados'],
-  ['¿Cuántas personas y familias están afectadas?', 'Estadísticas del COE'],
-  ['¿Qué sectores requieren atención prioritaria?', 'Priorización por sector'],
-  ['¿Qué vías se encuentran interrumpidas?', 'Capa de vías'],
-  ['¿Dónde existen albergues disponibles?', 'Semáforo de cupo'],
-  ['¿Qué recursos deben movilizarse?', 'Asistencia e inventario'],
-  ['¿Cómo coordinar la atención de incidentes?', 'Estados e historial en tiempo real'],
-];
 ---
 
 <BaseLayout titulo="Inicio">
@@ -39,18 +29,6 @@ const preguntas = [
       </PortadaMapa>
     </section>
 
-    <section class="st-seccion" id="escenario">
-      <div class="st-encabezado">
-        <h2>Jueves, 06:00. Ocho preguntas, una respuesta cada una.</h2>
-        <p>Seis eventos simultáneos tras una noche de lluvia intensa. Esto debe saber el COE en los primeros minutos.</p>
-      </div>
-      <ol class="st-indice">
-        {preguntas.map(([pregunta, respuesta]) => (
-          <li><span class="st-indice__pregunta">{pregunta}</span><span class="st-indice__respuesta">{respuesta}</span></li>
-        ))}
-      </ol>
-    </section>
-
     <section class="st-seccion st-app" id="app">
       <div class="st-encabezado">
         <h2>La app sigue funcionando sin señal.</h2>
@@ -58,13 +36,13 @@ const preguntas = [
       </div>
       <div class="st-app__accion">
         <a class="er-btn er-btn--primario er-btn--lg" href={URL_APK}><Download aria-hidden="true" /> Descargar APK</a>
-        <p class="st-nota">Android. Al ser un prototipo, el teléfono pedirá permitir la instalación.</p>
+        <p class="st-nota">Android. El teléfono pedirá permitir la instalación.</p>
       </div>
     </section>
   </main>
 
   <footer class="st-pie">
-    <span>Esmeraldas Resiliente · Hackathon UTLVTE 2026</span>
+    <span>Esmeraldas Resiliente</span>
     <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">© OpenStreetMap</a>
     <a href="/legal">Legal y licencias</a>
   </footer>
