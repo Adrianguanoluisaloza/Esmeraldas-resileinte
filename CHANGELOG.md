@@ -20,6 +20,7 @@ Todos los cambios relevantes del proyecto se registran aquí. Se sigue una estru
 
 ### Fixed
 
+- Ingreso con Google: ya no exige credenciales de administrador de Firebase y crea usuarios con UUID propio. Se quitan los reportes de prueba de la semilla.
 - Historial de git limpio: eliminadas todas las referencias a "Claude" como autor en las 7 ramas del repositorio. Rama `claude/peaceful-galileo-g66qx0` borrada de GitHub.
 
 - Inventario de agua, alimentos y medicinas: la entrega descuenta stock en la misma transacción y no permite entregar más de lo que hay.
