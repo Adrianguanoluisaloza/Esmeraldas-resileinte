@@ -6,6 +6,7 @@ Todos los cambios relevantes del proyecto se registran aquí. Se sigue una estru
 
 ### Added
 
+- Lo atendido sale del mapa automáticamente, búsqueda de incidentes y edición de reportes con historial.
 - Mapa con vías reales de OpenStreetMap y zonas de forma natural. Menú lateral plegable y portada renovada.
 - App móvil con logo nuevo y cumplimiento de la política de teselas de OpenStreetMap.
 - Logo nuevo de escudo con río en la web y el favicon.

@@ -282,3 +282,9 @@ Este documento registra decisiones, avances, bloqueos y pendientes importantes. 
 - **Cambio:** Las vías cerradas y parciales se dibujan con borde y etiqueta sobre su tramo. El botón de SMS queda oculto hasta configurar `EMERGENCY_SMS_NUMBER`.
 - **Decisión:** El SMS apuntaba al 911 real por defecto: no se debe enviar a una línea de emergencia sin convenio. Sin datos móviles el reporte queda en el celular y se envía al volver la conexión. El GPS recibe de satélites pero no transmite.
 - **Pendientes:** Definir un número receptor y una pasarela SMS si se quiere recibir reportes sin datos en el mapa.
+
+## 2026-11-10 — Atención en el mapa, búsqueda y edición
+- **Área:** backend | web
+- **Cambio:** Lo atendido o descartado sale de la lista y del mapa; lo despachado sigue visible con anillo hueco. Búsqueda en mapa y reportes. Edición de tipo, gravedad y descripción con `PATCH /reportes/{id}`.
+- **Decisión:** Cada edición queda en el historial. Reclasificar el tipo es del ECU 911 y la administración.
+- **Validación:** 54 pruebas de API y recorrido local en navegador. Edición probada contra PostGIS en Oracle con reporte temporal ya borrado.
