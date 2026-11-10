@@ -106,6 +106,14 @@ export function registro(nombre: string, correo: string, password: string) {
   });
 }
 
+export function recuperarClave(correo: string) {
+  return pedir<null>('/auth/recuperar', { method: 'POST', body: JSON.stringify({ correo }) });
+}
+
+export function restablecerClave(token: string, password: string) {
+  return pedir<null>('/auth/restablecer', { method: 'POST', body: JSON.stringify({ token, password }) });
+}
+
 export function listarReportes(filtros: Partial<Record<'estado' | 'tipo' | 'gravedad', string>> = {}) {
   const q = new URLSearchParams(Object.entries(filtros).filter(([, v]) => v) as [string, string][]);
   return conRespaldo(

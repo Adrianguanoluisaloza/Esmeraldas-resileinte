@@ -1,0 +1,18 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import CabeceraSitio from '../components/sitio/CabeceraSitio.astro';
+import { RestablecerCard } from '../components/RestablecerCard';
+import '../styles/panel.css';
+import '../styles/sitio.css';
+---
+
+<BaseLayout titulo="Nueva contraseña">
+  <CabeceraSitio />
+  <main id="contenido" class="st-centro">
+    <div class="er-tarjeta st-tarjeta-acceso">
+      <RestablecerCard client:only="react">
+        <div slot="fallback" class="er-cargando"><div class="er-giro"></div></div>
+      </RestablecerCard>
+    </div>
+  </main>
+</BaseLayout>
