@@ -1,4 +1,4 @@
-import { esPersonalCoe, type EstadoReporte } from "../dominio/catalogos.js";
+import { COMPETENCIA_INSTITUCION, esPersonalCoe, puedeAtenderTipo, type EstadoReporte } from "../dominio/catalogos.js";
 import { ErrorDominio } from "../dominio/errores.js";
 import type { FiltroReportes, PublicadorEventos, Reloj, RepositorioReportes, RepositorioTerritorio, Usuario } from "../dominio/puertos.js";
 import { validarTransicion, type Reporte, type ReporteNuevo } from "../dominio/reporte.js";
@@ -44,15 +44,16 @@ export class CasosReportes {
     return { reporte, nuevo: true };
   }
 
-  /** El ciudadano solo ve lo suyo (protección de datos); el COE ve todo. */
+  /** El ciudadano solo ve lo suyo (protección de datos), cada institución su competencia y el COE todo. */
   listar(actor: Actor, filtro: FiltroReportes) {
-    const alcance = esPersonalCoe(actor.rol) ? filtro : { ...filtro, usuario_id: actor.id };
+    const tipos = COMPETENCIA_INSTITUCION[actor.rol];
+    const alcance = esPersonalCoe(actor.rol) ? filtro : tipos ? { ...filtro, tipos } : { ...filtro, usuario_id: actor.id };
     return this.reportes.listar(alcance);
   }
 
   async detalle(actor: Actor, id: string): Promise<Reporte> {
     const r = await this.reportes.buscar(id);
-    if (!r || (!esPersonalCoe(actor.rol) && r.usuario_id !== actor.id)) {
+    if (!r || (!puedeAtenderTipo(actor.rol, r.tipo) && r.usuario_id !== actor.id)) {
       throw new ErrorDominio("NO_ENCONTRADO", "Reporte no encontrado");
     }
     return r;
@@ -84,9 +85,10 @@ export class CasosReportes {
   }
 
   async cambiarEstado(actor: Actor & { nombre?: string }, id: string, estado: EstadoReporte, nota: string | null, verificado: boolean): Promise<Reporte> {
-    if (!esPersonalCoe(actor.rol)) throw new ErrorDominio("SIN_PERMISO", "Requiere rol operador_911 o admin");
+    if (!esPersonalCoe(actor.rol) && !COMPETENCIA_INSTITUCION[actor.rol]) throw new ErrorDominio("SIN_PERMISO", "Tu rol no gestiona reportes");
     const actual = await this.reportes.buscar(id);
     if (!actual) throw new ErrorDominio("NO_ENCONTRADO", "Reporte no encontrado");
+    if (!puedeAtenderTipo(actor.rol, actual.tipo)) throw new ErrorDominio("SIN_PERMISO", "Este reporte no es competencia de tu institución");
     validarTransicion(actual.estado, estado);
     const r = await this.reportes.actualizarEstado(id, { estado, verificado }, nota, { id: actor.id, nombre: actor.nombre ?? "" });
     if (!r) throw new ErrorDominio("NO_ENCONTRADO", "Reporte no encontrado");

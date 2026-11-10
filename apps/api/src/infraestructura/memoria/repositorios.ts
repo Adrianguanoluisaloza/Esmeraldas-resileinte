@@ -81,7 +81,7 @@ export class ReportesEnMemoria implements RepositorioReportes {
   }
   async listar(f: FiltroReportes) {
     const todos = [...this.datos.values()]
-      .filter((r) => (!f.estado || r.estado === f.estado) && (!f.tipo || r.tipo === f.tipo) && (!f.gravedad || r.gravedad === f.gravedad))
+      .filter((r) => (!f.estado || r.estado === f.estado) && (!f.tipo || r.tipo === f.tipo) && (!f.tipos || f.tipos.includes(r.tipo)) && (!f.gravedad || r.gravedad === f.gravedad))
       .filter((r) => (f.verificado === undefined || r.verificado === f.verificado) && (!f.usuario_id || r.usuario_id === f.usuario_id))
       .sort((a, b) => b.recibido_en.localeCompare(a.recibido_en));
     const inicio = (f.pagina - 1) * f.limite;

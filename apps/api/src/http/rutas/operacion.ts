@@ -1,5 +1,5 @@
 import { Hono } from "hono";
-import { ROLES_COE } from "../../dominio/catalogos.js";
+import { ROLES_COE, ROLES_VIAS } from "../../dominio/catalogos.js";
 import { leerJson, requiereSesion, validar, type Dependencias, type Entorno } from "../contexto.js";
 import { AjusteInventarioEntrada, AlertaEntrada, AlertasFiltro, EntregaEntrada, IdRuta, InventarioRuta, ViaEstadoEntrada } from "../esquemas.js";
 
@@ -25,7 +25,7 @@ export function rutasOperacion(deps: Dependencias) {
     return c.json(await deps.operacion.cerrarAlerta(c.get("sesion"), id));
   });
 
-  r.patch("/vias/:id/estado", coe, async (c) => {
+  r.patch("/vias/:id/estado", requiereSesion(deps.tokens, ROLES_VIAS), async (c) => {
     const { id } = validar(IdRuta, c.req.param());
     const { estado } = await leerJson(c, ViaEstadoEntrada);
     return c.json(await deps.operacion.cambiarVia(c.get("sesion"), id, estado));

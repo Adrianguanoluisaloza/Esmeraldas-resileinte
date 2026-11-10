@@ -50,6 +50,8 @@ export interface ServicioCorreo {
 export interface FiltroReportes {
   estado?: EstadoReporte;
   tipo?: TipoIncidente;
+  /** Limita a los tipos que atiende una institución. */
+  tipos?: readonly TipoIncidente[];
   gravedad?: Gravedad;
   verificado?: boolean;
   /** Si viene, solo los reportes de esa persona (vista "Mis reportes" del ciudadano). */

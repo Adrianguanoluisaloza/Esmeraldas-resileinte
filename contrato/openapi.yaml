@@ -421,7 +421,7 @@ paths:
               properties:
                 rol:
                   type: string
-                  enum: [ciudadano, operador_911, admin]
+                  enum: [ciudadano, operador_911, bomberos, policia, admin]
       responses:
         '200':
           description: Usuario actualizado
@@ -821,7 +821,7 @@ components:
   schemas:
     Rol:
       type: string
-      enum: [ciudadano, operador_911, admin]
+      enum: [ciudadano, operador_911, bomberos, policia, admin]
 
     TipoIncidente:
       type: string

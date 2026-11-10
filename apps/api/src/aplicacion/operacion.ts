@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import { esPersonalCoe, type Necesidad } from "../dominio/catalogos.js";
+import { esPersonalCoe, ROLES_VIAS, type Necesidad } from "../dominio/catalogos.js";
 import { ErrorDominio } from "../dominio/errores.js";
 import {
   estadisticas,
@@ -68,7 +68,7 @@ export class CasosOperacion {
 
   // Vías ------------------------------------------------------------------------------------------------
   async cambiarVia(actor: Actor, id: string, estado: EstadoVia) {
-    this.exigirCoe(actor);
+    if (!ROLES_VIAS.includes(actor.rol)) throw new ErrorDominio("SIN_PERMISO", "Requiere ECU 911, Policía o administración");
     const via = await this.territorio.actualizarVia(id, estado);
     if (!via) throw new ErrorDominio("NO_ENCONTRADO", "Vía no encontrada");
     this.eventos.publicar({ tipo: "via.estado", datos: via });

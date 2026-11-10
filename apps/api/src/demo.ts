@@ -8,6 +8,8 @@ import type { RepositorioUsuarios, ServicioClaves } from "./dominio/puertos.js";
  */
 export const CUENTAS_DEMO: Array<{ nombre: string; correo: string; rol: Rol }> = [
   { nombre: "Operador COE demo", correo: "operador@demo.esmeraldas-resiliente.ec", rol: "operador_911" },
+  { nombre: "Bomberos demo", correo: "bomberos@demo.esmeraldas-resiliente.ec", rol: "bomberos" },
+  { nombre: "Policía demo", correo: "policia@demo.esmeraldas-resiliente.ec", rol: "policia" },
   { nombre: "Administrador demo", correo: "admin@demo.esmeraldas-resiliente.ec", rol: "admin" },
   { nombre: "Ciudadano demo", correo: "ciudadano@demo.esmeraldas-resiliente.ec", rol: "ciudadano" },
 ];

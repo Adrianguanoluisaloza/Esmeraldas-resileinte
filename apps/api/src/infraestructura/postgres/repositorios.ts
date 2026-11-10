@@ -139,6 +139,10 @@ export class ReportesPg implements RepositorioReportes {
     agregar("gravedad", f.gravedad);
     agregar("verificado", f.verificado);
     agregar("usuario_id", f.usuario_id);
+    if (f.tipos) {
+      valores.push([...f.tipos]);
+      condiciones.push(`tipo = ANY($${valores.length}::text[])`);
+    }
     const donde = condiciones.length ? `WHERE ${condiciones.join(" AND ")}` : "";
     const total = await this.db.query(`SELECT count(*)::int AS n FROM reportes ${donde}`, valores);
     const pagina = await this.db.query(

@@ -1,6 +1,6 @@
 import type { Hono } from "hono";
 import type { UpgradeWebSocket, WSContext } from "hono/ws";
-import { esPersonalCoe } from "../dominio/catalogos.js";
+import { esPersonalCoe, puedeAtenderTipo } from "../dominio/catalogos.js";
 import type { EventoTiempoReal, ServicioTokens } from "../dominio/puertos.js";
 import type { BusEventos } from "../infraestructura/sistema.js";
 import type { Entorno, Sesion } from "./contexto.js";
@@ -42,6 +42,6 @@ export function puedeVer(sesion: Sesion, e: EventoTiempoReal): boolean {
   // Información pública para la ciudadanía: alertas, cupos y estado de vías.
   if (e.tipo === "alerta.emitida" || e.tipo === "punto.ocupacion" || e.tipo === "via.estado") return true;
   // De los reportes, solo los propios. Las entregas (datos de familias) son solo para el COE.
-  if (e.tipo === "reporte.creado" || e.tipo === "reporte.estado") return e.datos.usuario_id === sesion.id;
+  if (e.tipo === "reporte.creado" || e.tipo === "reporte.estado") return e.datos.usuario_id === sesion.id || puedeAtenderTipo(sesion.rol, e.datos.tipo);
   return false;
 }

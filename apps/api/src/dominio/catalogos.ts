@@ -2,7 +2,7 @@
  * Catálogos copiados de contrato/openapi.yaml (única fuente de verdad).
  * Si cambia el contrato, se cambia aquí y en la app de Franco al mismo tiempo.
  */
-export const ROLES = ["ciudadano", "operador_911", "admin"] as const;
+export const ROLES = ["ciudadano", "operador_911", "bomberos", "policia", "admin"] as const;
 export type Rol = (typeof ROLES)[number];
 
 export const TIPOS_INCIDENTE = [
@@ -36,3 +36,12 @@ export type Origen = (typeof ORIGENES)[number];
 
 export const ROLES_COE: readonly Rol[] = ["operador_911", "admin"];
 export const esPersonalCoe = (rol: Rol) => ROLES_COE.includes(rol);
+
+/** Reportes que atiende cada institución. ECU 911 y administración ven todos; ver docs/ROLES.md. */
+export const COMPETENCIA_INSTITUCION: Partial<Record<Rol, readonly TipoIncidente[]>> = {
+  bomberos: ["inundacion", "deslizamiento", "personas_atrapadas", "dano_vivienda"],
+  policia: ["via_bloqueada", "personas_atrapadas"],
+};
+export const ROLES_VIAS: readonly Rol[] = [...ROLES_COE, "policia"];
+export const puedeAtenderTipo = (rol: Rol, tipo: TipoIncidente) =>
+  esPersonalCoe(rol) || (COMPETENCIA_INSTITUCION[rol]?.includes(tipo) ?? false);

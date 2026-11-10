@@ -10,7 +10,7 @@ CREATE TABLE usuarios (
   id           UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   nombre       VARCHAR(120) NOT NULL,
   correo       VARCHAR(254) NOT NULL,
-  rol          VARCHAR(20)  NOT NULL CHECK (rol IN ('ciudadano', 'operador_911', 'admin')),
+  rol          VARCHAR(20)  NOT NULL CHECK (rol IN ('ciudadano', 'operador_911', 'bomberos', 'policia', 'admin')),
   clave_hash   TEXT         NOT NULL,
   creado_en    TIMESTAMPTZ  NOT NULL DEFAULT now()
 );
