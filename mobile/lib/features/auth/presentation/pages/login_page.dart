@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-import '../../../../core/config/app_config.dart';
 import '../../../../core/security/validadores.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/mapa_fondo_esmeraldas.dart';
@@ -9,7 +8,6 @@ import '../widgets/google_sign_in_button.dart';
 import 'registro_page.dart';
 
 /// Pantalla de inicio de sesión único sobre el mapa de Esmeraldas (`FlutterMap`).
-/// Cero emojis (M4) y soporte para las credenciales demo de `TAREAS_MOVIL_FRANCO.md` (M2).
 class LoginPage extends StatefulWidget {
   const LoginPage({
     super.key,
@@ -65,20 +63,41 @@ class _LoginPageState extends State<LoginPage> {
       _cargando = true;
     });
     try {
-      final UsuarioSesion s = await widget.authRepository
+      final UsuarioSesion? s = await widget.authRepository
           .iniciarSesionConGoogle();
-      if (mounted) widget.onLoginSuccess(s);
+      if (s != null && mounted) widget.onLoginSuccess(s);
     } on AuthException catch (e) {
       if (mounted) setState(() => _error = e.mensaje);
+    } catch (_) {
+      if (mounted) {
+        setState(() => _error = 'No se pudo iniciar sesión con Google.');
+      }
     } finally {
       if (mounted) setState(() => _cargando = false);
     }
   }
 
-  void _rellenarDemo(String correo, String pass) {
-    _correoCtrl.text = correo;
-    _passCtrl.text = pass;
-    setState(() => _error = null);
+  Future<void> _mostrarDialogoRecuperarPassword() async {
+    final bool? enviado = await showDialog<bool>(
+      context: context,
+      builder: (BuildContext ctx) => _RecuperarPasswordDialog(
+        correoInicial: _correoCtrl.text.trim(),
+        onEnviar: (String c) =>
+            widget.authRepository.recuperarPassword(correo: c),
+      ),
+    );
+
+    if (enviado == true && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Si ese correo tiene una cuenta, enviamos un enlace para crear una contraseña nueva.',
+          ),
+          backgroundColor: AppTheme.colorPrimario,
+          duration: Duration(seconds: 6),
+        ),
+      );
+    }
   }
 
   @override
@@ -86,7 +105,10 @@ class _LoginPageState extends State<LoginPage> {
     return Scaffold(
       body: Stack(
         children: <Widget>[
-          const Positioned.fill(child: MapaFondoEsmeraldas()),
+          // Fondo vectorial: no descarga teselas detrás de la tarjeta, donde la atribución quedaría tapada.
+          const Positioned.fill(
+            child: MapaFondoEsmeraldas(tieneConexion: false),
+          ),
           SafeArea(
             child: ListView(
               padding: const EdgeInsets.all(18),
@@ -101,16 +123,12 @@ class _LoginPageState extends State<LoginPage> {
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(color: AppTheme.colorBorde),
                   ),
-                  child: const Row(
+                  child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: <Widget>[
-                      Icon(
-                        Icons.shield,
-                        color: AppTheme.colorSemaforoRojo,
-                        size: 20,
-                      ),
-                      SizedBox(width: 6),
-                      Text(
+                      Image.asset('assets/logo.png', width: 20, height: 23),
+                      const SizedBox(width: 6),
+                      const Text(
                         'ESMERALDAS ',
                         style: TextStyle(
                           fontWeight: FontWeight.w800,
@@ -118,7 +136,7 @@ class _LoginPageState extends State<LoginPage> {
                           fontSize: 14,
                         ),
                       ),
-                      Text(
+                      const Text(
                         'RESILIENTE',
                         style: TextStyle(
                           fontWeight: FontWeight.w800,
@@ -188,6 +206,21 @@ class _LoginPageState extends State<LoginPage> {
                               ),
                             ),
                           ),
+                          Align(
+                            alignment: Alignment.centerRight,
+                            child: TextButton(
+                              onPressed: _cargando
+                                  ? null
+                                  : _mostrarDialogoRecuperarPassword,
+                              child: const Text(
+                                'Olvidé mi contraseña',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: AppTheme.colorPrimario,
+                                ),
+                              ),
+                            ),
+                          ),
                           if (_error != null) ...<Widget>[
                             const SizedBox(height: 10),
                             Text(
@@ -251,56 +284,6 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                   ),
                 ),
-                if (AppConfig.modoDemo) ...<Widget>[
-                  const SizedBox(height: 12),
-                  Card(
-                    child: Padding(
-                      padding: const EdgeInsets.all(14),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: <Widget>[
-                          const Row(
-                            children: <Widget>[
-                              InsigniaOrigenDato(esOficial: false),
-                              SizedBox(width: 8),
-                              Expanded(
-                                child: Text(
-                                  'Cuentas de demostración (toca para rellenar):',
-                                  style: TextStyle(fontSize: 11.5),
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 8),
-                          _BotonDemo(
-                            icono: Icons.person_outline,
-                            etiqueta: 'Reporte ciudadano — ciudadano@demo.esmeraldas-resiliente.ec',
-                            onTap: () => _rellenarDemo(
-                              'ciudadano@demo.esmeraldas-resiliente.ec',
-                              'demo-resiliente-2026',
-                            ),
-                          ),
-                          _BotonDemo(
-                            icono: Icons.support_agent,
-                            etiqueta: 'Operador 911 — operador@demo.esmeraldas-resiliente.ec',
-                            onTap: () => _rellenarDemo(
-                              'operador@demo.esmeraldas-resiliente.ec',
-                              'demo-resiliente-2026',
-                            ),
-                          ),
-                          _BotonDemo(
-                            icono: Icons.admin_panel_settings_outlined,
-                            etiqueta: 'Administrador — admin@demo.esmeraldas-resiliente.ec',
-                            onTap: () => _rellenarDemo(
-                              'admin@demo.esmeraldas-resiliente.ec',
-                              'demo-resiliente-2026',
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
               ],
             ),
           ),
@@ -310,41 +293,124 @@ class _LoginPageState extends State<LoginPage> {
   }
 }
 
-class _BotonDemo extends StatelessWidget {
-  const _BotonDemo({
-    required this.icono,
-    required this.etiqueta,
-    required this.onTap,
+class _RecuperarPasswordDialog extends StatefulWidget {
+  const _RecuperarPasswordDialog({
+    required this.correoInicial,
+    required this.onEnviar,
   });
 
-  final IconData icono;
-  final String etiqueta;
-  final VoidCallback onTap;
+  final String correoInicial;
+  final Future<void> Function(String correo) onEnviar;
+
+  @override
+  State<_RecuperarPasswordDialog> createState() =>
+      _RecuperarPasswordDialogState();
+}
+
+class _RecuperarPasswordDialogState extends State<_RecuperarPasswordDialog> {
+  late final TextEditingController _ctrl;
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  bool _enviando = false;
+  String? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    _ctrl = TextEditingController(text: widget.correoInicial);
+  }
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  Future<void> _enviar() async {
+    if (!_formKey.currentState!.validate()) {
+      return;
+    }
+    setState(() {
+      _enviando = true;
+      _error = null;
+    });
+    try {
+      await widget.onEnviar(_ctrl.text.trim());
+      if (mounted) Navigator.of(context).pop(true);
+    } on AuthException catch (e) {
+      if (mounted) {
+        setState(() {
+          _enviando = false;
+          _error = e.mensaje;
+        });
+      }
+    } catch (_) {
+      if (mounted) {
+        setState(() {
+          _enviando = false;
+          _error = 'Error de red al solicitar recuperación.';
+        });
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(top: 6),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(8),
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-          decoration: BoxDecoration(
-            border: Border.all(color: AppTheme.colorBorde),
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: Row(
-            children: <Widget>[
-              Icon(icono, size: 16, color: AppTheme.colorPrimario),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Text(etiqueta, style: const TextStyle(fontSize: 11.5)),
+    return AlertDialog(
+      icon: const Icon(
+        Icons.lock_reset,
+        color: AppTheme.colorPrimario,
+        size: 28,
+      ),
+      title: const Text(
+        'Recuperar contraseña',
+        style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+      ),
+      content: Form(
+        key: _formKey,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: <Widget>[
+            const Text(
+              'Ingresa tu correo para recibir un enlace de recuperación. La contraseña nueva se crea en la web.',
+              style: TextStyle(
+                fontSize: 12,
+                color: AppTheme.colorTextoSecundario,
+              ),
+            ),
+            const SizedBox(height: 12),
+            TextFormField(
+              controller: _ctrl,
+              keyboardType: TextInputType.emailAddress,
+              validator: Validadores.correo,
+              decoration: const InputDecoration(
+                hintText: 'Correo electrónico',
+                prefixIcon: Icon(Icons.alternate_email),
+              ),
+            ),
+            if (_error != null) ...<Widget>[
+              const SizedBox(height: 8),
+              Text(
+                _error!,
+                style: const TextStyle(
+                  color: AppTheme.colorSemaforoRojo,
+                  fontSize: 12,
+                ),
               ),
             ],
-          ),
+          ],
         ),
       ),
+      actions: <Widget>[
+        TextButton(
+          onPressed: _enviando ? null : () => Navigator.of(context).pop(false),
+          child: const Text('Cancelar'),
+        ),
+        FilledButton(
+          onPressed: _enviando ? null : _enviar,
+          child: Text(_enviando ? 'Enviando...' : 'Enviar enlace'),
+        ),
+      ],
     );
   }
 }

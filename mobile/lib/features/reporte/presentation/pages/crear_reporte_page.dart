@@ -6,7 +6,9 @@ import 'package:latlong2/latlong.dart';
 import '../../../../core/config/app_config.dart';
 import '../../../../core/enums/app_enums.dart';
 import '../../../../core/location/location_service.dart';
+import '../../../../core/services/mbtiles_service.dart';
 import '../../../../core/services/photo_capture_service.dart';
+import '../../../../core/services/telephony_service.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/mapa_fondo_esmeraldas.dart';
 import '../../../../data/models/punto_servicio_model.dart';
@@ -32,6 +34,7 @@ class CrearReportePage extends StatefulWidget {
     this.reportes = const <ReporteColaModel>[],
     this.incidentesExtra = const <PinMapaIncidente>[],
     this.photoCaptureService,
+    this.telephonyService,
   });
 
   final CrearReporteOfflineUseCase crearReporteUseCase;
@@ -42,6 +45,7 @@ class CrearReportePage extends StatefulWidget {
   final List<ReporteColaModel> reportes;
   final List<PinMapaIncidente> incidentesExtra;
   final PhotoCaptureService? photoCaptureService;
+  final TelephonyService? telephonyService;
 
   @override
   State<CrearReportePage> createState() => _CrearReportePageState();
@@ -50,6 +54,7 @@ class CrearReportePage extends StatefulWidget {
 class _CrearReportePageState extends State<CrearReportePage> {
   final MapController _mapController = MapController();
   late final PhotoCaptureService _photoService;
+  late final TelephonyService _telephonyService;
 
   _PasoReporte _paso = _PasoReporte.mapaInicial;
   TipoIncidente _tipoSeleccionado = TipoIncidente.inundacion;
@@ -58,7 +63,9 @@ class _CrearReportePageState extends State<CrearReportePage> {
 
   CoordenadaCapturada? _coordenada;
   LatLng? _puntoMarcadoEnMapa;
+  bool _ubicacionFijadaManualmente = false;
   bool _capturandoGps = false;
+  bool _enviandoReporte = false;
   bool _capturandoFoto = false;
   FotoCapturada? _fotoCapturada;
 
@@ -81,6 +88,7 @@ class _CrearReportePageState extends State<CrearReportePage> {
   void initState() {
     super.initState();
     _photoService = widget.photoCaptureService ?? PhotoCaptureService();
+    _telephonyService = widget.telephonyService ?? const TelephonyService();
     _obtenerUbicacionDispositivo(centrarMapa: false);
   }
 
@@ -110,9 +118,11 @@ class _CrearReportePageState extends State<CrearReportePage> {
         _coordenada = coord;
         if (centrarMapa) {
           _puntoMarcadoEnMapa = null;
+          _ubicacionFijadaManualmente = false;
         }
       });
-      if (centrarMapa && widget.tieneConexionReal) {
+      if (centrarMapa &&
+          (widget.tieneConexionReal || EsmeraldasMbTilesService.estaListo)) {
         try {
           _mapController.move(_ubicacionGps, AppConfig.defaultZoom);
         } catch (_) {
@@ -129,6 +139,7 @@ class _CrearReportePageState extends State<CrearReportePage> {
   void _alTocarMapa(LatLng punto) {
     setState(() {
       _puntoMarcadoEnMapa = punto;
+      _ubicacionFijadaManualmente = true;
       if (_paso == _PasoReporte.mapaInicial) {
         _paso = _PasoReporte.confirmarUbicacion;
       }
@@ -260,58 +271,135 @@ class _CrearReportePageState extends State<CrearReportePage> {
     );
   }
 
-  Future<void> _guardarReporteEnCola() async {
-    // M3: latitud norte positiva en Esmeraldas (~0.9592)
-    final CoordenadaCapturada coordenadaFinal = _puntoMarcadoEnMapa != null
-        ? CoordenadaCapturada(
-            latitud: _puntoMarcadoEnMapa!.latitude,
-            longitud: _puntoMarcadoEnMapa!.longitude,
-            precisionMetros: 10.0,
-            esAproximada: false,
-          )
-        : (_coordenada ??
-              const CoordenadaCapturada(
-                latitud: AppConfig.esmeraldasCenterLat,
-                longitud: AppConfig.esmeraldasCenterLng,
-                precisionMetros: 50.0,
-                esAproximada: true,
-              ));
-
-    await widget.crearReporteUseCase.ejecutar(
-      DatosNuevoReporte(
-        tipo: _tipoSeleccionado,
-        descripcion: _descripcionController.text,
-        gravedad: _gravedadSeleccionada,
-        coordenada: coordenadaFinal,
-        rutaFotoLocal: _fotoCapturada?.rutaLocal ?? '',
-        personasAfectadas: _personasAfectadas,
-        ninos: _ninos,
-        adultosMayores: _adultosMayores,
-        necesidades: _necesidades.toList(),
-      ),
-    );
-
-    if (!mounted) return;
-    final LatLng puntoCreado = LatLng(
-      coordenadaFinal.latitud,
-      coordenadaFinal.longitud,
-    );
-    _descripcionController.clear();
-    setState(() {
-      _personasAfectadas = 0;
-      _ninos = 0;
-      _adultosMayores = 0;
-      _necesidades.clear();
-      _fotoCapturada = null;
-      _puntoMarcadoEnMapa = null;
-      _paso = _PasoReporte.mapaInicial;
-    });
-    if (widget.tieneConexionReal) {
-      try {
-        _mapController.move(puntoCreado, AppConfig.defaultZoom);
-      } catch (_) {}
+  Future<CoordenadaCapturada?> _resolverCoordenadaConGpsForzado() async {
+    if (_ubicacionFijadaManualmente && _puntoMarcadoEnMapa != null) {
+      return CoordenadaCapturada(
+        latitud: _puntoMarcadoEnMapa!.latitude,
+        longitud: _puntoMarcadoEnMapa!.longitude,
+        precisionMetros: 50.0,
+        // Marcado a mano: el COE debe saber que no viene del GPS.
+        esAproximada: true,
+      );
     }
-    widget.onReporteGuardado();
+
+    // Fuerza lectura fresca del hardware GPS del dispositivo al enviar el punto por la app
+    final CoordenadaCapturada? gpsFresco = await widget.locationService
+        .capturarUbicacionConRespaldo();
+    if (gpsFresco != null) {
+      _coordenada = gpsFresco;
+      return gpsFresco;
+    }
+
+    return _coordenada;
+  }
+
+  Future<void> _guardarReporteEnCola() async {
+    if (_enviandoReporte) return;
+    setState(() => _enviandoReporte = true);
+    try {
+      // Fuerza captura GPS real del dispositivo si el usuario no fijó un pin manual
+      final CoordenadaCapturada? coordenadaFinal =
+          await _resolverCoordenadaConGpsForzado();
+      if (coordenadaFinal == null) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text(
+                'Sin señal GPS. Toca el mapa para marcar el lugar del reporte.',
+              ),
+            ),
+          );
+        }
+        return;
+      }
+
+      await widget.crearReporteUseCase.ejecutar(
+        DatosNuevoReporte(
+          tipo: _tipoSeleccionado,
+          descripcion: _descripcionController.text,
+          gravedad: _gravedadSeleccionada,
+          coordenada: coordenadaFinal,
+          rutaFotoLocal: _fotoCapturada?.rutaLocal ?? '',
+          personasAfectadas: _personasAfectadas,
+          ninos: _ninos,
+          adultosMayores: _adultosMayores,
+          necesidades: _necesidades.toList(),
+        ),
+      );
+
+      if (!mounted) return;
+      final LatLng puntoCreado = LatLng(
+        coordenadaFinal.latitud,
+        coordenadaFinal.longitud,
+      );
+      _descripcionController.clear();
+      setState(() {
+        _personasAfectadas = 0;
+        _ninos = 0;
+        _adultosMayores = 0;
+        _necesidades.clear();
+        _fotoCapturada = null;
+        _puntoMarcadoEnMapa = null;
+        _ubicacionFijadaManualmente = false;
+        _paso = _PasoReporte.mapaInicial;
+      });
+      if (widget.tieneConexionReal || EsmeraldasMbTilesService.estaListo) {
+        try {
+          _mapController.move(puntoCreado, AppConfig.defaultZoom);
+        } catch (_) {}
+      }
+      widget.onReporteGuardado();
+    } finally {
+      if (mounted) {
+        setState(() => _enviandoReporte = false);
+      }
+    }
+  }
+
+  Future<void> _enviarPuntoGpsPorSms() async {
+    setState(() => _capturandoGps = true);
+    try {
+      final CoordenadaCapturada? coord =
+          await _resolverCoordenadaConGpsForzado();
+      if (coord == null) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text(
+                'Sin señal GPS. Toca el mapa para marcar el lugar antes de enviar el SMS.',
+              ),
+            ),
+          );
+        }
+        return;
+      }
+      final int totalPersonas = (_ninos + _adultosMayores) > _personasAfectadas
+          ? (_ninos + _adultosMayores)
+          : (_personasAfectadas > 0 ? _personasAfectadas : 1);
+      final bool enviado = await _telephonyService.enviarPuntoEmergenciaPorSms(
+        latitud: coord.latitud,
+        longitud: coord.longitud,
+        tipo: _tipoSeleccionado,
+        gravedad: _gravedadSeleccionada,
+        precisionMetros: coord.precisionMetros,
+        personasAfectadas: totalPersonas,
+        descripcion: _descripcionController.text,
+      );
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            enviado
+                ? 'Punto GPS (${coord.latitud.toStringAsFixed(4)}, ${coord.longitud.toStringAsFixed(4)}) preparado/enviado por SMS de emergencia.'
+                : 'El envío por SMS solo está disponible en dispositivos móviles Android.',
+          ),
+        ),
+      );
+    } finally {
+      if (mounted) {
+        setState(() => _capturandoGps = false);
+      }
+    }
   }
 
   List<PinMapaIncidente> _construirPinesIncidentes() {
@@ -493,7 +581,9 @@ class _CrearReportePageState extends State<CrearReportePage> {
               Flexible(
                 child: ListView(
                   shrinkWrap: true,
-                  children: _sectoresEsmeraldas.entries.map((MapEntry<String, LatLng> e) {
+                  children: _sectoresEsmeraldas.entries.map((
+                    MapEntry<String, LatLng> e,
+                  ) {
                     return ListTile(
                       leading: const Icon(Icons.location_on_outlined),
                       title: Text(e.key),
@@ -532,20 +622,33 @@ class _CrearReportePageState extends State<CrearReportePage> {
                 backgroundColor: AppTheme.colorSemaforoRojo,
                 minimumSize: const Size.fromHeight(52),
               ),
-              onPressed: () {
-                setState(() {
-                  _puntoMarcadoEnMapa ??= _ubicacionGps;
-                  _paso = _PasoReporte.confirmarUbicacion;
-                });
-              },
+              onPressed: _capturandoGps
+                  ? null
+                  : () async {
+                      if (!_ubicacionFijadaManualmente) {
+                        await _obtenerUbicacionDispositivo(centrarMapa: true);
+                      }
+                      if (!mounted) return;
+                      setState(() {
+                        _puntoMarcadoEnMapa ??= _ubicacionGps;
+                        _paso = _PasoReporte.confirmarUbicacion;
+                      });
+                    },
               icon: const Icon(Icons.local_fire_department_outlined),
               label: const Text('Reportar emergencia'),
             ),
             const SizedBox(height: 8),
             ActionChip(
               backgroundColor: Colors.white,
-              avatar: const Icon(Icons.location_city, size: 14, color: AppTheme.colorPrimario),
-              label: const Text('¿Sin señal GPS? Toca aquí para elegir tu sector', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600)),
+              avatar: const Icon(
+                Icons.location_city,
+                size: 14,
+                color: AppTheme.colorPrimario,
+              ),
+              label: const Text(
+                '¿Sin señal GPS? Toca aquí para elegir tu sector',
+                style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600),
+              ),
               onPressed: _mostrarSelectorSectores,
             ),
             const SizedBox(height: 6),
@@ -649,6 +752,7 @@ class _CrearReportePageState extends State<CrearReportePage> {
                             onPressed: () {
                               setState(() {
                                 _puntoMarcadoEnMapa = null;
+                                _ubicacionFijadaManualmente = false;
                                 _paso = _PasoReporte.mapaInicial;
                               });
                             },
@@ -664,8 +768,15 @@ class _CrearReportePageState extends State<CrearReportePage> {
             const SizedBox(height: 8),
             ActionChip(
               backgroundColor: Colors.white,
-              avatar: const Icon(Icons.location_city, size: 14, color: AppTheme.colorPrimario),
-              label: const Text('¿Sin señal GPS? Toca aquí para elegir tu sector', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600)),
+              avatar: const Icon(
+                Icons.location_city,
+                size: 14,
+                color: AppTheme.colorPrimario,
+              ),
+              label: const Text(
+                '¿Sin señal GPS? Toca aquí para elegir tu sector',
+                style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600),
+              ),
               onPressed: _mostrarSelectorSectores,
             ),
             const SizedBox(height: 6),
@@ -698,271 +809,298 @@ class _CrearReportePageState extends State<CrearReportePage> {
     final bool tieneFoto = _fotoCapturada != null;
     final LatLng coordMostrada = _coordenadaActiva;
 
-    return ListView(
-      padding: const EdgeInsets.fromLTRB(14, 90, 14, 16),
-      children: <Widget>[
-        Align(
-          alignment: Alignment.centerLeft,
-          child: FilledButton.tonalIcon(
-            style: FilledButton.styleFrom(
-              backgroundColor: Colors.white,
-              foregroundColor: AppTheme.colorTexto,
-              minimumSize: const Size(0, 36),
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            ),
-            onPressed: () {
-              setState(() => _paso = _PasoReporte.mapaInicial);
-            },
-            icon: const Icon(Icons.arrow_back, size: 16),
-            label: const Text(
-              'Cambiar punto en el mapa',
-              style: TextStyle(fontSize: 12),
+    return Container(
+      color: AppTheme.colorFondo,
+      child: ListView(
+        padding: const EdgeInsets.fromLTRB(14, 90, 14, 16),
+        children: <Widget>[
+          Align(
+            alignment: Alignment.centerLeft,
+            child: FilledButton.tonalIcon(
+              style: FilledButton.styleFrom(
+                backgroundColor: Colors.white,
+                foregroundColor: AppTheme.colorTexto,
+                minimumSize: const Size(0, 36),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 6,
+                ),
+              ),
+              onPressed: () {
+                setState(() => _paso = _PasoReporte.mapaInicial);
+              },
+              icon: const Icon(Icons.arrow_back, size: 16),
+              label: const Text(
+                'Cambiar punto en el mapa',
+                style: TextStyle(fontSize: 12),
+              ),
             ),
           ),
-        ),
-        const SizedBox(height: 8),
+          const SizedBox(height: 8),
 
-        // 1. ¿Qué está pasando?
-        Card(
-          child: Padding(
-            padding: const EdgeInsets.all(14),
+          // 1. ¿Qué está pasando?
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(14),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  const Text(
+                    '¿Qué está pasando?',
+                    style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700),
+                  ),
+                  const Text(
+                    'Selecciona el tipo de emergencia y su gravedad.',
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: AppTheme.colorTextoSecundario,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  GridView.count(
+                    crossAxisCount: 3,
+                    mainAxisSpacing: 6,
+                    crossAxisSpacing: 6,
+                    childAspectRatio: 1.35,
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    children: TipoIncidente.values.map((TipoIncidente tipo) {
+                      final bool sel = _tipoSeleccionado == tipo;
+                      return InkWell(
+                        borderRadius: BorderRadius.circular(8),
+                        onTap: () => setState(() => _tipoSeleccionado = tipo),
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 140),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 4,
+                            vertical: 4,
+                          ),
+                          decoration: BoxDecoration(
+                            color: sel ? Colors.white : AppTheme.colorCampo,
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(
+                              color: sel
+                                  ? AppTheme.colorPrimario
+                                  : AppTheme.colorBorde,
+                              width: sel ? 1.8 : 1,
+                            ),
+                          ),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: <Widget>[
+                              Icon(
+                                _iconosTipo[tipo] ?? Icons.warning_amber,
+                                size: 20,
+                                color: sel
+                                    ? AppTheme.colorPrimario
+                                    : AppTheme.colorTextoApagado,
+                              ),
+                              const SizedBox(height: 3),
+                              Text(
+                                tipo.etiqueta,
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  fontSize: 10.5,
+                                  fontWeight: sel
+                                      ? FontWeight.w700
+                                      : FontWeight.w500,
+                                  color: sel
+                                      ? AppTheme.colorTexto
+                                      : AppTheme.colorTextoSecundario,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                  const SizedBox(height: 12),
+                  SegmentedButton<GravedadIncidente>(
+                    segments: GravedadIncidente.values
+                        .map(
+                          (GravedadIncidente g) =>
+                              ButtonSegment<GravedadIncidente>(
+                                value: g,
+                                label: Text(
+                                  g.etiqueta,
+                                  style: const TextStyle(fontSize: 11),
+                                ),
+                              ),
+                        )
+                        .toList(),
+                    selected: <GravedadIncidente>{_gravedadSeleccionada},
+                    onSelectionChanged: (Set<GravedadIncidente> nueva) {
+                      setState(() => _gravedadSeleccionada = nueva.first);
+                    },
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 10),
+
+          // 2. Foto + GPS
+          Card(
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
-                const Text(
-                  '¿Qué está pasando?',
-                  style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700),
-                ),
-                const Text(
-                  'Selecciona el tipo de emergencia y su gravedad.',
-                  style: TextStyle(
-                    fontSize: 11,
+                ListTile(
+                  onTap: _capturandoFoto ? null : _mostrarSelectorFoto,
+                  leading: _capturandoFoto
+                      ? const SizedBox(
+                          width: 38,
+                          height: 38,
+                          child: Padding(
+                            padding: EdgeInsets.all(8),
+                            child: CircularProgressIndicator(strokeWidth: 2.2),
+                          ),
+                        )
+                      : (tieneFoto && _fotoCapturada!.bytesEnMemoria != null)
+                      ? ClipRRect(
+                          borderRadius: BorderRadius.circular(8),
+                          child: Image.memory(
+                            _fotoCapturada!.bytesEnMemoria!,
+                            width: 38,
+                            height: 38,
+                            fit: BoxFit.cover,
+                          ),
+                        )
+                      : Container(
+                          width: 38,
+                          height: 38,
+                          decoration: BoxDecoration(
+                            color: tieneFoto
+                                ? AppTheme.colorSemaforoVerde
+                                : AppTheme.colorSemaforoRojo,
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Icon(
+                            tieneFoto ? Icons.check : Icons.camera_alt_outlined,
+                            color: Colors.white,
+                            size: 20,
+                          ),
+                        ),
+                  title: Text(
+                    _capturandoFoto
+                        ? 'Abriendo cámara y comprimiendo foto...'
+                        : tieneFoto
+                        ? 'Foto comprimida · 1280 px · ${_fotoCapturada!.etiquetaTamano}'
+                        : '¿Puedes tomar una foto del incidente?',
+                    style: const TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  subtitle: Text(
+                    tieneFoto
+                        ? 'Toca para cambiar o quitar la evidencia fotográfica'
+                        : 'Evidencia fotográfica del incidente (opcional)',
+                    style: const TextStyle(fontSize: 11),
+                  ),
+                  trailing: Icon(
+                    tieneFoto
+                        ? Icons.edit_outlined
+                        : Icons.add_a_photo_outlined,
+                    size: 18,
                     color: AppTheme.colorTextoSecundario,
                   ),
                 ),
-                const SizedBox(height: 10),
-                GridView.count(
-                  crossAxisCount: 3,
-                  mainAxisSpacing: 8,
-                  crossAxisSpacing: 8,
-                  childAspectRatio: 1.18,
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  children: TipoIncidente.values.map((TipoIncidente tipo) {
-                    final bool sel = _tipoSeleccionado == tipo;
-                    return InkWell(
-                      borderRadius: BorderRadius.circular(8),
-                      onTap: () => setState(() => _tipoSeleccionado = tipo),
-                      child: AnimatedContainer(
-                        duration: const Duration(milliseconds: 140),
-                        padding: const EdgeInsets.all(6),
-                        decoration: BoxDecoration(
-                          color: sel ? Colors.white : AppTheme.colorCampo,
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(
-                            color: sel
-                                ? AppTheme.colorPrimario
-                                : AppTheme.colorBorde,
-                            width: sel ? 1.8 : 1,
-                          ),
-                        ),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: <Widget>[
-                            Icon(
-                              _iconosTipo[tipo] ?? Icons.warning_amber,
-                              size: 23,
-                              color: sel
-                                  ? AppTheme.colorPrimario
-                                  : AppTheme.colorTextoApagado,
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              tipo.etiqueta,
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                fontSize: 10.5,
-                                fontWeight: sel
-                                    ? FontWeight.w700
-                                    : FontWeight.w500,
-                                color: sel
-                                    ? AppTheme.colorTexto
-                                    : AppTheme.colorTextoSecundario,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    );
-                  }).toList(),
-                ),
-                const SizedBox(height: 12),
-                SegmentedButton<GravedadIncidente>(
-                  segments: GravedadIncidente.values
-                      .map(
-                        (GravedadIncidente g) =>
-                            ButtonSegment<GravedadIncidente>(
-                              value: g,
-                              label: Text(
-                                g.etiqueta,
-                                style: const TextStyle(fontSize: 11),
-                              ),
-                            ),
-                      )
-                      .toList(),
-                  selected: <GravedadIncidente>{_gravedadSeleccionada},
-                  onSelectionChanged: (Set<GravedadIncidente> nueva) {
-                    setState(() => _gravedadSeleccionada = nueva.first);
-                  },
+                const Divider(height: 1),
+                ListTile(
+                  leading: const Icon(
+                    Icons.gps_fixed,
+                    color: AppTheme.colorPrimario,
+                  ),
+                  title: Text(
+                    '${coordMostrada.latitude.toStringAsFixed(4)}, '
+                    '${coordMostrada.longitude.toStringAsFixed(4)} '
+                    '· ±${(_coordenada?.precisionMetros ?? 12).toStringAsFixed(0)} m',
+                    style: const TextStyle(
+                      fontSize: 12.5,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  subtitle: Text(
+                    _puntoMarcadoEnMapa != null
+                        ? 'Punto seleccionado en el mapa de Esmeraldas'
+                        : 'Ubicación GPS del dispositivo (latitud norte positiva)',
+                    style: const TextStyle(fontSize: 11),
+                  ),
                 ),
               ],
             ),
           ),
-        ),
-        const SizedBox(height: 10),
+          const SizedBox(height: 10),
 
-        // 2. Foto + GPS
-        Card(
-          child: Column(
-            children: <Widget>[
-              ListTile(
-                onTap: _capturandoFoto ? null : _mostrarSelectorFoto,
-                leading: _capturandoFoto
-                    ? const SizedBox(
-                        width: 38,
-                        height: 38,
-                        child: Padding(
-                          padding: EdgeInsets.all(8),
-                          child: CircularProgressIndicator(strokeWidth: 2.2),
-                        ),
-                      )
-                    : (tieneFoto && _fotoCapturada!.bytesEnMemoria != null)
-                    ? ClipRRect(
-                        borderRadius: BorderRadius.circular(8),
-                        child: Image.memory(
-                          _fotoCapturada!.bytesEnMemoria!,
-                          width: 38,
-                          height: 38,
-                          fit: BoxFit.cover,
-                        ),
-                      )
-                    : Container(
-                        width: 38,
-                        height: 38,
-                        decoration: BoxDecoration(
-                          color: tieneFoto
-                              ? AppTheme.colorSemaforoVerde
-                              : AppTheme.colorSemaforoRojo,
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Icon(
-                          tieneFoto ? Icons.check : Icons.camera_alt_outlined,
-                          color: Colors.white,
-                          size: 20,
-                        ),
-                      ),
-                title: Text(
-                  _capturandoFoto
-                      ? 'Abriendo cámara y comprimiendo foto...'
-                      : tieneFoto
-                      ? 'Foto comprimida · 1280 px · ${_fotoCapturada!.etiquetaTamano}'
-                      : '¿Puedes tomar una foto del incidente?',
-                  style: const TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                subtitle: Text(
-                  tieneFoto
-                      ? 'Toca para cambiar o quitar la evidencia fotográfica'
-                      : 'Pide permiso de cámara y guarda fuera de Hive',
-                  style: const TextStyle(fontSize: 11),
-                ),
-                trailing: Icon(
-                  tieneFoto ? Icons.edit_outlined : Icons.add_a_photo_outlined,
-                  size: 18,
-                  color: AppTheme.colorTextoSecundario,
-                ),
-              ),
-              const Divider(height: 1),
-              ListTile(
-                leading: const Icon(
-                  Icons.gps_fixed,
-                  color: AppTheme.colorPrimario,
-                ),
-                title: Text(
-                  '${coordMostrada.latitude.toStringAsFixed(4)}, '
-                  '${coordMostrada.longitude.toStringAsFixed(4)} '
-                  '· ±${(_coordenada?.precisionMetros ?? 12).toStringAsFixed(0)} m',
-                  style: const TextStyle(
-                    fontSize: 12.5,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                subtitle: Text(
-                  _puntoMarcadoEnMapa != null
-                      ? 'Punto seleccionado en el mapa de Esmeraldas'
-                      : 'Ubicación GPS del dispositivo (latitud norte positiva)',
-                  style: const TextStyle(fontSize: 11),
-                ),
-              ),
-            ],
+          // 3. Familia afectada
+          BloqueFamiliaWidget(
+            personasAfectadas: _personasAfectadas,
+            ninos: _ninos,
+            adultosMayores: _adultosMayores,
+            necesidadesSeleccionadas: _necesidades,
+            onPersonasChanged: (int v) =>
+                setState(() => _personasAfectadas = v),
+            onNinosChanged: (int v) => setState(() => _ninos = v),
+            onAdultosMayoresChanged: (int v) =>
+                setState(() => _adultosMayores = v),
+            onToggleNecesidad: (NecesidadFamiliar nec) {
+              setState(() {
+                if (_necesidades.contains(nec)) {
+                  _necesidades.remove(nec);
+                } else {
+                  _necesidades.add(nec);
+                }
+              });
+            },
           ),
-        ),
-        const SizedBox(height: 10),
+          const SizedBox(height: 10),
 
-        // 3. Familia afectada
-        BloqueFamiliaWidget(
-          personasAfectadas: _personasAfectadas,
-          ninos: _ninos,
-          adultosMayores: _adultosMayores,
-          necesidadesSeleccionadas: _necesidades,
-          onPersonasChanged: (int v) => setState(() => _personasAfectadas = v),
-          onNinosChanged: (int v) => setState(() => _ninos = v),
-          onAdultosMayoresChanged: (int v) =>
-              setState(() => _adultosMayores = v),
-          onToggleNecesidad: (NecesidadFamiliar nec) {
-            setState(() {
-              if (_necesidades.contains(nec)) {
-                _necesidades.remove(nec);
-              } else {
-                _necesidades.add(nec);
-              }
-            });
-          },
-        ),
-        const SizedBox(height: 10),
-
-        // 4. Descripción + botón rojo de envío
-        Card(
-          child: Padding(
-            padding: const EdgeInsets.all(12),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: <Widget>[
-                TextField(
-                  controller: _descripcionController,
-                  maxLength: 280,
-                  decoration: const InputDecoration(
-                    hintText:
-                        'Explica un poco más (sector o referencia, opcional)',
-                    counterText: '',
+          // 4. Descripción + botón rojo de envío
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: <Widget>[
+                  TextField(
+                    controller: _descripcionController,
+                    maxLength: 280,
+                    decoration: const InputDecoration(
+                      hintText:
+                          'Explica un poco más (sector o referencia, opcional)',
+                      counterText: '',
+                    ),
                   ),
-                ),
-                const SizedBox(height: 10),
-                FilledButton.icon(
-                  style: FilledButton.styleFrom(
-                    backgroundColor: AppTheme.colorSemaforoRojo,
+                  const SizedBox(height: 10),
+                  FilledButton.icon(
+                    style: FilledButton.styleFrom(
+                      backgroundColor: AppTheme.colorSemaforoRojo,
+                    ),
+                    onPressed: _enviandoReporte ? null : _guardarReporteEnCola,
+                    icon: const Icon(Icons.send_rounded, size: 18),
+                    label: Text(
+                      _enviandoReporte
+                          ? 'Buscando satélites y guardando...'
+                          : 'Enviar reporte de emergencia',
+                    ),
                   ),
-                  onPressed: _guardarReporteEnCola,
-                  icon: const Icon(Icons.send_rounded, size: 18),
-                  label: const Text('Enviar reporte de emergencia'),
-                ),
-              ],
+                  if (AppConfig.smsEmergenciaNumero.isNotEmpty) ...<Widget>[
+                    const SizedBox(height: 8),
+                    OutlinedButton.icon(
+                      onPressed: _capturandoGps ? null : _enviarPuntoGpsPorSms,
+                      icon: const Icon(Icons.sms_outlined, size: 17),
+                      label: const Text(
+                        'Enviar punto GPS por SMS (sin datos)',
+                        style: TextStyle(fontSize: 12),
+                      ),
+                    ),
+                  ],
+                ],
+              ),
             ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }

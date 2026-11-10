@@ -75,10 +75,12 @@ class _HomeShellPageState extends State<HomeShellPage> {
     };
     _inicializarDatosYSincronizar();
     _restaurarSesion();
-    _relojSesion = Timer.periodic(
-      const Duration(seconds: 15),
-      (_) => _vigilarSesion(),
-    );
+    _relojSesion = Timer.periodic(const Duration(seconds: 15), (_) {
+      _vigilarSesion();
+      if (!_modoOfflineSimulado && !_sincronizando && _cantidadPendientes > 0) {
+        unawaited(_ejecutarSincronizacion());
+      }
+    });
   }
 
   void _onOperacionesActualizadas() {
@@ -107,7 +109,7 @@ class _HomeShellPageState extends State<HomeShellPage> {
   Future<void> _inicializarDatosYSincronizar() async {
     await _recargarDatosLocales();
     if (!_modoOfflineSimulado && _cantidadPendientes > 0) {
-      await _ejecutarSincronizacion();
+      await _ejecutarSincronizacion(forzar: true);
     }
   }
 
@@ -182,7 +184,7 @@ class _HomeShellPageState extends State<HomeShellPage> {
     }
   }
 
-  Future<void> _ejecutarSincronizacion() async {
+  Future<void> _ejecutarSincronizacion({bool forzar = false}) async {
     if (_modoOfflineSimulado) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -195,7 +197,7 @@ class _HomeShellPageState extends State<HomeShellPage> {
     }
     setState(() => _sincronizando = true);
     try {
-      await widget.syncWorkerService.sincronizarPendientes();
+      await widget.syncWorkerService.sincronizarPendientes(forzar: forzar);
       await _recargarDatosLocales();
     } finally {
       if (mounted) {
@@ -268,11 +270,7 @@ class _HomeShellPageState extends State<HomeShellPage> {
           title: Row(
             mainAxisSize: MainAxisSize.min,
             children: <Widget>[
-              const Icon(
-                Icons.shield,
-                color: AppTheme.colorSemaforoRojo,
-                size: 18,
-              ),
+              Image.asset('assets/logo.png', width: 18, height: 21),
               const SizedBox(width: 5),
               const Text('ESMERALDAS '),
               const Text(
@@ -322,7 +320,7 @@ class _HomeShellPageState extends State<HomeShellPage> {
               ),
               onSelected: (bool valor) {
                 setState(() => _modoOfflineSimulado = valor);
-                if (!valor) _ejecutarSincronizacion();
+                if (!valor) _ejecutarSincronizacion(forzar: true);
               },
             ),
             const SizedBox(width: 6),
@@ -333,7 +331,7 @@ class _HomeShellPageState extends State<HomeShellPage> {
             SyncStatusBanner(
               pendientesCount: _cantidadPendientes,
               sincronizando: _sincronizando,
-              onReintentar: _ejecutarSincronizacion,
+              onReintentar: () => _ejecutarSincronizacion(forzar: true),
             ),
             Expanded(child: paginas[idx]),
           ],
@@ -384,12 +382,14 @@ class _HomeShellPageState extends State<HomeShellPage> {
                   await _ejecutarSincronizacion();
                 }
                 if (!mounted) return;
+                final bool quedoPendiente =
+                    _modoOfflineSimulado || _cantidadPendientes > 0;
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
                     content: Text(
-                      _modoOfflineSimulado
-                          ? 'Sin señal: reporte en cola local y marcado en el mapa.'
-                          : 'Reporte sincronizado y publicado en el mapa de Esmeraldas.',
+                      quedoPendiente
+                          ? 'Reporte guardado en cola local y marcado en el mapa; se enviará al conectar con el servidor.'
+                          : 'Reporte sincronizado con el servidor y publicado en el mapa de Esmeraldas.',
                     ),
                     action: SnackBarAction(
                       label: 'Mis reportes',
@@ -405,7 +405,11 @@ class _HomeShellPageState extends State<HomeShellPage> {
             ),
             MisReportesPage(
               reportes: _reportes,
-              onSincronizarManual: _ejecutarSincronizacion,
+              onSincronizarManual: () => _ejecutarSincronizacion(forzar: true),
+              onEliminarReporte: (String id) async {
+                await widget.colaRepository.eliminarReporte(id);
+                await _recargarDatosLocales();
+              },
               sinCuenta: _sesion == null,
               onIniciarSesion: () {
                 setState(() {
@@ -456,6 +460,8 @@ class _HomeShellPageState extends State<HomeShellPage> {
         );
 
       case RolUsuario.operador911:
+      case RolUsuario.bomberos:
+      case RolUsuario.policia:
         return (
           <Widget>[
             SituacionOperadorPage(

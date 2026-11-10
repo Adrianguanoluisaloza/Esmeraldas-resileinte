@@ -66,7 +66,7 @@ class SituacionOperadorPage extends StatelessWidget {
             'Vías bloq.',
           ),
           (
-            '${repo.puntos.where((p) => p.ratioOcupacion < 0.9).length}',
+            '${repo.puntos.where((p) => p.ratioOcupacion < 1.0).length}',
             'Con cupo',
           ),
         ];
@@ -712,7 +712,7 @@ class _PuntosAlertasOperadorPageState extends State<PuntosAlertasOperadorPage> {
                       ),
                     ),
                     subtitle: Text(
-                      '${p.ocupacion}/${p.capacidad} · Tel: ${p.telefono}',
+                      '${p.ocupacion}/${p.capacidad}${p.telefono.trim().isNotEmpty ? ' · Tel: ${p.telefono.trim()}' : ''}',
                       style: const TextStyle(fontSize: 11.5),
                     ),
                     trailing: editaCupo
@@ -819,109 +819,157 @@ class _PuntosAlertasOperadorPageState extends State<PuntosAlertasOperadorPage> {
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
             ),
             const SizedBox(height: 8),
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(12),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: <Widget>[
-                    TextField(
-                      controller: _sectorCtrl,
-                      decoration: const InputDecoration(
-                        hintText: 'Sector (ej. Las Palmas)',
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Row(
-                      children: <Widget>[
-                        Expanded(
-                          child: DropdownButtonFormField<GravedadIncidente>(
-                            initialValue: _nivel,
-                            items: GravedadIncidente.values
-                                .map(
-                                  (g) => DropdownMenuItem<GravedadIncidente>(
-                                    value: g,
-                                    child: Text(g.etiqueta),
-                                  ),
-                                )
-                                .toList(),
-                            onChanged: (v) => setState(() => _nivel = v!),
-                          ),
+            if (widget.sesion.rol.puede(Permiso.alertasCrear))
+              Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: <Widget>[
+                      TextField(
+                        controller: _sectorCtrl,
+                        decoration: const InputDecoration(
+                          hintText: 'Sector (ej. Las Palmas)',
                         ),
-                        const SizedBox(width: 8),
-                        FilterChip(
-                          label: Text(
-                            _oficial ? 'Alerta oficial' : 'Dato simulado',
-                          ),
-                          selected: _oficial,
-                          onSelected: (v) => setState(() => _oficial = v),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    TextField(
-                      controller: _msgCtrl,
-                      decoration: const InputDecoration(
-                        hintText: 'Mensaje para la población',
                       ),
-                    ),
-                    const SizedBox(height: 8),
-                    FilledButton.icon(
-                      style: FilledButton.styleFrom(
-                        backgroundColor: AppTheme.colorSemaforoRojo,
-                      ),
-                      onPressed: () {
-                        try {
-                          widget.repo.emitirAlerta(
-                            widget.sesion,
-                            sector: _sectorCtrl.text,
-                            nivel: _nivel,
-                            mensaje: _msgCtrl.text,
-                            oficial: _oficial,
-                          );
-                          _sectorCtrl.clear();
-                          _msgCtrl.clear();
-                        } catch (e) {
-                          _mostrarError(context, e);
-                        }
-                      },
-                      icon: const Icon(Icons.campaign_outlined),
-                      label: const Text('Emitir alerta'),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 8),
-            ...widget.repo.alertas.map(
-              (AlertaSector a) => Padding(
-                padding: const EdgeInsets.only(bottom: 6),
-                child: Card(
-                  child: ListTile(
-                    leading: const Icon(
-                      Icons.warning_amber_rounded,
-                      color: AppTheme.colorSemaforoAmbar,
-                    ),
-                    title: Row(
-                      children: <Widget>[
-                        Expanded(
-                          child: Text(
-                            '${a.sector} · ${a.nivel.etiqueta}',
-                            style: const TextStyle(
-                              fontWeight: FontWeight.w700,
-                              fontSize: 13,
+                      const SizedBox(height: 8),
+                      Row(
+                        children: <Widget>[
+                          Expanded(
+                            child: DropdownButtonFormField<GravedadIncidente>(
+                              initialValue: _nivel,
+                              items: GravedadIncidente.values
+                                  .map(
+                                    (g) => DropdownMenuItem<GravedadIncidente>(
+                                      value: g,
+                                      child: Text(g.etiqueta),
+                                    ),
+                                  )
+                                  .toList(),
+                              onChanged: (v) => setState(() => _nivel = v!),
                             ),
                           ),
+                          const SizedBox(width: 8),
+                          FilterChip(
+                            label: Text(
+                              _oficial ? 'Alerta oficial' : 'Dato simulado',
+                            ),
+                            selected: _oficial,
+                            onSelected: (v) => setState(() => _oficial = v),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      TextField(
+                        controller: _msgCtrl,
+                        decoration: const InputDecoration(
+                          hintText: 'Mensaje para la población',
                         ),
-                        InsigniaOrigenDato(esOficial: a.oficial),
-                      ],
-                    ),
-                    subtitle: Text('${a.mensaje}\npor ${a.creadaPor}'),
-                    isThreeLine: true,
+                      ),
+                      const SizedBox(height: 8),
+                      FilledButton.icon(
+                        style: FilledButton.styleFrom(
+                          backgroundColor: AppTheme.colorSemaforoRojo,
+                        ),
+                        onPressed: () {
+                          try {
+                            widget.repo.emitirAlerta(
+                              widget.sesion,
+                              sector: _sectorCtrl.text,
+                              nivel: _nivel,
+                              mensaje: _msgCtrl.text,
+                              oficial: _oficial,
+                            );
+                            _sectorCtrl.clear();
+                            _msgCtrl.clear();
+                          } catch (e) {
+                            _mostrarError(context, e);
+                          }
+                        },
+                        icon: const Icon(Icons.campaign_outlined),
+                        label: const Text('Emitir alerta'),
+                      ),
+                    ],
                   ),
                 ),
               ),
-            ),
+            const SizedBox(height: 8),
+            ...widget.repo.alertas.map((AlertaSector a) {
+              final bool esSimulacro = !a.oficial;
+              String mensaje = a.mensaje.trim();
+              if (esSimulacro &&
+                  mensaje.toLowerCase().startsWith('simulacro:')) {
+                mensaje = mensaje.substring('simulacro:'.length).trim();
+              }
+              final Color colorAlerta = esSimulacro
+                  ? AppTheme.colorOrigenSimulado
+                  : AppTheme.colorSemaforoRojo;
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 8),
+                child: Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: esSimulacro
+                        ? const Color(0xFFF7F5FE)
+                        : const Color(0xFFFDF2F2),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(
+                      color: esSimulacro
+                          ? const Color(0xFFE9E4F8)
+                          : const Color(0xFFF9D5D5),
+                    ),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: <Widget>[
+                      Row(
+                        children: <Widget>[
+                          Icon(
+                            Icons.warning_amber_rounded,
+                            size: 18,
+                            color: colorAlerta,
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              '${a.sector} · ${a.nivel.etiqueta}',
+                              style: TextStyle(
+                                fontWeight: FontWeight.w700,
+                                fontSize: 13,
+                                color: colorAlerta,
+                              ),
+                            ),
+                          ),
+                          Text(
+                            esSimulacro ? 'Simulacro' : 'Alerta oficial',
+                            style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w700,
+                              color: colorAlerta,
+                            ),
+                          ),
+                        ],
+                      ),
+                      if (mensaje.isNotEmpty) ...<Widget>[
+                        const SizedBox(height: 4),
+                        Text(
+                          mensaje,
+                          style: const TextStyle(fontSize: 12, height: 1.3),
+                        ),
+                      ],
+                      const SizedBox(height: 2),
+                      Text(
+                        'por ${a.creadaPor}',
+                        style: const TextStyle(
+                          fontSize: 10.5,
+                          color: AppTheme.colorTextoSecundario,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            }),
           ],
         );
       },

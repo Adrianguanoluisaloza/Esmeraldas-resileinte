@@ -92,13 +92,10 @@ class EventoAuditoria {
   final DateTime hora;
 }
 
-/// Repositorio del centro de operaciones (operador 911 y admin).
-/// En modo demo trabaja en memoria con datos SIMULADOS del escenario "jueves 06:00".
+/// Repositorio del centro de operaciones (operador 911 y admin) conectado al backend real.
 /// Cada método verifica el permiso del rol antes de actuar (el backend repite la validación).
 class OperacionesRepository extends ChangeNotifier {
-  OperacionesRepository({this.apiClient}) {
-    _sembrar();
-  }
+  OperacionesRepository({this.apiClient});
 
   ApiClient? apiClient;
   final List<ReporteOperacion> reportes = <ReporteOperacion>[];
@@ -237,6 +234,10 @@ class OperacionesRepository extends ChangeNotifier {
 
   List<ReporteOperacion> reportesVisibles(UsuarioSesion s) {
     if (s.rol.puede(Permiso.reporteVerTodos)) return reportes;
+    final Set<TipoIncidente>? competencia = competenciaInstitucion[s.rol];
+    if (competencia != null) {
+      return reportes.where((r) => competencia.contains(r.tipo)).toList();
+    }
     return reportes.where((r) => r.usuarioId == s.id).toList();
   }
 
@@ -455,204 +456,5 @@ class OperacionesRepository extends ChangeNotifier {
     }
     u.activo = !u.activo;
     auditar(s, u.activo ? 'ACTIVAR USUARIO' : 'DESACTIVAR USUARIO', u.correo);
-  }
-
-  void _sembrar() {
-    reportes.addAll(<ReporteOperacion>[
-      ReporteOperacion(
-        id: 'a4000000-0000-4000-8000-000000000001',
-        usuarioId: 'b0000000-0000-4000-8000-000000000001',
-        tipo: TipoIncidente.inundacion,
-        gravedad: GravedadIncidente.critica,
-        estado: EstadoReporte.pendiente,
-        sector: 'Isla Piedad',
-        punto: const LatLng(0.9765, -79.6582),
-        descripcion:
-            'Acumulación de agua en calles y viviendas de barrios ribereños.',
-        personas: 35,
-        ninos: 12,
-        mayores: 5,
-        necesidades: <NecesidadFamiliar>[
-          NecesidadFamiliar.rescate,
-          NecesidadFamiliar.agua,
-        ],
-        iaExplicacion:
-            'Se observa agua cubriendo la vía y la mitad de las puertas.',
-        iaConfianza: 'alta',
-      ),
-      ReporteOperacion(
-        id: 'a4000000-0000-4000-8000-000000000002',
-        usuarioId: 'b0000000-0000-4000-8000-000000000001',
-        tipo: TipoIncidente.inundacion,
-        gravedad: GravedadIncidente.critica,
-        estado: EstadoReporte.pendiente,
-        sector: 'Ribera del río Teaone (Tabiazo)',
-        punto: const LatLng(0.9120, -79.6320),
-        descripcion:
-            'Desbordamiento del río en comunidad rural con señal limitada.',
-        personas: 60,
-        ninos: 20,
-        mayores: 9,
-        necesidades: <NecesidadFamiliar>[
-          NecesidadFamiliar.rescate,
-          NecesidadFamiliar.alimentos,
-          NecesidadFamiliar.agua,
-        ],
-      ),
-      ReporteOperacion(
-          id: 'a4000000-0000-4000-8000-000000000003',
-          usuarioId: 'u9',
-          tipo: TipoIncidente.viaBloqueada,
-          gravedad: GravedadIncidente.alta,
-          estado: EstadoReporte.enProceso,
-          sector: 'Acceso Puente Tachina',
-          punto: const LatLng(0.9824, -79.6385),
-          descripcion:
-              'Deslizamiento interrumpe la vía. Se requiere ruta alterna.',
-          verificado: true,
-          tieneFoto: false,
-        )
-        ..historial.add(
-          'Pendiente → En proceso · operador@demo.esmeraldas-resiliente.ec · Maquinaria en ruta',
-        ),
-      ReporteOperacion(
-        id: 'a4000000-0000-4000-8000-000000000004',
-        usuarioId: 'u8',
-        tipo: TipoIncidente.personasAtrapadas,
-        gravedad: GravedadIncidente.critica,
-        estado: EstadoReporte.pendiente,
-        sector: 'Barrio 20 de Noviembre',
-        punto: const LatLng(0.9548, -79.6695),
-        descripcion: 'Familias atrapadas en planta alta, piden evacuación.',
-        personas: 14,
-        ninos: 6,
-        mayores: 3,
-        necesidades: <NecesidadFamiliar>[
-          NecesidadFamiliar.rescate,
-          NecesidadFamiliar.medicinas,
-        ],
-        iaExplicacion: 'Personas sobre planta alta rodeadas de agua.',
-        iaConfianza: 'media',
-      ),
-      ReporteOperacion(
-        id: 'a4000000-0000-4000-8000-000000000005',
-        usuarioId: 'u8',
-        tipo: TipoIncidente.otro,
-        gravedad: GravedadIncidente.alta,
-        estado: EstadoReporte.enProceso,
-        sector: 'Barrio 20 de Noviembre',
-        punto: const LatLng(0.9515, -79.6732),
-        descripcion: 'Albergue temporal UTLVTE cerca del límite de capacidad. Se necesita redirigir familias.',
-        personas: 112,
-        ninos: 40,
-        mayores: 15,
-        necesidades: <NecesidadFamiliar>[
-          NecesidadFamiliar.alimentos,
-          NecesidadFamiliar.agua,
-        ],
-        verificado: true,
-      ),
-      ReporteOperacion(
-        id: 'a4000000-0000-4000-8000-000000000006',
-        usuarioId: 'u8',
-        tipo: TipoIncidente.otro,
-        gravedad: GravedadIncidente.alta,
-        estado: EstadoReporte.pendiente,
-        sector: 'El Arenal',
-        punto: const LatLng(0.9700, -79.6490),
-        descripcion:
-            'Solicitud urgente de agua potable, alimentos y medicamentos.',
-        personas: 22,
-        ninos: 8,
-        mayores: 4,
-        necesidades: <NecesidadFamiliar>[
-          NecesidadFamiliar.agua,
-          NecesidadFamiliar.alimentos,
-          NecesidadFamiliar.medicinas,
-        ],
-      ),
-    ]);
-    puntos.addAll(const <PuntoServicioModel>[
-      PuntoServicioModel(
-        id: 'a3000000-0000-4000-8000-000000000001',
-        nombre: 'Albergue temporal UTLVTE',
-        tipo: TipoPuntoServicio.albergue,
-        latitud: 0.9515,
-        longitud: -79.6732,
-        telefono: '911',
-        capacidad: 120,
-        ocupacion: 112,
-      ),
-      PuntoServicioModel(
-        id: 'a3000000-0000-4000-8000-000000000002',
-        nombre: 'Coliseo Nubia Villacís',
-        tipo: TipoPuntoServicio.albergue,
-        latitud: 0.9635,
-        longitud: -79.6542,
-        telefono: '911',
-        capacidad: 200,
-        ocupacion: 70,
-      ),
-      PuntoServicioModel(
-        id: 'a3000000-0000-4000-8000-000000000003',
-        nombre: 'Unidad educativa Las Palmas',
-        tipo: TipoPuntoServicio.albergue,
-        latitud: 0.9880,
-        longitud: -79.6470,
-        telefono: '911',
-        capacidad: 90,
-        ocupacion: 20,
-      ),
-      PuntoServicioModel(
-        id: 'a3000000-0000-4000-8000-000000000004',
-        nombre: 'Hospital Delfina Torres de Concha',
-        tipo: TipoPuntoServicio.centroSalud,
-        latitud: 0.9428,
-        longitud: -79.6812,
-        telefono: '911',
-        capacidad: 150,
-        ocupacion: 138,
-      ),
-      PuntoServicioModel(
-        id: 'a3000000-0000-4000-8000-000000000005',
-        nombre: 'Centro de salud Las Palmas',
-        tipo: TipoPuntoServicio.centroSalud,
-        latitud: 0.9902,
-        longitud: -79.6455,
-        telefono: '911',
-        capacidad: 40,
-        ocupacion: 22,
-      ),
-    ]);
-    alertas.add(
-      AlertaSector(
-        sector: 'Ribera del río Teaone (Tabiazo)',
-        nivel: GravedadIncidente.critica,
-        mensaje: 'Simulacro: crecida del río. Dirigirse a zonas altas y seguir indicaciones de las autoridades.',
-        creadaPor: 'operador@demo.esmeraldas-resiliente.ec',
-        oficial: false,
-        hora: DateTime.now(),
-      ),
-    );
-    usuarios.addAll(<UsuarioGestion>[
-      UsuarioGestion(
-        id: 'b0000000-0000-4000-8000-000000000001',
-        nombre: 'María Quiñónez',
-        correo: 'ciudadano@demo.esmeraldas-resiliente.ec',
-        rol: RolUsuario.ciudadano,
-      ),
-      UsuarioGestion(
-        id: 'b0000000-0000-4000-8000-000000000002',
-        nombre: 'Operador Turno A',
-        correo: 'operador@demo.esmeraldas-resiliente.ec',
-        rol: RolUsuario.operador911,
-      ),
-      UsuarioGestion(
-        id: 'b0000000-0000-4000-8000-000000000003',
-        nombre: 'Administrador COE',
-        correo: 'admin@demo.esmeraldas-resiliente.ec',
-        rol: RolUsuario.admin,
-      ),
-    ]);
   }
 }

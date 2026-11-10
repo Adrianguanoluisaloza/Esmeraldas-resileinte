@@ -1,47 +1,149 @@
-import 'package:flutter_appauth/flutter_appauth.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:google_sign_in/google_sign_in.dart';
 
 import '../../../../core/config/app_config.dart';
 import '../../domain/repositories/auth_repository.dart';
 
-/// Obtiene un `id_token` de Google usando OAuth 2.0 con PKCE (sin client secret en la app).
-/// El `id_token` se envía al backend, que verifica firma, `aud` y `exp` con las claves de Google.
+/// Servicio de autenticación con Google mediante Firebase Auth.
+/// Flujo:
+/// 1. google_sign_in con serverClientId = AppConfig.googleClientId
+/// 2. GoogleAuthProvider.credential con idToken y accessToken de Google
+/// 3. FirebaseAuth.signInWithCredential
+/// 4. user.getIdToken() -> token de Firebase para enviar a POST /auth/firebase
 class GoogleAuthService {
-  GoogleAuthService({FlutterAppAuth? appAuth})
-    : _appAuth = appAuth ?? const FlutterAppAuth();
+  GoogleAuthService({
+    this.googleSignIn,
+    this.firebaseAuth,
+    this.esWeb = kIsWeb,
+  });
 
-  final FlutterAppAuth _appAuth;
+  final GoogleSignIn? googleSignIn;
+  final FirebaseAuth? firebaseAuth;
+
+  /// En el navegador se usa la ventana emergente de Firebase.
+  final bool esWeb;
+
+  GoogleSignIn get _resolvedGoogleSignIn =>
+      googleSignIn ??
+      GoogleSignIn(
+        serverClientId: AppConfig.googleClientId,
+        scopes: const <String>['email', 'profile'],
+      );
+
+  FirebaseAuth get _resolvedFirebaseAuth =>
+      firebaseAuth ?? FirebaseAuth.instance;
 
   bool get configurado => AppConfig.googleClientId.isNotEmpty;
 
-  Future<String> obtenerIdToken() async {
+  /// Obtiene el idToken de Firebase tras autenticar con Google.
+  /// Si el usuario cancela la selección de cuenta, retorna `null`.
+  Future<String?> obtenerFirebaseIdToken() async {
+    if (esWeb) return _obtenerTokenConVentana();
+
     if (!configurado) {
       throw const AuthException(
         'Google no está configurado. Usa --dart-define=GOOGLE_CLIENT_ID=...',
       );
     }
+
+    final GoogleSignInAccount? googleUser;
     try {
-      final AuthorizationTokenResponse
-      r = await _appAuth.authorizeAndExchangeCode(
-        AuthorizationTokenRequest(
-          AppConfig.googleClientId,
-          AppConfig.googleRedirectUri,
-          discoveryUrl:
-              'https://accounts.google.com/.well-known/openid-configuration',
-          scopes: const <String>['openid', 'email', 'profile'],
-          promptValues: const <String>['select_account'],
-        ),
-      );
-      final String? idToken = r.idToken;
-      if (idToken == null || idToken.isEmpty) {
-        throw const AuthException('Google no devolvió credenciales.');
-      }
-      return idToken;
-    } on AuthException {
-      rethrow;
-    } on FlutterAppAuthUserCancelledException {
-      throw const AuthException('Inicio con Google cancelado.');
-    } catch (_) {
-      throw const AuthException('No se pudo iniciar sesión con Google.');
+      googleUser = await _resolvedGoogleSignIn.signIn();
+    } catch (e) {
+      throw AuthException('No se pudo iniciar el selector de Google: $e');
     }
+
+    if (googleUser == null) {
+      // El usuario canceló la selección de cuenta
+      return null;
+    }
+
+    final GoogleSignInAuthentication googleAuth;
+    try {
+      googleAuth = await googleUser.authentication;
+    } catch (e) {
+      throw AuthException('Error al obtener credenciales de Google: $e');
+    }
+
+    final String? googleIdToken = googleAuth.idToken;
+    final String? accessToken = googleAuth.accessToken;
+
+    if (googleIdToken == null && accessToken == null) {
+      throw const AuthException('Google no devolvió credenciales válidas.');
+    }
+
+    try {
+      final OAuthCredential credential = GoogleAuthProvider.credential(
+        idToken: googleIdToken,
+        accessToken: accessToken,
+      );
+
+      final UserCredential userCredential = await _resolvedFirebaseAuth
+          .signInWithCredential(credential);
+      return await _tokenDe(userCredential.user);
+    } on FirebaseAuthException catch (e) {
+      throw AuthException('Error de Firebase: ${e.message ?? e.code}');
+    } catch (e) {
+      if (e is AuthException) rethrow;
+      throw AuthException('Error al autenticar con Google: $e');
+    }
+  }
+
+  Future<String?> _obtenerTokenConVentana() async {
+    final GoogleAuthProvider proveedor = GoogleAuthProvider()
+      ..setCustomParameters(<String, String>{'prompt': 'select_account'});
+
+    try {
+      final UserCredential credencial = await _resolvedFirebaseAuth
+          .signInWithPopup(proveedor);
+      return await _tokenDe(credencial.user);
+    } on FirebaseAuthException catch (e) {
+      if (e.code == 'popup-closed-by-user' ||
+          e.code == 'cancelled-popup-request') {
+        return null;
+      }
+      if (e.code == 'popup-blocked') {
+        throw const AuthException(
+          'El navegador bloqueó la ventana de Google. Permite las ventanas emergentes.',
+        );
+      }
+      throw AuthException('Error de Firebase: ${e.message ?? e.code}');
+    } catch (e) {
+      if (e is AuthException) rethrow;
+      throw AuthException('Error al autenticar con Google: $e');
+    }
+  }
+
+  Future<String> _tokenDe(User? user) async {
+    if (user == null) {
+      throw const AuthException('No se pudo autenticar en Firebase.');
+    }
+
+    final String? firebaseIdToken = await user.getIdToken();
+    if (firebaseIdToken == null || firebaseIdToken.isEmpty) {
+      throw const AuthException('Firebase no devolvió un token de sesión.');
+    }
+
+    return firebaseIdToken;
+  }
+
+  Future<void> cerrarSesion() async {
+    if (!esWeb) {
+      try {
+        if (googleSignIn != null) {
+          await googleSignIn!.signOut();
+        } else {
+          await _resolvedGoogleSignIn.signOut();
+        }
+      } catch (_) {}
+    }
+    try {
+      if (firebaseAuth != null) {
+        await firebaseAuth!.signOut();
+      } else {
+        await _resolvedFirebaseAuth.signOut();
+      }
+    } catch (_) {}
   }
 }

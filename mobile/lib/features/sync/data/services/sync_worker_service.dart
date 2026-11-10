@@ -31,14 +31,14 @@ class SyncWorkerService {
 
   bool get estaSincronizando => _sincronizando;
 
-  Future<int> sincronizarPendientes() async {
+  Future<int> sincronizarPendientes({bool forzar = false}) async {
     if (_sincronizando) return 0;
     _sincronizando = true;
     int sincronizadosExitosos = 0;
 
     try {
       final List<ReporteColaModel> pendientes = await colaRepository
-          .obtenerReportesPendientesDeEnvio();
+          .obtenerReportesPendientesDeEnvio(ignorarEspera: forzar);
       if (pendientes.isEmpty) return 0;
 
       final bool servidorDisponible = await apiClient.verificarSaludServidor();
@@ -47,12 +47,15 @@ class SyncWorkerService {
       }
 
       for (final ReporteColaModel reporte in pendientes) {
-        if (reporte.estadoCola == EstadoColaReporte.error) continue;
+        if (!forzar && reporte.estadoCola == EstadoColaReporte.error) continue;
         if (_uuidsEnVuelo.contains(reporte.id)) continue;
         _uuidsEnVuelo.add(reporte.id);
 
         try {
-          final bool completado = await _procesarReportePorPasos(reporte);
+          final bool completado = await _procesarReportePorPasos(
+            reporte,
+            forzar: forzar,
+          );
           if (completado) {
             sincronizadosExitosos++;
           }
@@ -66,8 +69,14 @@ class SyncWorkerService {
     }
   }
 
-  Future<bool> _procesarReportePorPasos(ReporteColaModel reporte) async {
-    EstadoColaReporte estadoActual = reporte.estadoCola;
+  Future<bool> _procesarReportePorPasos(
+    ReporteColaModel reporte, {
+    bool forzar = false,
+  }) async {
+    EstadoColaReporte estadoActual =
+        (forzar && reporte.estadoCola == EstadoColaReporte.error)
+        ? EstadoColaReporte.pendiente
+        : reporte.estadoCola;
 
     try {
       // Paso 1: Datos livianos (idempotente por UUID)
@@ -133,6 +142,7 @@ class SyncWorkerService {
           id: reporte.id,
           nuevoEstado: EstadoColaReporte.enviado,
           rutaFotoLocal: '',
+          mensajeError: null,
         );
       }
 

@@ -7,8 +7,7 @@ class AppConfig {
 
   static const String _envApiBaseUrl = String.fromEnvironment(
     'API_BASE_URL',
-    defaultValue:
-        'https://seasonal-acceptable-crimes-remember.trycloudflare.com',
+    defaultValue: 'https://api-esmeraldas.cifralabapp.com',
   );
 
   /// URL base del backend configurada mediante `--dart-define=API_BASE_URL=...`.
@@ -18,11 +17,10 @@ class AppConfig {
     return kIsWeb ? 'http://localhost:3000' : 'http://10.0.2.2:3000';
   }
 
-  /// Modo demostración: usa cuentas y datos simulados en el dispositivo
-  /// mientras el backend no está listo. `--dart-define=MODO_DEMO=false` para usar la API.
+  /// Indica si la app opera en modo demostración (`--dart-define=MODO_DEMO=...`).
   static const bool modoDemo = bool.fromEnvironment(
     'MODO_DEMO',
-    defaultValue: true,
+    defaultValue: false,
   );
 
   /// OAuth de Google (cliente configurado en `google-services.json`, proyecto `esmeralsrelesiente`).
@@ -61,10 +59,23 @@ class AppConfig {
   static const double esmeraldasCenterLng = -79.6539;
   static const double defaultZoom = 13.5;
   static const double maxZoom = 18.0;
-  static const double minZoom = 10.0;
+  static const double minZoom = 8.0;
+
+  /// Número telefónico de emergencia para envío de punto GPS por SMS / llamada.
+  /// Número que recibe el punto GPS por SMS. Vacío desactiva el envío:
+  /// no debe apuntar a una línea de emergencia real sin un convenio.
+  static const String smsEmergenciaNumero = String.fromEnvironment(
+    'EMERGENCY_SMS_NUMBER',
+  );
 
   /// Parámetros de captura offline.
   static const Duration gpsTimeout = Duration(seconds: 20);
+
+  /// Sin datos el GPS no recibe ayuda de antenas y el primer fijado tarda mucho más.
+  static const Duration gpsTimeoutSinRed = Duration(seconds: 60);
+
+  /// Tiempo durante el que una ubicación ya fijada se considera actual.
+  static const Duration gpsVigencia = Duration(seconds: 90);
   static const int photoMaxDimensionPx = 1280;
   static const int photoCompressQuality = 75;
 

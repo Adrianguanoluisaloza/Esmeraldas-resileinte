@@ -315,3 +315,10 @@ Este documento registra decisiones, avances, bloqueos y pendientes importantes. 
 - **Decisión:** Se autoriza un solo puerto local en CORS. Firebase no cambió porque `localhost` ya estaba autorizado.
 - **Validación:** `flutter analyze` sin problemas, 18 pruebas en verde, app cargada en `localhost:16760` y CORS comprobado. El login con Google no se completó porque requiere un clic real.
 - **Pendientes:** Franco prueba Google en su navegador. Después de la demostración, quitar el puerto local de `CORS_ORIGENES`.
+
+## 2026-11-10
+- **Área:** mobile | producto
+- **Cambio:** La app de `francopcontrol` se juntó en `desarrollo-adrian`, con los ajustes visuales de Franco. Se devolvió la etiqueta "Alerta oficial" en la lista de albergues y "Dato simulado" en la insignia.
+- **Decisión:** La app se toma de `francopcontrol`. Web, API, base y documentación se quedan como están en `desarrollo-adrian`, que es la versión desplegada.
+- **Validación:** `flutter analyze` sin problemas y 18 pruebas en verde.
+- **Pendientes:** Revisar la app nueva en un teléfono.

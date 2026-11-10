@@ -101,7 +101,6 @@ class DioApiClient implements ApiClient {
   final String _baseUrl;
   final AuthRepository? authRepository;
   late final Dio _dio;
-  bool _servidorRealActivo = true;
 
   String get baseUrl => _baseUrl;
 
@@ -118,31 +117,20 @@ class DioApiClient implements ApiClient {
             ),
           )
           .timeout(const Duration(seconds: 5));
-      _servidorRealActivo = true;
       if (r.statusCode == 200 && r.data is Map) {
         return (r.data as Map<dynamic, dynamic>)['estado'] == 'ok';
       }
       return r.statusCode == 200;
-    } on DioException {
-      _servidorRealActivo = false;
-      return AppConfig.modoDemo;
     } catch (_) {
-      _servidorRealActivo = false;
-      return AppConfig.modoDemo;
+      return false;
     }
   }
 
   @override
   Future<void> enviarDatosReporte(Map<String, dynamic> payload) async {
-    if (AppConfig.modoDemo && !_servidorRealActivo) {
-      return;
-    }
     try {
       await _dio.post<dynamic>('/reportes', data: payload);
     } on DioException catch (e) {
-      if (AppConfig.modoDemo && _esErrorConexion(e)) {
-        return;
-      }
       throw _mapearError(e);
     }
   }
@@ -152,9 +140,6 @@ class DioApiClient implements ApiClient {
     required String reporteId,
     required String rutaArchivoLocal,
   }) async {
-    if (AppConfig.modoDemo && !_servidorRealActivo) {
-      return;
-    }
     try {
       MultipartFile archivo;
       final Uint8List? bytesEnMemoria =
@@ -193,9 +178,6 @@ class DioApiClient implements ApiClient {
         ),
       );
     } on DioException catch (e) {
-      if (AppConfig.modoDemo && _esErrorConexion(e)) {
-        return;
-      }
       throw _mapearError(e);
     }
   }
@@ -383,8 +365,12 @@ class DioApiClient implements ApiClient {
       return UnauthorizedFailure(mensaje);
     }
     if (status == 400 ||
+        status == 403 ||
+        status == 404 ||
         status == 409 ||
         codigo == 'VALIDACION' ||
+        codigo == 'SIN_PERMISO' ||
+        codigo == 'NO_ENCONTRADO' ||
         codigo == 'CONFLICTO') {
       return ValidationFailure(mensaje);
     }

@@ -1,0 +1,105 @@
+name: Compilar APK y Distribuir
+
+on:
+  push:
+    branches:
+      - francopcontrol
+      - desarrollofranco
+    paths:
+      - 'mobile/**'
+      - '.github/workflows/build-apk.yml'
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Compilar APK Flutter Release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Clonar repositorio
+        uses: actions/checkout@v4
+
+      - name: Configurar Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+          cache: 'gradle'
+
+      - name: Configurar Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          cache: true
+
+      - name: Restaurar google-services.json
+        run: |
+          if [ -n "${{ secrets.GOOGLE_SERVICES_JSON_BASE64 }}" ]; then
+            echo "${{ secrets.GOOGLE_SERVICES_JSON_BASE64 }}" | base64 -d > mobile/android/app/google-services.json
+          elif [ -n "${{ secrets.GOOGLE_SERVICES_JSON }}" ]; then
+            printf '%s\n' "${{ secrets.GOOGLE_SERVICES_JSON }}" > mobile/android/app/google-services.json
+          fi
+          test -s mobile/android/app/google-services.json || { echo "Error: google-services.json vacio o no creado"; exit 1; }
+          head -n 5 mobile/android/app/google-services.json
+
+      - name: Instalar dependencias de Flutter
+        run: |
+          cd mobile
+          flutter pub get
+
+      - name: Análisis estático
+        run: |
+          cd mobile
+          flutter analyze
+
+      - name: Ejecutar pruebas unitarias y de widgets
+        run: |
+          cd mobile
+          flutter test
+
+      - name: Restaurar llave de firma
+        run: echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 -d > "$RUNNER_TEMP/esmeraldas.jks"
+
+      - name: Compilar APK Release
+        env:
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          export ANDROID_KEYSTORE_PATH="$RUNNER_TEMP/esmeraldas.jks"
+          cd mobile
+          flutter build apk --release \
+            --dart-define=API_BASE_URL=https://api-esmeraldas.cifralabapp.com \
+            --dart-define=MODO_DEMO=false \
+            --dart-define=GOOGLE_CLIENT_ID=644267053650-hdva73c46tut51k2tjrgk23ul4n4r5ve.apps.googleusercontent.com
+
+      - name: Subir artefacto APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-release
+          path: mobile/build/app/outputs/flutter-apk/app-release.apk
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Publicar APK para el botón de descarga de la web
+        if: github.ref == 'refs/heads/francopcontrol'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          cp mobile/build/app/outputs/flutter-apk/app-release.apk esmeraldas-resiliente.apk
+          gh release view app-movil >/dev/null 2>&1 || gh release create app-movil --prerelease --title "App móvil (prototipo)" --notes "APK del prototipo Esmeraldas Resiliente. No reemplaza al ECU 911."
+          gh release upload app-movil esmeraldas-resiliente.apk --clobber
+
+      - name: Distribuir en Firebase App Distribution
+        env:
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+        if: env.FIREBASE_TOKEN != ''
+        uses: wzieba/Firebase-Distribution-Github-Action@v1
+        with:
+          appId: 1:644267053650:android:71bc72c7671c740865c58b
+          token: ${{ secrets.FIREBASE_TOKEN }}
+          file: mobile/build/app/outputs/flutter-apk/app-release.apk
+          testers: geo7u7r@gmail.com, eliasadrianlozadaguanoluisa@gmail.com
+          releaseNotes: "Build automático de Esmeraldas Resiliente con autenticación Firebase y Google"

@@ -78,20 +78,36 @@ class ReporteColaModel {
 
   /// Convierte los datos livianos al formato esperado por `POST /reportes` (`contrato/openapi.yaml`).
   Map<String, dynamic> toApiPayload() {
+    final bool coordValida =
+        latitud >= -0.5 &&
+        latitud <= 1.6 &&
+        longitud >= -80.3 &&
+        longitud <= -78.4;
+    final double lat = coordValida ? latitud : 0.9592;
+    final double lon = coordValida ? longitud : -79.6539;
+    final String descLimpia = descripcion.trim();
+    final String descFinal = descLimpia.length >= 3
+        ? descLimpia
+        : '${tipo.etiqueta} (${gravedad.etiqueta}) en Esmeraldas (${lat.toStringAsFixed(4)}, ${lon.toStringAsFixed(4)})';
+    final int minPersonas = ninos + adultosMayores;
+    final int totalPersonas = personasAfectadas < minPersonas
+        ? minPersonas
+        : personasAfectadas;
+
     return <String, dynamic>{
       'id': id,
       'tipo': tipo.valor,
-      'descripcion': descripcion,
+      'descripcion': descFinal,
       'gravedad': gravedad.valor,
-      'latitud': latitud,
-      'longitud': longitud,
-      'precision_m': precisionM,
-      'ubicacion_aproximada': ubicacionAproximada,
+      'latitud': lat,
+      'longitud': lon,
+      'precision_m': precisionM.clamp(0.0, 100000.0),
+      'ubicacion_aproximada': ubicacionAproximada || !coordValida,
       'capturado_en': capturadoEnUtc.toUtc().toIso8601String(),
-      'personas_afectadas': personasAfectadas,
+      'personas_afectadas': totalPersonas,
       'ninos': ninos,
       'adultos_mayores': adultosMayores,
-      'necesidades': necesidades.map((n) => n.valor).toList(),
+      'necesidades': necesidades.map((n) => n.valor).toSet().toList(),
     };
   }
 

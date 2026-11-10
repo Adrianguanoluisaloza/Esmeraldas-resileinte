@@ -70,9 +70,9 @@ class _RegistroPageState extends State<RegistroPage> {
       _cargando = true;
     });
     try {
-      final UsuarioSesion s = await widget.authRepository
+      final UsuarioSesion? s = await widget.authRepository
           .iniciarSesionConGoogle();
-      if (mounted) widget.onRegistroExitoso(s);
+      if (s != null && mounted) widget.onRegistroExitoso(s);
     } on AuthException catch (e) {
       if (mounted) setState(() => _errorServidor = e.mensaje);
     } finally {

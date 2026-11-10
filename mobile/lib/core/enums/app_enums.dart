@@ -4,6 +4,8 @@
 enum RolUsuario {
   ciudadano('ciudadano'),
   operador911('operador_911'),
+  bomberos('bomberos'),
+  policia('policia'),
   admin('admin');
 
   const RolUsuario(this.valor);
@@ -101,7 +103,7 @@ enum NecesidadFamiliar {
 /// Flujo: pendiente -> enviando_datos -> datos_enviados -> enviando_foto -> enviado
 /// o error cuando el servidor rechaza el reporte con 4xx.
 enum EstadoColaReporte {
-  pendiente('pendiente', 'Pendiente de envío'),
+  pendiente('pendiente', 'Guardado: se enviará al volver internet'),
   enviandoDatos('enviando_datos', 'Enviando datos...'),
   datosEnviados('datos_enviados', 'Datos enviados (falta foto)'),
   enviandoFoto('enviando_foto', 'Subiendo foto...'),
