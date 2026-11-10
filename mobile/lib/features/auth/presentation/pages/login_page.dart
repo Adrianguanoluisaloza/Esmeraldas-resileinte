@@ -63,13 +63,40 @@ class _LoginPageState extends State<LoginPage> {
       _cargando = true;
     });
     try {
-      final UsuarioSesion s = await widget.authRepository
+      final UsuarioSesion? s = await widget.authRepository
           .iniciarSesionConGoogle();
-      if (mounted) widget.onLoginSuccess(s);
+      if (s != null && mounted) widget.onLoginSuccess(s);
     } on AuthException catch (e) {
       if (mounted) setState(() => _error = e.mensaje);
+    } catch (_) {
+      if (mounted) {
+        setState(() => _error = 'No se pudo iniciar sesión con Google.');
+      }
     } finally {
       if (mounted) setState(() => _cargando = false);
+    }
+  }
+
+  Future<void> _mostrarDialogoRecuperarPassword() async {
+    final bool? enviado = await showDialog<bool>(
+      context: context,
+      builder: (BuildContext ctx) => _RecuperarPasswordDialog(
+        correoInicial: _correoCtrl.text.trim(),
+        onEnviar: (String c) =>
+            widget.authRepository.recuperarPassword(correo: c),
+      ),
+    );
+
+    if (enviado == true && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Si ese correo tiene una cuenta, enviamos un enlace para crear una contraseña nueva.',
+          ),
+          backgroundColor: AppTheme.colorPrimario,
+          duration: Duration(seconds: 6),
+        ),
+      );
     }
   }
 
@@ -180,6 +207,21 @@ class _LoginPageState extends State<LoginPage> {
                               ),
                             ),
                           ),
+                          Align(
+                            alignment: Alignment.centerRight,
+                            child: TextButton(
+                              onPressed: _cargando
+                                  ? null
+                                  : _mostrarDialogoRecuperarPassword,
+                              child: const Text(
+                                'Olvidé mi contraseña',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: AppTheme.colorPrimario,
+                                ),
+                              ),
+                            ),
+                          ),
                           if (_error != null) ...<Widget>[
                             const SizedBox(height: 10),
                             Text(
@@ -248,6 +290,128 @@ class _LoginPageState extends State<LoginPage> {
           ),
         ],
       ),
+    );
+  }
+}
+
+class _RecuperarPasswordDialog extends StatefulWidget {
+  const _RecuperarPasswordDialog({
+    required this.correoInicial,
+    required this.onEnviar,
+  });
+
+  final String correoInicial;
+  final Future<void> Function(String correo) onEnviar;
+
+  @override
+  State<_RecuperarPasswordDialog> createState() =>
+      _RecuperarPasswordDialogState();
+}
+
+class _RecuperarPasswordDialogState extends State<_RecuperarPasswordDialog> {
+  late final TextEditingController _ctrl;
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  bool _enviando = false;
+  String? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    _ctrl = TextEditingController(text: widget.correoInicial);
+  }
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  Future<void> _enviar() async {
+    if (!_formKey.currentState!.validate()) {
+      return;
+    }
+    setState(() {
+      _enviando = true;
+      _error = null;
+    });
+    try {
+      await widget.onEnviar(_ctrl.text.trim());
+      if (mounted) Navigator.of(context).pop(true);
+    } on AuthException catch (e) {
+      if (mounted) {
+        setState(() {
+          _enviando = false;
+          _error = e.mensaje;
+        });
+      }
+    } catch (_) {
+      if (mounted) {
+        setState(() {
+          _enviando = false;
+          _error = 'Error de red al solicitar recuperación.';
+        });
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      icon: const Icon(
+        Icons.lock_reset,
+        color: AppTheme.colorPrimario,
+        size: 28,
+      ),
+      title: const Text(
+        'Recuperar contraseña',
+        style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+      ),
+      content: Form(
+        key: _formKey,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: <Widget>[
+            const Text(
+              'Ingresa tu correo para recibir un enlace de recuperación. La contraseña nueva se crea en la web.',
+              style: TextStyle(
+                fontSize: 12,
+                color: AppTheme.colorTextoSecundario,
+              ),
+            ),
+            const SizedBox(height: 12),
+            TextFormField(
+              controller: _ctrl,
+              keyboardType: TextInputType.emailAddress,
+              validator: Validadores.correo,
+              decoration: const InputDecoration(
+                hintText: 'Correo electrónico',
+                prefixIcon: Icon(Icons.alternate_email),
+              ),
+            ),
+            if (_error != null) ...<Widget>[
+              const SizedBox(height: 8),
+              Text(
+                _error!,
+                style: const TextStyle(
+                  color: AppTheme.colorSemaforoRojo,
+                  fontSize: 12,
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+      actions: <Widget>[
+        TextButton(
+          onPressed: _enviando ? null : () => Navigator.of(context).pop(false),
+          child: const Text('Cancelar'),
+        ),
+        FilledButton(
+          onPressed: _enviando ? null : _enviar,
+          child: Text(_enviando ? 'Enviando...' : 'Enviar enlace'),
+        ),
+      ],
     );
   }
 }
