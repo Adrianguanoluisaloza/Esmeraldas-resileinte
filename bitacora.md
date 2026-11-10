@@ -308,3 +308,10 @@ Este documento registra decisiones, avances, bloqueos y pendientes importantes. 
 - **Decisión:** La IA, el envío por SMS o satélite y los convenios institucionales se presentan como siguiente etapa, no como hechos.
 - **Validación:** Rutas contrastadas con `contrato/openapi.yaml` y tablas con `database/01_schema_postgis.sql`. La presentación no se ensayó en la sala.
 - **Pendientes:** Después de la demostración: retirar el túnel antiguo y cambiar la contraseña de demostración. Franco sigue con la interfaz de la app.
+
+## 2026-11-10
+- **Área:** mobile | infraestructura
+- **Cambio:** La API acepta `http://localhost:16760` para revisar la app en el navegador. La app arranca en Chrome con opciones web de Firebase y Google usa la ventana emergente (commit `612b589` en `francopcontrol`).
+- **Decisión:** Se autoriza un solo puerto local en CORS. Firebase no cambió porque `localhost` ya estaba autorizado.
+- **Validación:** `flutter analyze` sin problemas, 18 pruebas en verde, app cargada en `localhost:16760` y CORS comprobado. El login con Google no se completó porque requiere un clic real.
+- **Pendientes:** Franco prueba Google en su navegador. Después de la demostración, quitar el puerto local de `CORS_ORIGENES`.

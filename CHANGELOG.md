@@ -6,6 +6,7 @@ Todos los cambios relevantes del proyecto se registran aquí. Se sigue una estru
 
 ### Added
 
+- App móvil: inicio de sesión con Google también desde el navegador.
 - Documentación técnica consolidada en `docs/DOCUMENTACION_TECNICA.md`.
 - Portada con video del panel y página propia de la app móvil en `/app`.
 - Documento de propuestas: envío por SMS o satélite, rutas por la red vial, censo de familias e IA.
