@@ -93,12 +93,29 @@ services:
       - api
     command: ["tunnel", "--no-autoupdate", "--url", "http://api:3000"]
 
+  # Túnel con nombre: URL fija aunque el contenedor se reinicie. Ver docs/DESPLIEGUE.md.
+  tunel-fijo:
+    container_name: esmeraldas-tunel-fijo
+    image: cloudflare/cloudflared:latest
+    profiles: ["tunel-fijo"]
+    restart: unless-stopped
+    networks:
+      - esmeraldas-net
+    depends_on:
+      - api
+    volumes:
+      - cloudflared_datos:/home/nonroot/.cloudflared
+    command: ["tunnel", "--no-autoupdate", "run", "--url", "http://api:3000", "esmeraldas-api"]
+
 networks:
   esmeraldas-net:
     name: esmeraldas-net
     driver: bridge
 
 volumes:
+  cloudflared_datos:
+    name: esmeraldas_cloudflared
+    external: true
   datos_db:
     name: esmeraldas_datos_db
   fotos:
