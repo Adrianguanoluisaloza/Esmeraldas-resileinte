@@ -2,6 +2,7 @@
 /** Cabecera de las páginas públicas (portada y acceso). */
 import { Download } from 'lucide-react';
 import { URL_APK } from '../../config/enlaces';
+const enPaginaApp = Astro.url.pathname.replace(//+$/, '') === '/app';
 ---
 
 <header class="st-cabecera">
@@ -14,5 +15,5 @@ import { URL_APK } from '../../config/enlaces';
     <a href="/#instituciones">Instituciones</a>
     <a href="/app">App móvil</a>
   </nav>
-  <a class="er-btn st-btn-oscuro" href={URL_APK}><Download size={15} aria-hidden="true" /> Descargar app</a>
+  {!enPaginaApp && <a class="er-btn st-btn-oscuro" href={URL_APK}><Download size={15} aria-hidden="true" /> Descargar app</a>}
 </header>
