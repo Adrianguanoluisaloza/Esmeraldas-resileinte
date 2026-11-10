@@ -35,6 +35,8 @@ interface Props {
   mostrarVias?: boolean;
   /** Si viene, tocar el mapa entrega la coordenada (marcar ubicación sin GPS). */
   alTocarMapa?: (latitud: number, longitud: number) => void;
+  /** Vista de presentación: no captura el desplazamiento de la página. */
+  soloVista?: boolean;
 }
 
 // Caja amplia: ciudad y parroquias cercanas (Tachina, Tabiazo, Vuelta Larga).
@@ -105,6 +107,7 @@ export function MapaEsmeraldas({
   mostrarZonas = true,
   mostrarVias = true,
   alTocarMapa,
+  soloVista = false,
 }: Props) {
   const tocarRef = useRef(alTocarMapa);
   tocarRef.current = alTocarMapa;
@@ -114,12 +117,12 @@ export function MapaEsmeraldas({
 
   useEffect(() => {
     if (!contenedor.current || mapa.current) return;
-    const m = L.map(contenedor.current, { center: CENTRO, zoom: 13, minZoom: 11, maxZoom: 18, maxBounds: LIMITES, maxBoundsViscosity: 0.8, zoomControl: false });
+    const m = L.map(contenedor.current, { center: CENTRO, zoom: 13, minZoom: 11, maxZoom: 18, maxBounds: LIMITES, maxBoundsViscosity: 0.8, zoomControl: false, ...(soloVista ? { dragging: false, scrollWheelZoom: false, doubleClickZoom: false, touchZoom: false, boxZoom: false, keyboard: false } : {}) });
     L.tileLayer(TESELAS, {
       maxZoom: 19,
       attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap</a>',
     }).addTo(m);
-    L.control.zoom({ position: 'topright' }).addTo(m);
+    if (!soloVista) L.control.zoom({ position: 'topright' }).addTo(m);
     L.control.scale({ imperial: false, position: 'bottomleft' }).addTo(m);
     // Orden de dibujo: zonas abajo, luego vías, puntos y reportes arriba.
     capas.current = {
@@ -145,7 +148,7 @@ export function MapaEsmeraldas({
     L.geoJSON(zonas, {
       style: (f) => {
         const color = COLOR_RIESGO[(f?.properties?.nivel_riesgo as keyof typeof COLOR_RIESGO) ?? 'medio'] ?? COLOR_RIESGO.medio;
-        return { color, weight: 1.5, fillColor: color, fillOpacity: 0.18, dashArray: f?.properties?.origen === 'simulado' ? '4 4' : undefined };
+        return { color, weight: 1, opacity: 0.75, fillColor: color, fillOpacity: 0.22, lineJoin: 'round' };
       },
       onEachFeature: (f, l) =>
         l.bindTooltip(`${e(f.properties?.nombre_sector)} · riesgo ${e(f.properties?.nivel_riesgo)}`, { sticky: true }),
@@ -160,7 +163,7 @@ export function MapaEsmeraldas({
     L.geoJSON(vias, {
       style: (f) => {
         const estado = (f?.properties?.estado as keyof typeof COLOR_VIA) ?? 'habilitada';
-        return { color: COLOR_VIA[estado] ?? COLOR_VIA.habilitada, weight: estado === 'habilitada' ? 3 : 5, dashArray: estado === 'bloqueada' ? '2 8' : undefined, lineCap: 'round' };
+        return { color: COLOR_VIA[estado] ?? COLOR_VIA.habilitada, weight: estado === 'habilitada' ? 3 : 5, opacity: 0.9, lineCap: 'round', lineJoin: 'round' };
       },
       onEachFeature: (f, l) => l.bindTooltip(`${e(f.properties?.nombre)} · ${e(f.properties?.estado)}`, { sticky: true }),
     }).addTo(capa);

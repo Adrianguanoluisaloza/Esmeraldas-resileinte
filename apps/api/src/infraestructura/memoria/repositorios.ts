@@ -150,7 +150,7 @@ export class TerritorioEnMemoria implements RepositorioTerritorio {
     return { id: v.id, nombre: v.nombre, estado: v.estado, origen: "simulado", actualizado_en: new Date().toISOString() };
   }
   async sectorDe(lat: number, lon: number) {
-    // Las zonas semilla son rectángulos, así que basta comparar contra sus límites.
+    // Aproximación por caja envolvente: suficiente para la demo en memoria.
     for (const z of ZONAS) {
       const lons = z.anillo.map((p) => p[0]);
       const lats = z.anillo.map((p) => p[1]);

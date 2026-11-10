@@ -42,7 +42,7 @@
 }
 .op-leyenda span { display: inline-flex; align-items: center; gap: 5px; }
 .op-leyenda i { display: inline-block; width: 9px; height: 9px; border-radius: 50%; }
-.op-leyenda__sim { border: 1.5px dashed var(--er-origen-simulado); }
+.op-leyenda__sim { border: 1.5px solid var(--er-origen-simulado); }
 .op-leyenda__ciu { background: var(--er-origen-ciudadano); }
 .op-leyenda__via { width: 14px !important; height: 3px !important; border-radius: 2px !important; background: var(--er-danger); }
 
@@ -65,10 +65,8 @@
   font-size: 0; border: 2px solid #ffffff; box-shadow: 0 1px 3px #00000059;
 }
 /* Datos simulados con anillo discontinuo: el jurado debe distinguirlos de un reporte real. */
-.mk-reporte--sim { outline: 2px dashed #5b4bc4; outline-offset: 2px; }
+.mk-reporte--sim { outline: 1.5px solid #5b4bc4; outline-offset: 2px; }
 .mk-reporte--sel { border-width: 3px; box-shadow: 0 0 0 3px var(--mk-color); }
-.mk-reporte--critica:not(.mk-reporte--sel) { animation: mk-latido 1.6s ease-out infinite; }
-@keyframes mk-latido { 0% { box-shadow: 0 0 0 0 #c6282880; } 100% { box-shadow: 0 0 0 12px #c6282800; } }
 
 .mk-punto {
   display: inline-flex; align-items: center; gap: 4px; padding: 1px 5px; border-radius: 5px; white-space: nowrap;
@@ -96,4 +94,10 @@
   .op-lista { height: 280px; min-height: 0; }
   .op-mapa-tarjeta { height: 55dvh; }
   .op-capas { margin-left: 0; }
+  .op-mapa-tarjeta { order: -1; }
+  .op-filtros .er-segmentos { max-width: 100%; overflow-x: auto; }
+  .op-leyenda { flex-wrap: wrap; right: var(--er-s8); }
 }
+
+/* Mosaicos del mapa sin juntas visibles. */
+.leaflet-container img.leaflet-tile { max-width: none !important; mix-blend-mode: plus-lighter; }
