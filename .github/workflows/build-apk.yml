@@ -70,11 +70,12 @@ jobs:
           retention-days: 14
 
       - name: Distribuir en Firebase App Distribution
-        if: ${{ env.FIREBASE_TOKEN != '' || secrets.FIREBASE_SERVICE_ACCOUNT != '' }}
+        env:
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+        if: env.FIREBASE_TOKEN != ''
         uses: wzieba/Firebase-Distribution-Github-Action@v1
         with:
           appId: 1:644267053650:android:71bc72c7671c740865c58b
-          serviceCredentialsFileContent: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
           token: ${{ secrets.FIREBASE_TOKEN }}
           file: mobile/build/app/outputs/flutter-apk/app-release.apk
           testers: geo7u7r@gmail.com
