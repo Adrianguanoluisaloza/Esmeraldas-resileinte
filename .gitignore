@@ -75,3 +75,6 @@ Thumbs.db
 # Firebase debug logs
 firebase-debug.log
 .firebase/
+
+# Configuracion local de la app para Franco
+mobile/franco.env
