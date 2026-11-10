@@ -337,10 +337,39 @@ class _DirectorioAlberguesPageState extends State<DirectorioAlberguesPage> {
                         fontSize: 13.5,
                       ),
                     ),
-                    subtitle: Text(
-                      '${p.tipo.etiqueta} · Libres: ${p.cuposDisponibles}/${p.capacidad}\n'
-                      'A ${distanciaKm.toStringAsFixed(1)} km${p.telefono.trim().isNotEmpty ? ' · Tel: ${p.telefono.trim()}' : ''}',
-                      style: const TextStyle(fontSize: 11.5),
+                    subtitle: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: <Widget>[
+                        Text(
+                          '${p.tipo.etiqueta} · Libres: ${p.cuposDisponibles}/${p.capacidad}\n'
+                          'A ${distanciaKm.toStringAsFixed(1)} km${p.telefono.trim().isNotEmpty ? ' · Tel: ${p.telefono.trim()}' : ''}',
+                          style: const TextStyle(fontSize: 11.5),
+                        ),
+                        if (p.pasoBloqueado)
+                          const Padding(
+                            padding: EdgeInsets.only(top: 4),
+                            child: Row(
+                              children: <Widget>[
+                                Icon(
+                                  Icons.warning_amber_rounded,
+                                  size: 14,
+                                  color: AppTheme.colorSemaforoAmbar,
+                                ),
+                                SizedBox(width: 4),
+                                Flexible(
+                                  child: Text(
+                                    'El camino cruza una vía bloqueada',
+                                    style: TextStyle(
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.w700,
+                                      color: AppTheme.colorSemaforoAmbar,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                      ],
                     ),
                     isThreeLine: true,
                     trailing: Container(

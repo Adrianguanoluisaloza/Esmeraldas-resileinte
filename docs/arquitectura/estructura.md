@@ -34,79 +34,43 @@ Inventarios y control de entregas (módulo 5) se presentan como mejora futura.
 
 ```
 esmeraldas-resiliente/
+├── AGENTS.md                   # reglas del proyecto
 ├── README.md
-├── BITACORA.md                 # registro de cambios y pendientes
-├── docker-compose.yml          # api + postgres/postgis
+├── bitacora.md                 # registro de avances y decisiones
+├── CHANGELOG.md                # cambios visibles y de contrato
+├── docker-compose.yml          # PostGIS + API (Oracle Cloud y local)
 ├── .env.example                # sin claves reales
 ├── contrato/
-│   └── openapi.yaml            # ÚNICA fuente de verdad de la API
-│
-├── backend/                    # ~25-30 archivos, ~2.000-2.500 líneas
-│   ├── Dockerfile
-│   ├── package.json
-│   └── src/
-│       ├── index.ts            # app principal
-│       ├── config/env.ts
-│       ├── db/
-│       │   ├── client.ts
-│       │   ├── migrations/     # 001_usuarios ... 007_alertas
-│       │   └── seed.sql        # datos del escenario jueves 06:00
-│       ├── middleware/         # auth, roles, rateLimit, errores
-│       ├── routes/             # auth, reportes, fotos, zonas, puntos_servicio,
-│       │                       # alertas, estadisticas, usuarios, ia
-│       ├── services/           # fotos (guardar/comprimir/miniatura), clasificador-ia
-│       └── lib/                # geo, uuid, validaciones
-│
-├── web/                        # ~35-45 archivos, ~3.000-3.500 líneas
-│   └── src/
-│       ├── pages/              # login, panel, reportes, reportes/[id],
-│       │                       # puntos-servicio, estadisticas, admin/usuarios
-│       ├── components/         # MapaEsmeraldas, PinReporte, PanelReporte,
-│       │                       # FotoConEsqueleto, BadgeEstado, Filtros,
-│       │                       # Graficos, TarjetaFamilias, GuionDemo
-│       ├── lib/                # api (cliente), session, tipos
-│       └── public/geo/         # límites de Esmeraldas, zonas (GeoJSON)
-│
-├── mobile/                     # ~25-30 archivos, ~2.500-3.000 líneas
+│   └── openapi.yaml            # fuente de verdad de la API
+├── database/
+│   ├── 01_schema_postgis.sql   # tablas, geometrías e índices
+│   ├── 02_seed_escenario_06am.sql  # escenario jueves 06:00 (simulado)
+│   └── 03_rol_aplicacion.sh    # usuario de la API con permisos mínimos
+├── apps/
+│   ├── api/                    # Hono + TypeScript (Clean Architecture)
+│   │   └── src/
+│   │       ├── dominio/        # entidades, catálogos, puertos, errores
+│   │       ├── aplicacion/     # casos de uso: auth, reportes, territorio, operación
+│   │       ├── infraestructura/  # postgres, memoria, fotos, correo, seguridad
+│   │       └── http/           # rutas, esquemas zod, límites, WebSocket
+│   └── web/                    # Astro + islas React + Leaflet
+│       └── src/                # pages, components, layouts, lib, styles
+├── mobile/                     # Flutter + Hive (cola offline)
 │   └── lib/
-│       ├── main.dart
-│       ├── core/               # api_client, config, enums
-│       ├── data/               # cola offline en Hive, models
-│       └── features/
-│           ├── auth/           # login
-│           ├── reporte/        # cámara + GPS + tipo + descripción + bloque familias
-│           ├── mis_reportes/   # lista con estado (pendiente/enviando/enviado)
-│           └── sync/           # reintentos con espera, estado por paso
-│
-└── docs/                       # ~10-15 archivos
-    ├── arquitectura.md         # diagrama de componentes (Mermaid)
-    ├── modelo-datos.md         # diagrama ER (Mermaid)
-    ├── manual-usuario.md
-    └── guion-demo.md           # escenario jueves 06:00 paso a paso
-    ├── AGENTS.md                   # reglas de arquitectura y colaboración
-    ├── bitacora.md                 # registro de cambios y pendientes
-    ├── CHANGELOG.md                # cambios visibles y contratos
-**Total estimado:** 90-110 archivos y 8.000-9.500 líneas (±30%), sin código autogenerado.
-    ├── contrato/
-    │   └── openapi.yaml            # fuente de verdad de la API
+│       ├── core/               # network, location, routing, theme, services
+│       ├── data/               # modelos, adaptadores Hive, repositorios
+│       └── features/           # auth, reporte, mis_reportes, sync, operaciones, admin
+└── docs/
+    ├── ARQUITECTURA.md         # componentes y flujo (Mermaid)
+    ├── MODELO_DATOS.md         # diagrama ER (Mermaid)
+    ├── MANUAL_USUARIO.md       # uso por rol
+    ├── DOCUMENTACION_TECNICA.md
+    ├── PRUEBAS_Y_COSTOS.md
+    ├── arquitectura/           # este archivo y decisiones
+    └── orquestacion/           # tareas por carril
+```
 
-    ├── backend/                    # espacio de trabajo de la rama backend
-    │   └── README.md
-| `historial_estados` | id, reporte_id, estado_anterior, estado_nuevo, operador_id, fecha, nota |
-    ├── frontend/                   # espacio de trabajo de la rama desarrollo-adrian
-    │   └── README.md
-- **Zonas:** `GET /zonas`
-    ├── mobile/                     # espacio de trabajo de la rama desarrollofranco
-    │   └── README.md
-    │
-    ├── apps/
-    │   ├── web/                    # aplicación Astro + React + Leaflet
-    │   └── mobile/                 # aplicación Flutter + flutter_map
-| Crear reporte y foto | Sí | Sí | Sí |
-    └── docs/                       # documentación técnica
-        └── OPENSTREETMAP.md        # teselas, atribución y OAuth
-
-## 8. Flujo offline (el corazón de la demo)
+## 4. Flujo offline (el corazón de la demo)
     Las carpetas `backend/`, `frontend/` y `mobile/` son espacios de trabajo por rama. El código ejecutable actual permanece en `apps/` hasta que una integración sea revisada.
 1. Sin conexión, el ciudadano toma la foto. La app la comprime (lado largo ~1280 px, calidad 70-80%), la guarda como archivo en la carpeta de la app y escribe en Hive: ID único, ruta de la foto, GPS, precisión, hora **del momento de captura** y estado *pendiente*. La foto no se guarda dentro de Hive.
 2. Vuelve la conexión (datos móviles o wifi). La app no se fía solo de "hay wifi": intenta enviar y reintenta con espera si falla.
@@ -117,14 +81,14 @@ esmeraldas-resiliente/
 
 **GPS sin internet:** el celular solo recibe de los satélites; lo que se envía son las coordenadas ya calculadas. En modo avión hay que volver a prender la ubicación, y bajo techo el primer fix puede tardar. Plan B: última ubicación conocida marcada como aproximada, con su precisión en metros.
 
-## 9. Fotos y espacio
+## 5. Fotos y espacio
 
 - **En el celular:** compresión antes de guardar (4-8 MB baja a 150-400 KB).
 - **En el servidor:** validar que sea imagen, tope de ~2 MB, y miniatura de 20-40 KB para pines y listas.
 - **Uso real (estimado):** con 300 KB por foto, mil reportes al día con 2 fotos son unos 18 GB al mes. Para escalar, mover a almacenamiento tipo objeto (por ejemplo Cloudflare R2; verificar precios actuales).
 - **Después:** máximo 3 fotos por reporte, política de retención y acceso a la foto completa solo para roles autorizados.
 
-## 10. Demo: las 8 preguntas de la sección 7.2
+## 6. Demo: las 8 preguntas de la sección 7.2
 
 | Pregunta de las bases | Dónde se responde |
 |---|---|
@@ -143,7 +107,7 @@ esmeraldas-resiliente/
 3. Vuelve la señal por datos móviles: sincroniza la fase 1 (datos) y la fase 2 (foto).
 4. En el panel 911 se responden las preguntas, se actualiza el cupo del albergue y se emite una alerta por sector.
 
-## 11. Ramas y revisión
+## 7. Ramas y revisión
 
 - `main`: protegida, nadie escribe directo.
 - `backend`: backend y contratos de servidor.
@@ -153,20 +117,20 @@ esmeraldas-resiliente/
 - El contrato `contrato/openapi.yaml` se cambia **antes** que el código.
 - Cada tarea termina con una línea en `bitacora.md` (fecha, quién, qué cambió, qué falta) y con cómo verificarla.
 
-## 12. Entregables del reto vs. dónde están
+## 8. Entregables del reto vs. dónde están
 
 | Entregable | Dónde |
 |---|---|
-| Prototipo funcional | `apps/web/` + `apps/mobile/` |
-| Arquitectura de software | `docs/arquitectura.md` |
-| Modelo de datos (ER) | `docs/modelo-datos.md` |
-| Base de datos con registros de prueba | `backend/src/db/seed.sql` |
-| Componente geográfico | `apps/web/` + `apps/mobile/` + PostGIS |
-| Servicios de integración | `backend/` + `contrato/openapi.yaml` |
-| Documentación técnica y manual | `README.md` + `docs/manual-usuario.md` |
-| Presentación demostrativa | `docs/guion-demo.md` |
+| Prototipo funcional | `apps/web/` + `mobile/` + `apps/api/` |
+| Arquitectura de software | `docs/ARQUITECTURA.md` |
+| Modelo de datos (ER) | `docs/MODELO_DATOS.md` |
+| Base de datos con registros de prueba | `database/02_seed_escenario_06am.sql` |
+| Componente geográfico | `apps/web/` + `mobile/` + PostGIS |
+| Servicios de integración | `apps/api/` + `contrato/openapi.yaml` |
+| Documentación técnica y manual | `docs/DOCUMENTACION_TECNICA.md` + `docs/MANUAL_USUARIO.md` |
+| Presentación demostrativa | Presentación en el USB de entrega |
 
-## 13. Riesgos a vigilar
+## 9. Riesgos a vigilar
 
 - La cola offline en el celular real: probar en modo avión desde la primera noche. Debe estar en el Flutter real, no en una maqueta.
 - La reconexión de la demo: usar datos móviles, no el wifi de la universidad.

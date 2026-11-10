@@ -12,6 +12,7 @@ class PuntoServicioModel {
     required this.capacidad,
     required this.ocupacion,
     this.activo = true,
+    this.pasoBloqueado = false,
   });
 
   final String id;
@@ -23,6 +24,9 @@ class PuntoServicioModel {
   final int capacidad;
   final int ocupacion;
   final bool activo;
+
+  /// El tramo recto hasta el punto cruza una vía bloqueada (PostGIS, `paso_bloqueado`).
+  final bool pasoBloqueado;
 
   int get cuposDisponibles => (capacidad - ocupacion).clamp(0, capacidad);
 
@@ -41,6 +45,7 @@ class PuntoServicioModel {
       'capacidad': capacidad,
       'ocupacion': ocupacion,
       'activo': activo,
+      'paso_bloqueado': pasoBloqueado,
     };
   }
 
@@ -55,6 +60,7 @@ class PuntoServicioModel {
       capacidad: map['capacidad'] as int? ?? 0,
       ocupacion: map['ocupacion'] as int? ?? 0,
       activo: map['activo'] as bool? ?? true,
+      pasoBloqueado: map['paso_bloqueado'] as bool? ?? false,
     );
   }
 }

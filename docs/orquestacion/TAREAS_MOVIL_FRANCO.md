@@ -90,8 +90,8 @@ palabra "Simulacro". Escuchar `alerta.emitida` y `via.estado` por `GET /ws?token
 
 ## M7. Una sola carpeta de la app
 
-Hoy hay dos proyectos Flutter: `apps/mobile` (el inicial, solo `main.dart`) y `mobile/` (el real). Dejar uno solo
-en `apps/mobile` (mover `mobile/` ahí y borrar el inicial) en un commit propio, y avisar antes de hacerlo.
+Hecho (10/11/2026): se borró el proyecto inicial `apps/mobile`. El único proyecto Flutter es `mobile/`, que es
+el que usa el CI (`.github/workflows/build-apk.yml`).
 
 ## M8. No editar el backend desde esta rama
 

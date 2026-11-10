@@ -12,7 +12,7 @@ npm install leaflet react-leaflet
 - `react-leaflet`: componentes React para Leaflet.
 - Astro carga el mapa como isla React cuando la página necesita interacción.
 
-### Flutter (`apps/mobile`)
+### Flutter (`mobile/`)
 
 ```bash
 flutter pub add flutter_map latlong2 geolocator flutter_appauth

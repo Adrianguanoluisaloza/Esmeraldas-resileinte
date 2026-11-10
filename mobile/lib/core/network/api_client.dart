@@ -293,7 +293,7 @@ class DioApiClient implements ApiClient {
   }) async {
     try {
       await _dio.patch<dynamic>(
-        '/albergues/$id/ocupacion',
+        '/puntos-servicio/$id/ocupacion',
         data: <String, dynamic>{'ocupacion': ocupacion},
       );
     } on DioException catch (e) {
@@ -339,10 +339,11 @@ class DioApiClient implements ApiClient {
             (m['latitud'] ?? m['lat'] ?? AppConfig.esmeraldasCenterLat) as num,
         'longitud':
             (m['longitud'] ?? m['lng'] ?? AppConfig.esmeraldasCenterLng) as num,
-        'telefono': m['telefono'] ?? '911',
+        'telefono': m['telefono'] ?? '',
         'capacidad': (m['capacidad'] ?? 0) as int,
         'ocupacion': (m['ocupacion'] ?? 0) as int,
         'activo': (m['activo'] ?? true) as bool,
+        'paso_bloqueado': m['paso_bloqueado'] == true,
       });
     }).toList();
   }

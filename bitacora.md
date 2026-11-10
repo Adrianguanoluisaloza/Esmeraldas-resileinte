@@ -329,3 +329,10 @@ Este documento registra decisiones, avances, bloqueos y pendientes importantes. 
 - **Decisión:** No se afirma un punto de quiebre porque la prueba no llegó a él. Los precios sin fuente confirmada quedan como cotización pendiente.
 - **Validación:** Datos tomados de la salida original de la prueba, de los metadatos de la VM y de páginas de precios consultadas el 10 de noviembre.
 - **Pendientes:** Confirmar en Facturación de Oracle si la VM de 4 OCPU genera cobro, porque la cuota gratuita bajó a 2 OCPU en la documentación.
+
+## 2026-11-10
+- **Área:** mobile | producto
+- **Cambio:** Orden del repositorio. Se borró el proyecto Flutter inicial `apps/mobile` (solo tenía la plantilla); queda `mobile/`. Se reparó `docs/arquitectura/estructura.md`. En la app: ruta correcta para la ocupación de albergues, sin teléfono 911 inventado y aviso de vía bloqueada en el directorio.
+- **Decisión:** La llave de Oracle y las bases del reto viven en el USB de entrega, no en el repo. `HACKATHON 2026.pdf` queda ignorado por Git.
+- **Validación:** `flutter analyze` sin problemas y `flutter test` con 18 pruebas en verde. Se revisó que no haya llaves privadas en archivos versionados.
+- **Pendientes:** Clasificador de reportes en `POST /reportes/{id}/clasificar` (hoy responde 501), en la rama `backend`.

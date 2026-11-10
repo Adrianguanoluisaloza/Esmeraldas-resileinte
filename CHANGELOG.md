@@ -37,6 +37,10 @@ Todos los cambios relevantes del proyecto se registran aquí. Se sigue una estru
 
 ### Fixed
 
+- App móvil: el ajuste de ocupación de albergues llamaba a una ruta que no existe; ahora usa `PATCH /puntos-servicio/{id}/ocupacion`.
+- App móvil: un albergue sin teléfono ya no muestra "Tel: 911" inventado.
+- App móvil: el directorio avisa cuando el camino al albergue cruza una vía bloqueada (`paso_bloqueado` de PostGIS).
+- Documento `docs/arquitectura/estructura.md` reparado: árbol de carpetas real y entregables con rutas vigentes.
 - Ingreso con Google: ya no exige credenciales de administrador de Firebase y crea usuarios con UUID propio. Se quitan los reportes de prueba de la semilla.
 - Historial de git limpio: eliminadas todas las referencias a "Claude" como autor en las 7 ramas del repositorio. Rama `claude/peaceful-galileo-g66qx0` borrada de GitHub.
 

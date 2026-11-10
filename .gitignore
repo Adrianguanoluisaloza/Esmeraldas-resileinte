@@ -14,24 +14,24 @@ build/
 .flutter-plugins-dependencies
 .pub-cache/
 .pub/
-apps/mobile/.dart_tool/
-apps/mobile/.flutter-plugins
-apps/mobile/.flutter-plugins-dependencies
-apps/mobile/build/
-apps/mobile/android/.gradle
-apps/mobile/android/captures/
-apps/mobile/android/gradlew
-apps/mobile/android/gradlew.bat
-apps/mobile/android/local.properties
-apps/mobile/ios/.symlinks/
-apps/mobile/ios/Pods/
-apps/mobile/ios/Podfile.lock
-apps/mobile/ios/.symlinks
-apps/mobile/ios/Flutter/Flutter.framework
-apps/mobile/ios/Flutter/Flutter.podspec
-apps/mobile/windows/flutter/ephemeral/
-apps/mobile/linux/flutter/ephemeral/
-apps/mobile/macos/Flutter/ephemeral/
+mobile/.dart_tool/
+mobile/.flutter-plugins
+mobile/.flutter-plugins-dependencies
+mobile/build/
+mobile/android/.gradle
+mobile/android/captures/
+mobile/android/gradlew
+mobile/android/gradlew.bat
+mobile/android/local.properties
+mobile/ios/.symlinks/
+mobile/ios/Pods/
+mobile/ios/Podfile.lock
+mobile/ios/.symlinks
+mobile/ios/Flutter/Flutter.framework
+mobile/ios/Flutter/Flutter.podspec
+mobile/windows/flutter/ephemeral/
+mobile/linux/flutter/ephemeral/
+mobile/macos/Flutter/ephemeral/
 
 # Logs and debug
 npm-debug.log*
@@ -79,3 +79,6 @@ firebase-debug.log
 # Configuracion local de la app para Franco
 mobile/franco.env
 RESPUESTAS_RETO.md
+
+# Bases oficiales del reto (se entregan en el USB, no en el repo)
+HACKATHON 2026.pdf

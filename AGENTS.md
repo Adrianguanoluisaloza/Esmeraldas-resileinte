@@ -51,8 +51,7 @@ Cuando se incorporen fuentes al repositorio, mantener una separación similar a 
 apps/
   api/                    # Backend Hono + PostGIS (dominio, aplicacion, infraestructura, http)
   web/                    # Proyecto Astro
-  mobile/                 # Proyecto Flutter inicial (se unifica con mobile/, ver tareas móvil)
-mobile/                   # App Flutter de Franco
+mobile/                   # App Flutter (único proyecto móvil)
 database/                 # 01 esquema, 02 semilla del escenario, 03 usuario de la API
 docker-compose.yml        # PostGIS + API (Oracle Cloud y local)
 contrato/                 # Contratos compartidos, incluido OpenAPI
