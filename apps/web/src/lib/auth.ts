@@ -1,4 +1,4 @@
-export type RolUsuario = 'ciudadano' | 'operador_911' | 'admin';
+export type RolUsuario = 'ciudadano' | 'operador_911' | 'bomberos' | 'policia' | 'admin';
 
 export interface UsuarioSesion {
   id: string;
@@ -29,6 +29,16 @@ export const USUARIOS_DEMO: Record<RolUsuario, { correo: string; pass: string; u
       rol: 'operador_911',
       creado_en: '2026-11-01T08:00:00Z',
     },
+  },
+  bomberos: {
+    correo: 'bomberos@demo.esmeraldas-resiliente.ec',
+    pass: CLAVE_DEMO,
+    usuario: { id: 'usr-bom-01', nombre: 'Bomberos demo', correo: 'bomberos@demo.esmeraldas-resiliente.ec', rol: 'bomberos', creado_en: '2026-11-01T08:00:00Z' },
+  },
+  policia: {
+    correo: 'policia@demo.esmeraldas-resiliente.ec',
+    pass: CLAVE_DEMO,
+    usuario: { id: 'usr-pol-01', nombre: 'Policía demo', correo: 'policia@demo.esmeraldas-resiliente.ec', rol: 'policia', creado_en: '2026-11-01T08:00:00Z' },
   },
   admin: {
     correo: 'admin@demo.esmeraldas-resiliente.ec',

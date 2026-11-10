@@ -33,15 +33,16 @@ export interface GrupoNav {
 }
 
 const COE: RolUsuario[] = ['operador_911', 'admin'];
-const TODOS: RolUsuario[] = ['ciudadano', 'operador_911', 'admin'];
+const OPERATIVOS: RolUsuario[] = [...COE, 'bomberos', 'policia'];
+const TODOS: RolUsuario[] = ['ciudadano', ...OPERATIVOS];
 
 export const NAVEGACION: GrupoNav[] = [
   {
     titulo: 'Operaciones',
     items: [
-      { ruta: '/panel', etiqueta: 'Mapa operativo', icono: 'mapa', roles: COE },
-      { ruta: '/panel/reportes', etiqueta: 'Reportes', icono: 'reportes', roles: COE },
-      { ruta: '/panel/alertas', etiqueta: 'Alertas y vías', icono: 'alertas', roles: COE },
+      { ruta: '/panel', etiqueta: 'Mapa operativo', icono: 'mapa', roles: OPERATIVOS },
+      { ruta: '/panel/reportes', etiqueta: 'Reportes', icono: 'reportes', roles: OPERATIVOS },
+      { ruta: '/panel/alertas', etiqueta: 'Alertas y vías', icono: 'alertas', roles: [...COE, 'policia'] },
       { ruta: '/panel/asistencia', etiqueta: 'Asistencia', icono: 'asistencia', roles: COE },
       { ruta: '/panel/estadisticas', etiqueta: 'Estadísticas', icono: 'estadisticas', roles: COE },
     ],

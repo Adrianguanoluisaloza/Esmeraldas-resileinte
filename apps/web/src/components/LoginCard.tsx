@@ -8,7 +8,9 @@ import { USUARIOS_DEMO, guardarSesion, obtenerSesionActual, type RolUsuario } fr
 import { Aviso, Boton } from './ui/Basicos';
 
 const DEMOS: Array<[RolUsuario, string]> = [
-  ['operador_911', 'Operador'],
+  ['operador_911', 'ECU 911'],
+  ['bomberos', 'Bomberos'],
+  ['policia', 'Policía'],
   ['admin', 'Admin'],
   ['ciudadano', 'Ciudadano'],
 ];

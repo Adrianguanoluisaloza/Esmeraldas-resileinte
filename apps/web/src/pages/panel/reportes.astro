@@ -4,6 +4,6 @@ import { TablaReportes } from '../../components/TablaReportes';
 import '../../styles/operaciones.css';
 ---
 
-<PanelLayout titulo="Reportes" roles={['operador_911', 'admin']}>
+<PanelLayout titulo="Reportes" roles={['operador_911', 'bomberos', 'policia', 'admin']}>
   <TablaReportes client:only="react" modo="coe" />
 </PanelLayout>

@@ -2,6 +2,7 @@ import { useEffect, useState, type FormEvent } from 'react';
 import { Megaphone } from 'lucide-react';
 import type { Gravedad } from '../types/mapa';
 import * as api from '../lib/api';
+import { obtenerSesionActual } from '../lib/auth';
 import { ETIQUETA_GRAVEDAD, fechaHoraLocal } from '../lib/catalogos';
 import { Aviso, Boton, Cargando, EstadoVacio } from './ui/Basicos';
 import { InsigniaGravedad } from './ui/Insignias';
@@ -16,6 +17,9 @@ const ESTADOS_VIA: api.EstadoVia[] = ['habilitada', 'parcial', 'bloqueada'];
 const ETIQUETA_VIA: Record<api.EstadoVia, string> = { habilitada: 'Habilitada', parcial: 'Parcial', bloqueada: 'Bloqueada' };
 
 export function AlertasVias() {
+  // La Policía actualiza vías y lee alertas; emitirlas o cerrarlas es del ECU 911 y la administración.
+  const rol = obtenerSesionActual()?.rol;
+  const esCoe = rol === 'operador_911' || rol === 'admin';
   const [alertas, setAlertas] = useState<api.Alerta[] | null>(null);
   const [vias, setVias] = useState<Via[] | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -25,7 +29,7 @@ export function AlertasVias() {
   const fallo = (e: unknown) => setError(e instanceof api.ErrorApi ? e.message : 'No se pudo completar la acción.');
 
   useEffect(() => {
-    api.listarAlertas(true).then(setAlertas).catch(fallo);
+    api.listarAlertas(esCoe).then(setAlertas).catch(fallo);
     api
       .viasGeoJson()
       .then((c) => setVias(c.features.map((f) => ({ id: String(f.properties?.id), nombre: String(f.properties?.nombre), estado: f.properties?.estado as api.EstadoVia }))))
@@ -70,7 +74,7 @@ export function AlertasVias() {
       <div className="pn-bloque">
         {error && <Aviso tipo="peligro">{error}</Aviso>}
 
-        <form className="er-tarjeta er-tarjeta__cuerpo pn-form" onSubmit={emitir}>
+        {esCoe && <form className="er-tarjeta er-tarjeta__cuerpo pn-form" onSubmit={emitir}>
           <h2 className="er-tarjeta__titulo">Emitir alerta</h2>
           <label className="er-campo">
             <span className="er-etiqueta">Sector</span>
@@ -98,7 +102,7 @@ export function AlertasVias() {
           <Boton type="submit" variante="primario" disabled={enviando}>
             <Megaphone aria-hidden="true" /> {enviando ? 'Emitiendo...' : 'Emitir'}
           </Boton>
-        </form>
+        </form>}
 
         <section className="er-tarjeta">
           <div className="er-tarjeta__cabecera"><h2 className="er-tarjeta__titulo">Vías</h2></div>
@@ -135,7 +139,7 @@ export function AlertasVias() {
                   <span>{a.mensaje}</span>
                   <span className="pn-sub er-num">{fechaHoraLocal(a.creado_en)}</span>
                 </div>
-                {a.vigente && <Boton tamano="sm" onClick={() => cerrar(a.id)}>Cerrar</Boton>}
+                {a.vigente && esCoe && <Boton tamano="sm" onClick={() => cerrar(a.id)}>Cerrar</Boton>}
               </li>
             ))}
           </ul>
@@ -153,16 +157,16 @@ export function AlertasVigentes() {
   }, []);
   if (!alertas?.length) return null;
   return (
-    <section className="er-tarjeta pn-alertas" aria-label="Alertas vigentes">
+    <section className="er-tarjeta pn-vigentes" aria-label="Alertas vigentes">
       <ul>
         {alertas.map((a) => (
-          <li key={a.id} className="pn-alerta">
+          <li key={a.id} className="pn-vigente">
             <InsigniaGravedad valor={a.nivel} />
-            <div className="pn-alerta__texto">
+            <div className="pn-vigente__texto">
               <strong>{a.sector}</strong>
               <span>{a.mensaje.replace(/^Simulacro:\s*(.)/i, (_, letra: string) => letra.toUpperCase())}</span>
             </div>
-            <span className="pn-alerta__origen">{a.origen === 'oficial' ? 'Alerta oficial' : 'Simulacro'}</span>
+            <span className="pn-vigente__origen">{a.origen === 'oficial' ? 'Alerta oficial' : 'Simulacro'}</span>
           </li>
         ))}
       </ul>

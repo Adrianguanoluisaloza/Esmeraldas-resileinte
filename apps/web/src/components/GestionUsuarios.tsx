@@ -4,7 +4,16 @@ import { fechaHoraLocal } from '../lib/catalogos';
 import { obtenerSesionActual, type RolUsuario, type UsuarioSesion } from '../lib/auth';
 import { Aviso, Cargando, EstadoVacio } from './ui/Basicos';
 
-const ROLES: Array<[RolUsuario, string]> = [['ciudadano', 'Ciudadano'], ['operador_911', 'Operador 911'], ['admin', 'Administrador']];
+const ROLES: Array<[RolUsuario, string]> = [['ciudadano', 'Ciudadano'], ['operador_911', 'ECU 911'], ['bomberos', 'Bomberos'], ['policia', 'Policía'], ['admin', 'Administrador']];
+
+/** Resumen de lo que el servidor permite a cada rol. La regla real está en la API. */
+const PERMISOS: Array<[string, string, string]> = [
+  ['Ciudadano', 'Solo los suyos', 'Reportar, ver albergues y alertas vigentes'],
+  ['ECU 911', 'Todos', 'Despachar, emitir alertas, actualizar vías y albergues, asistencia y estadísticas'],
+  ['Bomberos', 'Inundación, deslizamiento, personas atrapadas y daño de vivienda', 'Atender esos reportes y ver el mapa operativo'],
+  ['Policía', 'Vía bloqueada y personas atrapadas', 'Atender esos reportes y actualizar el estado de las vías'],
+  ['Administrador', 'Todos', 'Todo lo anterior y asignar roles'],
+];
 
 /** El administrador decide quién opera el COE. El servidor vuelve a exigir el rol en cada petición. */
 export function GestionUsuarios() {
@@ -68,6 +77,16 @@ export function GestionUsuarios() {
           </table>
         </div>
       )}
+
+      <section className="er-tarjeta" aria-label="Permisos por rol">
+        <div className="er-tarjeta__cabecera"><h2 className="er-tarjeta__titulo">Qué puede hacer cada rol</h2></div>
+        <div className="er-tabla-contenedor pn-sin-borde">
+          <table className="er-tabla">
+            <thead><tr><th scope="col">Rol</th><th scope="col">Reportes que ve</th><th scope="col">Acciones</th></tr></thead>
+            <tbody>{PERMISOS.map(([rol, ve, hace]) => <tr key={rol}><td><strong>{rol}</strong></td><td>{ve}</td><td>{hace}</td></tr>)}</tbody>
+          </table>
+        </div>
+      </section>
     </div>
   );
 }

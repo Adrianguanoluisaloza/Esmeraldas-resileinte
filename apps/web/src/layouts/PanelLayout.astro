@@ -21,7 +21,7 @@ interface Props {
   completo?: boolean;
 }
 
-const { titulo, descripcion, roles = ['ciudadano', 'operador_911', 'admin'], completo = false } = Astro.props;
+const { titulo, descripcion, roles = ['ciudadano', 'operador_911', 'bomberos', 'policia', 'admin'], completo = false } = Astro.props;
 const rutaActual = Astro.url.pathname.replace(/\/+$/, '') || '/';
 ---
 
@@ -93,7 +93,7 @@ const rutaActual = Astro.url.pathname.replace(/\/+$/, '') || '/';
   import { cerrarSesion, obtenerSesionActual, obtenerTokenActual } from '../lib/auth';
   import { inicioSegunRol } from '../config/navegacion';
 
-  const ETIQUETA_ROL: Record<string, string> = { ciudadano: 'Ciudadano', operador_911: 'Operador 911', admin: 'Administrador' };
+  const ETIQUETA_ROL: Record<string, string> = { ciudadano: 'Ciudadano', operador_911: 'ECU 911', bomberos: 'Bomberos', policia: 'Policía', admin: 'Administrador' };
 
   const raiz = document.querySelector<HTMLElement>('.pn')!;
   const sesion = obtenerSesionActual();
