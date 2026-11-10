@@ -123,7 +123,7 @@ export function MapaEsmeraldas({
       attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap</a>',
     }).addTo(m);
     if (!soloVista) L.control.zoom({ position: 'topright' }).addTo(m);
-    L.control.scale({ imperial: false, position: 'bottomleft' }).addTo(m);
+    if (!soloVista) L.control.scale({ imperial: false, position: 'bottomleft' }).addTo(m);
     // Orden de dibujo: zonas abajo, luego vías, puntos y reportes arriba.
     capas.current = {
       zonas: L.layerGroup().addTo(m),

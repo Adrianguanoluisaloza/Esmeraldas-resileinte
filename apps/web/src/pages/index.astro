@@ -29,12 +29,9 @@ const actores = [
     <section class="st-heroe">
       <div class="st-heroe__texto">
         <h1>Del celular del ciudadano al mapa del COE.</h1>
-        <p class="st-bajada">Quien necesita ayuda reporta aunque no tenga señal. ECU 911, Bomberos y Policía ven lo que les corresponde en el mismo mapa.</p>
         <div class="st-acciones">
           <a class="er-btn er-btn--primario er-btn--lg" href="/login">Ingresar</a>
-          <a class="er-btn er-btn--secundario er-btn--lg" href={URL_APK}><Download aria-hidden="true" /> Descargar app Android</a>
         </div>
-        <p class="st-nota">No reemplaza al ECU 911. En una emergencia, llama al 911.</p>
       </div>
       <PortadaMapa client:only="react">
         <div slot="fallback" class="st-tablero st-tablero--cargando"></div>
@@ -68,7 +65,7 @@ const actores = [
   </main>
 
   <footer class="st-pie">
-    <span>Esmeraldas Resiliente</span>
+    <span>Esmeraldas Resiliente. No reemplaza al ECU 911: en una emergencia, llama al 911.</span>
     <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">© OpenStreetMap</a>
     <a href="/legal">Legal y licencias</a>
   </footer>
