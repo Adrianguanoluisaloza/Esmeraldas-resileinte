@@ -153,12 +153,19 @@ export function AlertasVigentes() {
   }, []);
   if (!alertas?.length) return null;
   return (
-    <div className="pn-bloque">
-      {alertas.map((a) => (
-        <Aviso key={a.id} tipo={a.origen === 'oficial' ? 'peligro' : 'simulado'} titulo={`${a.sector} · ${ETIQUETA_GRAVEDAD[a.nivel]}${a.origen === 'simulada' ? ' · Simulacro' : ''}`}>
-          {a.mensaje}
-        </Aviso>
-      ))}
-    </div>
+    <section className="er-tarjeta pn-alertas" aria-label="Alertas vigentes">
+      <ul>
+        {alertas.map((a) => (
+          <li key={a.id} className="pn-alerta">
+            <InsigniaGravedad valor={a.nivel} />
+            <div className="pn-alerta__texto">
+              <strong>{a.sector}</strong>
+              <span>{a.mensaje.replace(/^Simulacro:\s*/i, '')}</span>
+            </div>
+            <span className="pn-alerta__origen">{a.origen === 'oficial' ? 'Alerta oficial' : 'Simulacro'}</span>
+          </li>
+        ))}
+      </ul>
+    </section>
   );
 }

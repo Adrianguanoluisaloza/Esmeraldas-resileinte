@@ -12,7 +12,7 @@ Una sola fuente para colores, componentes y reglas de la web. La app de Franco u
 | Semáforo ámbar (casi lleno, en proceso) | `--er-warn` | `#EF6C00` | `colorSemaforoAmbar` |
 | Semáforo rojo (lleno, pendiente, crítico) | `--er-danger` | `#C62828` | `colorSemaforoRojo` |
 | Botón de emergencia ("Reportar emergencia", "Enviar reporte") | `--er-emergencia` | `#C62828` | usar `colorSemaforoRojo` |
-| Dato simulado (borde discontinuo) | `--er-origen-simulado` | `#5B4BC4` | agregar |
+| Dato simulado (punto hueco y texto) | `--er-origen-simulado` | `#5B4BC4` | agregar |
 | Alerta oficial (INAMHI / SNGR) | `--er-origen-oficial` | `#1F4FB8` | agregar |
 | Fondo / superficie / borde | `--er-bg` / `--er-surface` / `--er-border` | `#F5F7F5` / `#FFFFFF` / `#DCE3DE` | — |
 | Texto / secundario / apagado | `--er-text` / `--er-text-2` / `--er-muted` | `#13201A` / `#36463E` / `#5F6F67` | — |
@@ -22,7 +22,7 @@ El modo oscuro solo cambia los valores de los tokens (`src/styles/tokens.css`), 
 
 **Por qué así:** verde de marca de Franco para todo lo normal; rojo SOLO para emergencia y peligro, así el ojo lo
 encuentra al instante bajo estrés. El reto exige diferenciar *reporte ciudadano*, *dato simulado* y *alerta oficial*:
-cada uno tiene su color y su texto, y el simulado además lleva borde discontinuo (se distingue sin color).
+cada uno tiene su color y su texto, y el simulado además lleva un punto hueco (se distingue sin color). Insignias y avisos son sólidos: sin fondos tintados ni bordes discontinuos.
 
 ## 2. Reglas que no se rompen
 

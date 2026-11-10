@@ -37,28 +37,32 @@
 /* Insignia (dato real: gravedad, estado, origen, cupo). Nunca decorativa. ------------------------ */
 .er-insignia {
   display: inline-flex; align-items: center; gap: 5px; padding: 0 7px; border-radius: 4px;
-  border: 1px solid var(--er-border); background: var(--er-surface-2); color: var(--er-text-2);
+  border: 1px solid var(--er-border); background: var(--er-surface); color: var(--er-text);
   font-size: 11.5px; font-weight: 600; line-height: 20px; white-space: nowrap;
 }
-.er-insignia__punto { width: 6px; height: 6px; border-radius: 50%; background: currentColor; flex-shrink: 0; }
+.er-insignia__punto, [class*="er-insignia--estado-"]::before, [class*="er-insignia--origen-"]::before {
+  width: 6px; height: 6px; border-radius: 50%; background: var(--er-punto, var(--er-muted)); flex-shrink: 0;
+}
+[class*="er-insignia--estado-"]::before, [class*="er-insignia--origen-"]::before { content: ""; }
 
-.er-insignia--grav-baja    { color: var(--er-grav-baja); }
-.er-insignia--grav-media   { color: var(--er-grav-media); }
-.er-insignia--grav-alta    { color: var(--er-warn-text); border-color: var(--er-grav-alta); background: var(--er-warn-soft); }
-.er-insignia--grav-critica { color: #ffffff; border-color: var(--er-grav-critica); background: var(--er-grav-critica); }
+/* Sólidas: el color solo va en el punto. La gravedad crítica es la única con relleno. */
+.er-insignia--grav-baja    { --er-punto: var(--er-grav-baja); }
+.er-insignia--grav-media   { --er-punto: var(--er-grav-media); }
+.er-insignia--grav-alta    { --er-punto: var(--er-grav-alta); }
+.er-insignia--grav-critica { --er-punto: #ffffff; color: #ffffff; border-color: var(--er-emergencia); background: var(--er-emergencia); }
 
-.er-insignia--estado-pendiente  { color: var(--er-danger); border-color: var(--er-danger); background: var(--er-danger-soft); }
-.er-insignia--estado-en_proceso { color: var(--er-warn-text); border-color: var(--er-warn); background: var(--er-warn-soft); }
-.er-insignia--estado-atendido   { color: var(--er-ok); border-color: var(--er-ok); background: var(--er-ok-soft); }
-.er-insignia--estado-descartado { color: var(--er-muted); }
+.er-insignia--estado-pendiente  { --er-punto: var(--er-danger); }
+.er-insignia--estado-en_proceso { --er-punto: var(--er-warn); }
+.er-insignia--estado-atendido   { --er-punto: var(--er-ok); }
 
-.er-insignia--origen-ciudadano { color: var(--er-primary-text); border-color: var(--er-origen-ciudadano); background: var(--er-primary-soft); }
-.er-insignia--origen-simulado  { color: var(--er-origen-simulado); border: 1px dashed var(--er-origen-simulado); background: var(--er-origen-simulado-soft); }
-.er-insignia--origen-oficial   { color: var(--er-origen-oficial); border-color: var(--er-origen-oficial); background: var(--er-origen-oficial-soft); }
+.er-insignia--origen-ciudadano { --er-punto: var(--er-origen-ciudadano); }
+.er-insignia--origen-oficial   { --er-punto: var(--er-origen-oficial); }
+/* Punto hueco: el simulado se distingue también sin color. */
+.er-insignia--origen-simulado::before { background: transparent; box-shadow: inset 0 0 0 1.5px var(--er-muted); }
 
-.er-insignia--cupo-verde { color: var(--er-ok); border-color: var(--er-ok); background: var(--er-ok-soft); }
-.er-insignia--cupo-ambar { color: var(--er-warn-text); border-color: var(--er-warn); background: var(--er-warn-soft); }
-.er-insignia--cupo-rojo  { color: var(--er-danger); border-color: var(--er-danger); background: var(--er-danger-soft); }
+.er-insignia--cupo-verde { --er-punto: var(--er-ok); }
+.er-insignia--cupo-ambar { --er-punto: var(--er-warn); }
+.er-insignia--cupo-rojo  { --er-punto: var(--er-danger); }
 
 /* Tarjeta ---------------------------------------------------------------------------------------- */
 .er-tarjeta {
@@ -84,21 +88,17 @@
 /* Aviso ---------------------------------------------------------------------------------------------- */
 .er-aviso {
   display: flex; align-items: flex-start; gap: var(--er-s2); padding: 10px var(--er-s3);
-  border: 1px solid var(--er-border); border-radius: var(--er-r-md); background: var(--er-surface-2);
+  border: 1px solid var(--er-border); border-radius: var(--er-r-md); background: var(--er-surface);
   font-size: var(--er-fs-sm); color: var(--er-text);
 }
 .er-aviso svg { width: 16px; height: 16px; flex-shrink: 0; margin-top: 1px; }
 .er-aviso__titulo { font-weight: 600; }
-.er-aviso--info    { border-color: var(--er-origen-oficial); background: var(--er-origen-oficial-soft); }
 .er-aviso--info svg { color: var(--er-origen-oficial); }
-.er-aviso--ok      { border-color: var(--er-ok); background: var(--er-ok-soft); }
 .er-aviso--ok svg { color: var(--er-ok); }
-.er-aviso--aviso   { border-color: var(--er-warn); background: var(--er-warn-soft); }
 .er-aviso--aviso svg { color: var(--er-warn); }
-.er-aviso--peligro { border-color: var(--er-danger); background: var(--er-danger-soft); }
+.er-aviso--peligro { border-color: var(--er-danger); }
 .er-aviso--peligro svg { color: var(--er-danger); }
-.er-aviso--simulado { border: 1px dashed var(--er-origen-simulado); background: var(--er-origen-simulado-soft); }
-.er-aviso--simulado svg { color: var(--er-origen-simulado); }
+.er-aviso--simulado svg { color: var(--er-muted); }
 
 /* Formularios ---------------------------------------------------------------------------------------- */
 .er-campo { display: grid; gap: 6px; }
@@ -142,7 +142,7 @@
 /* Estado vacío / pendiente ------------------------------------------------------------------------- */
 .er-vacio {
   display: grid; justify-items: center; gap: var(--er-s2); padding: var(--er-s8) var(--er-s6);
-  text-align: center; color: var(--er-text-2); border: 1px dashed var(--er-border-strong); border-radius: var(--er-r-md);
+  text-align: center; color: var(--er-text-2); border: 1px solid var(--er-border); border-radius: var(--er-r-md);
   background: var(--er-surface);
 }
 .er-vacio svg { width: 28px; height: 28px; color: var(--er-muted); }

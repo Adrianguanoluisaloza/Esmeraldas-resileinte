@@ -137,3 +137,16 @@
 @keyframes pn-entrar { from { transform: translateX(100%); } }
 @keyframes er-aparecer-velo { from { opacity: 0; } }
 @keyframes er-aparecer { from { opacity: 0; transform: translateY(6px); } }
+
+/* Alertas vigentes: un solo bloque sólido, una fila por alerta. */
+.pn-alertas ul { list-style: none; margin: 0; padding: 0; }
+.pn-alerta { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: var(--er-s3); padding: 10px var(--er-s4); border-top: 1px solid var(--er-border); }
+.pn-alerta:first-child { border-top: 0; }
+.pn-alerta__texto { display: grid; font-size: var(--er-fs-sm); }
+.pn-alerta__texto strong { font-weight: 600; }
+.pn-alerta__texto span { color: var(--er-text-2); }
+.pn-alerta__origen { font-size: var(--er-fs-xs); color: var(--er-muted); white-space: nowrap; }
+@media (max-width: 560px) {
+  .pn-alerta { grid-template-columns: minmax(0, 1fr) auto; }
+  .pn-alerta__texto { grid-column: 1 / -1; grid-row: 2; }
+}
