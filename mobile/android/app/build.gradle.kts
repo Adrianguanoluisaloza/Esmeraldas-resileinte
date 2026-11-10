@@ -30,11 +30,22 @@ android {
         versionName = flutter.versionName
     }
 
+    // La llave estable llega por variables de entorno (secretos de CI). Sin ella se firma con la de debug.
+    val rutaLlave = System.getenv("ANDROID_KEYSTORE_PATH")
+    if (!rutaLlave.isNullOrBlank()) {
+        signingConfigs {
+            create("publicacion") {
+                storeFile = file(rutaLlave)
+                storePassword = System.getenv("ANDROID_KEYSTORE_PASSWORD")
+                keyAlias = System.getenv("ANDROID_KEY_ALIAS")
+                keyPassword = System.getenv("ANDROID_KEY_PASSWORD")
+            }
+        }
+    }
+
     buildTypes {
         release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
-            signingConfig = signingConfigs.getByName("debug")
+            signingConfig = signingConfigs.getByName(if (rutaLlave.isNullOrBlank()) "debug" else "publicacion")
         }
     }
 }

@@ -14,6 +14,8 @@ jobs:
   build:
     name: Compilar APK Flutter Release
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
 
     steps:
       - name: Clonar repositorio
@@ -57,8 +59,16 @@ jobs:
           cd mobile
           flutter test
 
+      - name: Restaurar llave de firma
+        run: echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 -d > "$RUNNER_TEMP/esmeraldas.jks"
+
       - name: Compilar APK Release
+        env:
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
         run: |
+          export ANDROID_KEYSTORE_PATH="$RUNNER_TEMP/esmeraldas.jks"
           cd mobile
           flutter build apk --release \
             --dart-define=API_BASE_URL=https://empire-extensive-origins-observe.trycloudflare.com \
@@ -72,6 +82,15 @@ jobs:
           path: mobile/build/app/outputs/flutter-apk/app-release.apk
           if-no-files-found: error
           retention-days: 14
+
+      - name: Publicar APK para el botón de descarga de la web
+        if: github.ref == 'refs/heads/francopcontrol'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          cp mobile/build/app/outputs/flutter-apk/app-release.apk esmeraldas-resiliente.apk
+          gh release view app-movil >/dev/null 2>&1 || gh release create app-movil --prerelease --title "App móvil (prototipo)" --notes "APK del prototipo Esmeraldas Resiliente. No reemplaza al ECU 911."
+          gh release upload app-movil esmeraldas-resiliente.apk --clobber
 
       - name: Distribuir en Firebase App Distribution
         env:
