@@ -6,6 +6,8 @@ Todos los cambios relevantes del proyecto se registran aquí. Se sigue una estru
 
 ### Added
 
+- Portada con mapa real y botón para descargar la app Android. Reportes del celular primero, con miniatura y actualización en vivo.
+- Registro de albergues por el COE, pantalla de usuarios y roles para el administrador, y correo con diseño para restablecer la contraseña.
 - Restablecer contraseña con enlace de un solo uso en API y web (`/auth/recuperar`, `/auth/restablecer`, página `/restablecer`). Registro web con confirmación de contraseña.
 - API y PostGIS en Oracle Cloud con Docker aislado, imagen de base compatible con ARM (`database/Dockerfile`) y túnel propio.
 - Web publicada en producción en `esmeraldas-resiliente.pages.dev` y página `/legal` con licencias, atribución de OpenStreetMap y privacidad.
