@@ -336,3 +336,10 @@ Este documento registra decisiones, avances, bloqueos y pendientes importantes. 
 - **Decisión:** La llave de Oracle y las bases del reto viven en el USB de entrega, no en el repo. `HACKATHON 2026.pdf` queda ignorado por Git.
 - **Validación:** `flutter analyze` sin problemas y `flutter test` con 18 pruebas en verde. Se revisó que no haya llaves privadas en archivos versionados.
 - **Pendientes:** Clasificador de reportes en `POST /reportes/{id}/clasificar` (hoy responde 501), en la rama `backend`.
+
+## 2026-11-10
+- **Área:** mobile
+- **Cambio:** Panel "Análisis" en la app (ECU 911 y admin) con `/estadisticas`, `/estadisticas/recurrencia`, `/asistencia/pendientes`, `/asistencia/inventario` y registro de entregas. Mapa grande en el centro de "Situación". La app quedó ordenada por capas: `lib/data` se repartió en `features/reporte`, `features/albergues` y `features/operaciones`.
+- **Decisión:** Bomberos y Policía no ven "Análisis" porque la API solo da esos datos al COE (`ROLES_COE`). El clasificador de IA queda a cargo del agente "Vigía Esmeraldas" en Google Cloud.
+- **Validación:** `flutter analyze` sin problemas y `flutter test` con 20 pruebas en verde. Por SSH a la VM de Oracle (llave del USB) se revisó la base: 12 reportes, 5 puntos de servicio, inventario de agua, alimentos y medicinas, 0 entregas. La API responde `/salud` y pide sesión en `/estadisticas`.
+- **Pendientes:** Probar el panel en un teléfono con una cuenta de ECU 911.

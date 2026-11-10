@@ -7,8 +7,8 @@ import '../../../../core/enums/app_enums.dart';
 import '../../../../core/error/failures.dart';
 import '../../../../core/network/api_client.dart';
 import '../../../../core/services/photo_capture_service.dart';
-import '../../../../data/models/reporte_cola_model.dart';
-import '../../../../data/repositories/cola_reportes_repository.dart';
+import '../../../reporte/data/models/reporte_cola_model.dart';
+import '../../../reporte/data/repositories/cola_reportes_repository.dart';
 
 /// Servicio de sincronización en dos pasos con espera creciente (backoff) y control de concurrencia por UUID.
 /// Cumple las reglas de `TAREAS_MOVIL_FRANCO.md` (M1 y M2):

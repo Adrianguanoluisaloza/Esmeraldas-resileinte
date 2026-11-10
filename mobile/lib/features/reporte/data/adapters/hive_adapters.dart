@@ -1,6 +1,6 @@
 import 'package:hive_ce/hive.dart';
 
-import '../models/punto_servicio_model.dart';
+import '../../../albergues/data/models/punto_servicio_model.dart';
 import '../models/reporte_cola_model.dart';
 
 /// Adaptador Hive CE para [ReporteColaModel].

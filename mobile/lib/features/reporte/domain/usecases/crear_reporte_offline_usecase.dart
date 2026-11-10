@@ -2,8 +2,8 @@ import 'package:uuid/uuid.dart';
 
 import '../../../../core/enums/app_enums.dart';
 import '../../../../core/location/location_service.dart';
-import '../../../../data/models/reporte_cola_model.dart';
-import '../../../../data/repositories/cola_reportes_repository.dart';
+import '../../data/models/reporte_cola_model.dart';
+import '../../data/repositories/cola_reportes_repository.dart';
 
 /// Datos capturados en el formulario del ciudadano para crear un reporte offline.
 class DatosNuevoReporte {

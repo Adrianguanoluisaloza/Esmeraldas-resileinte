@@ -6,8 +6,8 @@ import '../../../../core/enums/app_enums.dart';
 import '../../../../core/security/permisos.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/mapa_fondo_esmeraldas.dart';
-import '../../../../data/models/punto_servicio_model.dart';
-import '../../../../data/repositories/operaciones_repository.dart';
+import '../../../albergues/data/models/punto_servicio_model.dart';
+import '../../data/repositories/operaciones_repository.dart';
 import '../../../auth/domain/repositories/auth_repository.dart';
 
 void _mostrarError(BuildContext context, Object e) {
@@ -71,139 +71,151 @@ class SituacionOperadorPage extends StatelessWidget {
           ),
         ];
 
-        return Stack(
-          children: <Widget>[
-            Positioned.fill(
-              child: MapaFondoEsmeraldas(
-                tieneConexion: tieneConexion,
-                ubicacionUsuario: const LatLng(
-                  AppConfig.esmeraldasCenterLat,
-                  AppConfig.esmeraldasCenterLng,
-                ),
-                puntosServicio: repo.puntos,
-                incidentes: R
-                    .map(
-                      (ReporteOperacion r) => PinMapaIncidente(
-                        punto: r.punto,
-                        gravedad: r.gravedad,
-                        etiqueta: r.sector,
-                        onTap: () => onSeleccionarReporte(r),
-                      ),
-                    )
-                    .toList(),
+        final Widget mapa = ClipRRect(
+          borderRadius: BorderRadius.circular(12),
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              border: Border.all(color: AppTheme.colorBorde),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: MapaFondoEsmeraldas(
+              tieneConexion: tieneConexion,
+              ubicacionUsuario: const LatLng(
+                AppConfig.esmeraldasCenterLat,
+                AppConfig.esmeraldasCenterLng,
               ),
-            ),
-            ListView(
-              padding: const EdgeInsets.fromLTRB(14, 150, 14, 16),
-              children: <Widget>[
-                Card(
-                  child: Padding(
-                    padding: const EdgeInsets.all(12),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: <Widget>[
-                        const Row(
-                          children: <Widget>[
-                            Expanded(
-                              child: Text(
-                                'Situación en Esmeraldas',
-                                style: TextStyle(
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.w700,
-                                ),
-                              ),
-                            ),
-                            InsigniaOrigenDato(esOficial: false),
-                          ],
-                        ),
-                        const SizedBox(height: 10),
-                        GridView.count(
-                          crossAxisCount: 3,
-                          mainAxisSpacing: 8,
-                          crossAxisSpacing: 8,
-                          childAspectRatio: 1.55,
-                          shrinkWrap: true,
-                          physics: const NeverScrollableScrollPhysics(),
-                          children: kpis
-                              .map(
-                                ((String, String) k) => Container(
-                                  decoration: BoxDecoration(
-                                    color: AppTheme.colorFondo,
-                                    borderRadius: BorderRadius.circular(8),
-                                    border: Border.all(
-                                      color: AppTheme.colorBorde,
-                                    ),
-                                  ),
-                                  child: Center(
-                                    child: Column(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: <Widget>[
-                                        Text(
-                                          k.$1,
-                                          style: const TextStyle(
-                                            fontSize: 19,
-                                            fontWeight: FontWeight.w800,
-                                          ),
-                                        ),
-                                        Text(
-                                          k.$2,
-                                          style: const TextStyle(
-                                            fontSize: 11,
-                                            color:
-                                                AppTheme.colorTextoSecundario,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              )
-                              .toList(),
-                        ),
-                      ],
+              puntosServicio: repo.puntos,
+              incidentes: R
+                  .map(
+                    (ReporteOperacion r) => PinMapaIncidente(
+                      punto: r.punto,
+                      gravedad: r.gravedad,
+                      etiqueta: r.sector,
+                      onTap: () => onSeleccionarReporte(r),
                     ),
-                  ),
-                ),
-                const SizedBox(height: 10),
-                Card(
-                  child: Padding(
-                    padding: const EdgeInsets.all(12),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: <Widget>[
-                        const Row(
-                          children: <Widget>[
-                            Icon(
-                              Icons.inventory_2_outlined,
-                              size: 16,
-                              color: AppTheme.colorPrimario,
-                            ),
-                            SizedBox(width: 6),
-                            Text(
-                              'Necesidades pendientes de movilizar',
+                  )
+                  .toList(),
+            ),
+          ),
+        );
+
+        // Contadores arriba, mapa grande en el centro y necesidades abajo.
+        return Padding(
+          padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
+          child: Column(
+            children: <Widget>[
+              Card(
+                margin: EdgeInsets.zero,
+                child: Padding(
+                  padding: const EdgeInsets.all(10),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: <Widget>[
+                      const Row(
+                        children: <Widget>[
+                          Expanded(
+                            child: Text(
+                              'Situación en Esmeraldas',
                               style: TextStyle(
+                                fontSize: 15,
                                 fontWeight: FontWeight.w700,
-                                fontSize: 13,
                               ),
                             ),
-                          ],
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          nec.isEmpty
-                              ? 'Sin necesidades pendientes'
-                              : nec.entries
-                                    .map((e) => '${e.key.etiqueta}: ${e.value}')
-                                    .join(' · '),
-                          style: const TextStyle(fontSize: 12),
-                        ),
-                      ],
-                    ),
+                          ),
+                          InsigniaOrigenDato(esOficial: false),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      GridView.count(
+                        crossAxisCount: 6,
+                        mainAxisSpacing: 6,
+                        crossAxisSpacing: 6,
+                        childAspectRatio: 0.95,
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        children: kpis
+                            .map(
+                              ((String, String) k) => Container(
+                                decoration: BoxDecoration(
+                                  color: AppTheme.colorFondo,
+                                  borderRadius: BorderRadius.circular(8),
+                                  border: Border.all(
+                                    color: AppTheme.colorBorde,
+                                  ),
+                                ),
+                                child: Center(
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: <Widget>[
+                                      Text(
+                                        k.$1,
+                                        style: const TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w800,
+                                        ),
+                                      ),
+                                      Text(
+                                        k.$2,
+                                        textAlign: TextAlign.center,
+                                        maxLines: 2,
+                                        style: const TextStyle(
+                                          fontSize: 9.5,
+                                          color: AppTheme.colorTextoSecundario,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            )
+                            .toList(),
+                      ),
+                    ],
                   ),
                 ),
-              ],
-            ),
-          ],
+              ),
+              const SizedBox(height: 8),
+              Expanded(child: mapa),
+              const SizedBox(height: 8),
+              Card(
+                margin: EdgeInsets.zero,
+                child: Padding(
+                  padding: const EdgeInsets.all(10),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: <Widget>[
+                      const Row(
+                        children: <Widget>[
+                          Icon(
+                            Icons.inventory_2_outlined,
+                            size: 16,
+                            color: AppTheme.colorPrimario,
+                          ),
+                          SizedBox(width: 6),
+                          Text(
+                            'Necesidades pendientes de movilizar',
+                            style: TextStyle(
+                              fontWeight: FontWeight.w700,
+                              fontSize: 13,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        nec.isEmpty
+                            ? 'Sin necesidades pendientes'
+                            : nec.entries
+                                  .map((e) => '${e.key.etiqueta}: ${e.value}')
+                                  .join(' · '),
+                        style: const TextStyle(fontSize: 12),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
         );
       },
     );

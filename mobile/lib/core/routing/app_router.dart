@@ -2,14 +2,16 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
-import '../../data/models/punto_servicio_model.dart';
-import '../../data/models/reporte_cola_model.dart';
-import '../../data/repositories/cola_reportes_repository.dart';
-import '../../data/repositories/operaciones_repository.dart';
+import '../../features/albergues/data/models/punto_servicio_model.dart';
+import '../../features/reporte/data/models/reporte_cola_model.dart';
+import '../../features/reporte/data/repositories/cola_reportes_repository.dart';
+import '../../features/operaciones/data/repositories/operaciones_repository.dart';
 import '../../features/admin/presentation/pages/admin_pages.dart';
+import '../../features/analisis/domain/repositories/analisis_repository.dart';
+import '../../features/analisis/presentation/pages/analisis_page.dart';
 import '../../features/auth/domain/repositories/auth_repository.dart';
 import '../../features/auth/presentation/pages/login_page.dart';
-import '../../features/mis_reportes/presentation/pages/directorio_albergues_page.dart';
+import '../../features/albergues/presentation/pages/directorio_albergues_page.dart';
 import '../../features/mis_reportes/presentation/pages/mis_reportes_page.dart';
 import '../../features/operaciones/presentation/pages/operaciones_pages.dart';
 import '../../features/reporte/domain/usecases/crear_reporte_offline_usecase.dart';
@@ -34,6 +36,7 @@ class HomeShellPage extends StatefulWidget {
     required this.syncWorkerService,
     this.apiClient,
     this.operacionesRepository,
+    this.analisisRepository,
   });
 
   final ColaReportesRepository colaRepository;
@@ -43,6 +46,7 @@ class HomeShellPage extends StatefulWidget {
   final SyncWorkerService syncWorkerService;
   final ApiClient? apiClient;
   final OperacionesRepository? operacionesRepository;
+  final AnalisisRepository? analisisRepository;
 
   @override
   State<HomeShellPage> createState() => _HomeShellPageState();
@@ -338,6 +342,9 @@ class _HomeShellPageState extends State<HomeShellPage> {
         ),
         bottomNavigationBar: NavigationBar(
           selectedIndex: idx,
+          labelBehavior: destinos.length > 5
+              ? NavigationDestinationLabelBehavior.onlyShowSelected
+              : NavigationDestinationLabelBehavior.alwaysShow,
           onDestinationSelected: (int nuevoIndice) {
             setState(() => _indiceActual = nuevoIndice);
           },
@@ -460,6 +467,35 @@ class _HomeShellPageState extends State<HomeShellPage> {
         );
 
       case RolUsuario.operador911:
+        return (
+          <Widget>[
+            _paginaSituacion(s),
+            IncidentesOperadorPage(repo: _ops, sesion: s),
+            _paginaAnalisis(),
+            PuntosAlertasOperadorPage(repo: _ops, sesion: s),
+            SeguridadCuentaPage(
+              repo: _ops,
+              sesion: s,
+              onCerrarSesion: _cerrarSesion,
+            ),
+          ],
+          const <NavigationDestination>[
+            _destinoSituacion,
+            _destinoIncidentes,
+            _destinoAnalisis,
+            NavigationDestination(
+              icon: Icon(Icons.campaign_outlined),
+              selectedIcon: Icon(Icons.campaign),
+              label: 'Albergues',
+            ),
+            NavigationDestination(
+              icon: Icon(Icons.shield_outlined),
+              selectedIcon: Icon(Icons.shield),
+              label: 'Seguridad',
+            ),
+          ],
+        );
+
       case RolUsuario.bomberos:
       case RolUsuario.policia:
         return (
@@ -524,6 +560,7 @@ class _HomeShellPageState extends State<HomeShellPage> {
                   ),
             ),
             IncidentesOperadorPage(repo: _ops, sesion: s),
+            _paginaAnalisis(),
             PuntosAlertasOperadorPage(repo: _ops, sesion: s),
             UsuariosAdminPage(repo: _ops, sesion: s),
             SeguridadCuentaPage(
@@ -543,6 +580,7 @@ class _HomeShellPageState extends State<HomeShellPage> {
               selectedIcon: Icon(Icons.emergency),
               label: 'Incidentes',
             ),
+            _destinoAnalisis,
             NavigationDestination(
               icon: Icon(Icons.campaign_outlined),
               selectedIcon: Icon(Icons.campaign),
@@ -562,4 +600,35 @@ class _HomeShellPageState extends State<HomeShellPage> {
         );
     }
   }
+
+  Widget _paginaSituacion(UsuarioSesion s) => SituacionOperadorPage(
+    repo: _ops,
+    sesion: s,
+    tieneConexion: !_modoOfflineSimulado,
+    onSeleccionarReporte: (ReporteOperacion r) =>
+        mostrarHojaGestionReporte(context, repo: _ops, sesion: s, reporte: r),
+  );
+
+  Widget _paginaAnalisis() => AnalisisPage(
+    repositorio: widget.analisisRepository,
+    tieneConexion: !_modoOfflineSimulado,
+  );
+
+  static const NavigationDestination _destinoSituacion = NavigationDestination(
+    icon: Icon(Icons.dashboard_outlined),
+    selectedIcon: Icon(Icons.dashboard),
+    label: 'Situación',
+  );
+
+  static const NavigationDestination _destinoIncidentes = NavigationDestination(
+    icon: Icon(Icons.emergency_outlined),
+    selectedIcon: Icon(Icons.emergency),
+    label: 'Incidentes',
+  );
+
+  static const NavigationDestination _destinoAnalisis = NavigationDestination(
+    icon: Icon(Icons.insights_outlined),
+    selectedIcon: Icon(Icons.insights),
+    label: 'Análisis',
+  );
 }

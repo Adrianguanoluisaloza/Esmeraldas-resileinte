@@ -6,8 +6,8 @@ import '../../../../core/location/location_service.dart';
 import '../../../../core/network/api_client.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/mapa_fondo_esmeraldas.dart';
-import '../../../../data/models/punto_servicio_model.dart';
-import '../../../../data/repositories/cola_reportes_repository.dart';
+import '../../data/models/punto_servicio_model.dart';
+import '../../../reporte/data/repositories/cola_reportes_repository.dart';
 
 /// Pantalla de Albergues y Centros de Salud (M5 de `TAREAS_MOVIL_FRANCO.md`):
 /// - Descarga `GET /puntos-servicio` cuando hay red y lo guarda en la caja de Hive.

@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 
-import '../../data/models/punto_servicio_model.dart';
+import '../../features/albergues/data/models/punto_servicio_model.dart';
 import '../../features/auth/domain/repositories/auth_repository.dart';
 import '../config/app_config.dart';
 import '../error/failures.dart';
@@ -50,7 +50,7 @@ abstract interface class ApiClient {
     required String nota,
   }) async {}
 
-  /// `PATCH /albergues/{id}/ocupacion` (operador_911 / admin).
+  /// `PATCH /puntos-servicio/{id}/ocupacion` (operador_911 / admin).
   Future<void> actualizarOcupacionAlbergueRemoto({
     required String id,
     required int ocupacion,

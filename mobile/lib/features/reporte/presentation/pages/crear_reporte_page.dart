@@ -11,8 +11,8 @@ import '../../../../core/services/photo_capture_service.dart';
 import '../../../../core/services/telephony_service.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/mapa_fondo_esmeraldas.dart';
-import '../../../../data/models/punto_servicio_model.dart';
-import '../../../../data/models/reporte_cola_model.dart';
+import '../../../albergues/data/models/punto_servicio_model.dart';
+import '../../data/models/reporte_cola_model.dart';
 import '../../domain/usecases/crear_reporte_offline_usecase.dart';
 import '../widgets/bloque_familia_widget.dart';
 

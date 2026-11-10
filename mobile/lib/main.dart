@@ -8,7 +8,9 @@ import 'core/network/api_client.dart';
 import 'core/routing/app_router.dart';
 import 'core/services/mbtiles_service.dart';
 import 'core/theme/app_theme.dart';
-import 'data/repositories/cola_reportes_repository.dart';
+import 'features/reporte/data/repositories/cola_reportes_repository.dart';
+import 'features/analisis/data/repositories/analisis_repository_impl.dart';
+import 'features/analisis/domain/repositories/analisis_repository.dart';
 import 'features/auth/data/repositories/auth_repository_impl.dart';
 import 'features/auth/domain/repositories/auth_repository.dart';
 import 'features/reporte/domain/usecases/crear_reporte_offline_usecase.dart';
@@ -54,6 +56,7 @@ class _EsmeraldasResilienteAppState extends State<EsmeraldasResilienteApp> {
   late final ApiClient _apiClient;
   late final CrearReporteOfflineUseCase _crearReporteUseCase;
   late final SyncWorkerService _syncWorkerService;
+  late final AnalisisRepository _analisisRepository;
 
   @override
   void initState() {
@@ -68,6 +71,9 @@ class _EsmeraldasResilienteAppState extends State<EsmeraldasResilienteApp> {
     _syncWorkerService = SyncWorkerService(
       colaRepository: widget.colaRepository,
       apiClient: _apiClient,
+    );
+    _analisisRepository = AnalisisRepositoryImpl(
+      authRepository: _authRepository,
     );
   }
 
@@ -84,6 +90,7 @@ class _EsmeraldasResilienteAppState extends State<EsmeraldasResilienteApp> {
         apiClient: _apiClient,
         crearReporteUseCase: _crearReporteUseCase,
         syncWorkerService: _syncWorkerService,
+        analisisRepository: _analisisRepository,
       ),
     );
   }

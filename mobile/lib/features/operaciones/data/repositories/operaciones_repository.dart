@@ -3,12 +3,12 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:latlong2/latlong.dart';
 
-import '../../core/enums/app_enums.dart';
-import '../../core/network/api_client.dart';
-import '../../core/security/permisos.dart';
-import '../../features/auth/domain/repositories/auth_repository.dart';
-import '../models/punto_servicio_model.dart';
-import '../models/reporte_cola_model.dart';
+import '../../../../core/enums/app_enums.dart';
+import '../../../../core/network/api_client.dart';
+import '../../../../core/security/permisos.dart';
+import '../../../auth/domain/repositories/auth_repository.dart';
+import '../../../albergues/data/models/punto_servicio_model.dart';
+import '../../../reporte/data/models/reporte_cola_model.dart';
 
 /// Reporte tal como lo ve el centro de operaciones (`GET /reportes`).
 class ReporteOperacion {

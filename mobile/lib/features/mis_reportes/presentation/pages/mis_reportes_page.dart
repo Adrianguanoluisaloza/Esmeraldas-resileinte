@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../../core/enums/app_enums.dart';
 import '../../../../core/services/telephony_service.dart';
 import '../../../../core/theme/app_theme.dart';
-import '../../../../data/models/reporte_cola_model.dart';
+import '../../../reporte/data/models/reporte_cola_model.dart';
 
 /// Pantalla "Mis reportes" con los pasos de sincronización de 2 fases (`1 · Datos`, `2 · Foto`).
 /// Cumple M11: en modo emergencia sin cuenta avisa que "Mis reportes" solo lista los enviados con cuenta.

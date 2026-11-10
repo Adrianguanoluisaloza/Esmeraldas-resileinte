@@ -1,8 +1,8 @@
 import 'package:hive_ce_flutter/hive_flutter.dart';
 
-import '../../core/enums/app_enums.dart';
+import '../../../../core/enums/app_enums.dart';
 import '../adapters/hive_adapters.dart';
-import '../models/punto_servicio_model.dart';
+import '../../../albergues/data/models/punto_servicio_model.dart';
 import '../models/reporte_cola_model.dart';
 
 /// Contrato del repositorio de la cola offline y directorio local.

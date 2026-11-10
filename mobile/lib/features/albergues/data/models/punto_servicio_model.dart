@@ -1,4 +1,4 @@
-import '../../core/enums/app_enums.dart';
+import '../../../../core/enums/app_enums.dart';
 
 /// Modelo de albergue o centro de salud almacenado en la caja local del directorio (Hive).
 class PuntoServicioModel {

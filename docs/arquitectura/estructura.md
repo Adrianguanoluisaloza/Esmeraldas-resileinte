@@ -57,9 +57,17 @@ esmeraldas-resiliente/
 │       └── src/                # pages, components, layouts, lib, styles
 ├── mobile/                     # Flutter + Hive (cola offline)
 │   └── lib/
-│       ├── core/               # network, location, routing, theme, services
-│       ├── data/               # modelos, adaptadores Hive, repositorios
-│       └── features/           # auth, reporte, mis_reportes, sync, operaciones, admin
+│       ├── main.dart           # composición de dependencias
+│       ├── core/               # config, network, location, routing, theme, security, services, widgets
+│       └── features/           # cada función con sus capas
+│           ├── auth/           # domain · data · presentation (correo y Google)
+│           ├── reporte/        # domain (casos de uso) · data (cola Hive, modelos) · presentation
+│           ├── sync/           # data (envío en 2 pasos) · presentation (banner)
+│           ├── mis_reportes/   # presentation
+│           ├── albergues/      # data (modelo) · presentation (directorio, más cercano)
+│           ├── operaciones/    # data (repositorio) · presentation (situación, incidentes, alertas)
+│           ├── analisis/       # domain · data · presentation (indicadores, sectores, asistencia)
+│           └── admin/          # presentation (usuarios y auditoría)
 └── docs/
     ├── ARQUITECTURA.md         # componentes y flujo (Mermaid)
     ├── MODELO_DATOS.md         # diagrama ER (Mermaid)

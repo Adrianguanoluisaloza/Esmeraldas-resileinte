@@ -1,4 +1,4 @@
-import '../../core/enums/app_enums.dart';
+import '../../../../core/enums/app_enums.dart';
 
 /// Modelo de un reporte ciudadano almacenado en la cola local (Hive).
 /// La foto NO se almacena dentro de Hive; solo se guarda [rutaFotoLocal].

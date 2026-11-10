@@ -4,7 +4,7 @@ import '../../../../core/enums/app_enums.dart';
 import '../../../../core/security/permisos.dart';
 import '../../../../core/security/validadores.dart';
 import '../../../../core/theme/app_theme.dart';
-import '../../../../data/repositories/operaciones_repository.dart';
+import '../../../operaciones/data/repositories/operaciones_repository.dart';
 import '../../../auth/domain/repositories/auth_repository.dart';
 
 // ============================================================================

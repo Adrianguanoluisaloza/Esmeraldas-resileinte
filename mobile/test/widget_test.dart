@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -7,9 +6,9 @@ import 'package:mobile/core/error/failures.dart';
 import 'package:mobile/core/location/location_service.dart';
 import 'package:mobile/core/network/api_client.dart';
 import 'package:mobile/core/services/telephony_service.dart';
-import 'package:mobile/data/models/punto_servicio_model.dart';
-import 'package:mobile/data/models/reporte_cola_model.dart';
-import 'package:mobile/data/repositories/cola_reportes_repository.dart';
+import 'package:mobile/features/albergues/data/models/punto_servicio_model.dart';
+import 'package:mobile/features/reporte/data/models/reporte_cola_model.dart';
+import 'package:mobile/features/reporte/data/repositories/cola_reportes_repository.dart';
 import 'package:mobile/features/auth/domain/repositories/auth_repository.dart';
 import 'package:mobile/features/sync/data/services/sync_worker_service.dart';
 import 'package:mobile/main.dart';

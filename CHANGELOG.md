@@ -6,6 +6,9 @@ Todos los cambios relevantes del proyecto se registran aquí. Se sigue una estru
 
 ### Added
 
+- App móvil: panel "Análisis" para ECU 911 y administrador con indicadores, sectores prioritarios, inventario y registro de entregas (igual que Estadísticas y Asistencia de la web).
+- App móvil: en "Situación" el mapa ahora ocupa el centro de la pantalla, con los contadores arriba y las necesidades abajo.
+- App móvil ordenada por capas: cada función en `features/<función>/{domain,data,presentation}`; se eliminó la carpeta suelta `lib/data`.
 - Documento de pruebas de carga y costos en `docs/PRUEBAS_Y_COSTOS.md`.
 - App móvil: semáforo "Casi sin cupo", alertas en bloques sólidos y formulario de reporte más compacto.
 - App móvil: inicio de sesión con Google también desde el navegador.

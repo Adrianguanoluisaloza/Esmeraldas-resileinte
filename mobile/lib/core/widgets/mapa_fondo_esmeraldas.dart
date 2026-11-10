@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart' hide Path;
 
-import '../../data/models/punto_servicio_model.dart';
+import '../../features/albergues/data/models/punto_servicio_model.dart';
 import '../config/app_config.dart';
 import '../enums/app_enums.dart';
 import '../services/mbtiles_service.dart';
