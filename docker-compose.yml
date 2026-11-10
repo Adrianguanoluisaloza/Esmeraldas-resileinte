@@ -7,7 +7,9 @@ name: esmeraldas-resiliente
 services:
   db:
     container_name: esmeraldas-db
-    image: postgis/postgis:16-3.4-alpine
+    # Imagen propia: funciona en x86 y en la VM ARM de Oracle (ver database/Dockerfile).
+    build: ./database
+    image: esmeraldas-postgis:16-3
     restart: unless-stopped
     networks:
       - esmeraldas-net
@@ -46,7 +48,9 @@ services:
       # La API entra con el usuario de permisos mínimos, nunca con el dueño de la base.
       DATABASE_URL: postgres://resiliente_app:${APP_DB_PASSWORD}@db:5432/${POSTGRES_DB:-resiliente}
       JWT_SECRET: ${JWT_SECRET:?Define JWT_SECRET en .env}
-      CORS_ORIGENES: ${CORS_ORIGENES:-http://localhost:4321,https://esmeraldas-resiliente.eliasadrianlozadaguanoluisa.workers.dev}
+      CORS_ORIGENES: ${CORS_ORIGENES:-http://localhost:4321,https://esmeraldas-resiliente.pages.dev}
+      # Opcional: activa el ingreso con Google (tokens de Firebase).
+      FIREBASE_PROJECT_ID: ${FIREBASE_PROJECT_ID:-}
       # Detrás de Cloudflare Tunnel: usar CF-Connecting-IP para el límite de peticiones.
       CONFIAR_EN_PROXY: ${CONFIAR_EN_PROXY:-true}
     # Contenedor endurecido: sin privilegios extra y sistema de archivos de solo lectura (fotos en volumen).
@@ -63,6 +67,19 @@ services:
       # Solo escucha en la propia máquina: el acceso público entra por Cloudflare Tunnel.
       # Para probar desde otro equipo de la red local: API_ESCUCHA=0.0.0.0 en .env.
       - "${API_ESCUCHA:-127.0.0.1}:${API_PUERTO:-3000}:3000"
+
+  # Túnel rápido propio, sin dominio ni puertos abiertos. Solo arranca con: --profile tunel
+  # La URL cambia si este contenedor se reinicia: ver con docker logs esmeraldas-tunel.
+  tunel:
+    container_name: esmeraldas-tunel
+    image: cloudflare/cloudflared:latest
+    profiles: ["tunel"]
+    restart: unless-stopped
+    networks:
+      - esmeraldas-net
+    depends_on:
+      - api
+    command: ["tunnel", "--no-autoupdate", "--url", "http://api:3000"]
 
 networks:
   esmeraldas-net:
