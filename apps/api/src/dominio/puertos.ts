@@ -25,6 +25,8 @@ export interface UsuarioConClave extends Usuario {
 export interface RepositorioUsuarios {
   buscarPorCorreo(correo: string): Promise<UsuarioConClave | null>;
   crear(usuario: UsuarioConClave): Promise<void>;
+  listar(): Promise<Usuario[]>;
+  cambiarRol(id: string, rol: Rol): Promise<Usuario | null>;
 }
 
 export interface SolicitudRestablecimiento {
@@ -84,6 +86,8 @@ export interface RepositorioAsistencia {
 
 /** Donde viven los archivos de foto. Hoy disco local (volumen Docker); mañana Object Storage de Oracle o R2. */
 export interface AlmacenFotos {
+  /** null si no existe. El nombre ya viene validado por la ruta. */
+  leer(nombre: string): Promise<{ bytes: Uint8Array; tipo: string } | null>;
   guardar(reporteId: string, bytes: Uint8Array, extension: "jpg" | "png"): Promise<{ url: string; miniaturaUrl: string; tamano: number }>;
 }
 
@@ -108,6 +112,7 @@ export interface RepositorioTerritorio {
   /** paso_bloqueado = el tramo recto hasta el punto cruza una vía bloqueada (ruta de evacuación a revisar). */
   puntosCercanos(c: Cercania): Promise<Array<PuntoServicio & { distancia_m: number; paso_bloqueado: boolean }>>;
   actualizarOcupacion(id: string, ocupacion: number): Promise<PuntoServicio | null>;
+  crearPunto(punto: PuntoServicio): Promise<PuntoServicio>;
   /** Cambia el estado de una vía; devuelve sus propiedades o null si no existe. */
   actualizarVia(id: string, estado: EstadoVia): Promise<Record<string, unknown> | null>;
 }

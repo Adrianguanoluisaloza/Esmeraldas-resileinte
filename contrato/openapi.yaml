@@ -390,6 +390,61 @@ paths:
         '200':
           description: Vías en formato GeoJSON FeatureCollection (LineString)
 
+  /usuarios:
+    get:
+      summary: Listar usuarios (solo administrador)
+      tags: [Administración]
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200':
+          description: Usuarios registrados, máximo 200
+        '403':
+          description: Requiere rol admin
+
+  /usuarios/{id}/rol:
+    patch:
+      summary: Cambiar el rol de otro usuario (solo administrador)
+      tags: [Administración]
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [rol]
+              properties:
+                rol:
+                  type: string
+                  enum: [ciudadano, operador_911, admin]
+      responses:
+        '200':
+          description: Usuario actualizado
+        '403':
+          description: Requiere rol admin
+        '409':
+          description: No se puede cambiar el rol propio
+
+  /fotos/{nombre}:
+    get:
+      summary: Foto o miniatura de un reporte
+      tags: [Reportes]
+      parameters:
+        - name: nombre
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Imagen JPEG o PNG
+        '404':
+          description: No existe
+
   /puntos-servicio/cercanos:
     get:
       summary: Albergues o centros de salud con cupo, ordenados por distancia real (PostGIS)
@@ -441,6 +496,31 @@ paths:
                       type: object
 
   /puntos-servicio:
+    post:
+      summary: Registrar un albergue o centro de salud (COE)
+      tags: [Territorio]
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [nombre, tipo, capacidad, latitud, longitud]
+              properties:
+                nombre: { type: string, minLength: 3, maxLength: 160 }
+                tipo: { $ref: '#/components/schemas/TipoPuntoServicio' }
+                direccion: { type: string, maxLength: 200 }
+                telefono: { type: string, maxLength: 30 }
+                capacidad: { type: integer, minimum: 1 }
+                ocupacion: { type: integer, minimum: 0 }
+                latitud: { type: number }
+                longitud: { type: number }
+      responses:
+        '201':
+          description: Punto creado con origen coe
+        '403':
+          description: Requiere rol operador_911 o admin
     get:
       summary: Listar albergues y centros de salud
       tags: [Puntos de Servicio]
@@ -1002,6 +1082,10 @@ components:
     PuntoServicio:
       type: object
       properties:
+        origen:
+          type: string
+          enum: [simulado, coe]
+          description: simulado es dato del escenario; coe lo registró el personal del COE.
         id:
           type: string
           format: uuid

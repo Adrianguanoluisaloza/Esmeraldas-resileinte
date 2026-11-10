@@ -13,7 +13,7 @@ test("semáforo de cupo según el contrato (verde < 70, ámbar 70-90, rojo > 90)
 });
 
 test("vista del punto calcula porcentaje y cupos libres sin negativos", () => {
-  const v = vistaPunto({ id: "x", nombre: "A", tipo: "albergue", telefono: "", direccion: "", capacidad: 120, ocupacion: 125, activo: true, latitud: 0, longitud: 0 });
+  const v = vistaPunto({ id: "x", nombre: "A", tipo: "albergue", telefono: "", direccion: "", capacidad: 120, ocupacion: 125, activo: true, origen: "simulado", latitud: 0, longitud: 0 });
   assert.equal(v.cupos_libres, 0);
   assert.equal(v.estado_cupo, "rojo");
   assert.equal(v.porcentaje_ocupacion, 104.2);

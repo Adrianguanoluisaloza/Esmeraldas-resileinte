@@ -1,5 +1,5 @@
 import pg from "pg";
-import type { TipoPuntoServicio } from "../../dominio/catalogos.js";
+import type { Rol, TipoPuntoServicio } from "../../dominio/catalogos.js";
 import { esSuministro, type Alerta, type Entrega, type EstadoVia, type HistorialEstado, type ItemInventario, type Suministro } from "../../dominio/operacion.js";
 import type {
   Cercania,
@@ -12,6 +12,7 @@ import type {
   RepositorioTerritorio,
   RepositorioUsuarios,
   SolicitudRestablecimiento,
+  Usuario,
   UsuarioConClave,
 } from "../../dominio/puertos.js";
 import type { PuntoServicio } from "../../dominio/puntoServicio.js";
@@ -62,6 +63,17 @@ export class UsuariosPg implements RepositorioUsuarios {
       "INSERT INTO usuarios (id, nombre, correo, rol, clave_hash, creado_en) VALUES ($1, $2, $3, $4, $5, $6)",
       [u.id, u.nombre, u.correo, u.rol, u.clave_hash, u.creado_en],
     );
+  }
+
+  async listar() {
+    const r = await this.db.query("SELECT id, nombre, correo, rol, creado_en FROM usuarios ORDER BY creado_en DESC LIMIT 200");
+    return r.rows.map((f) => ({ ...f, creado_en: iso(f.creado_en) }) as Usuario);
+  }
+
+  async cambiarRol(id: string, rol: Rol) {
+    const r = await this.db.query("UPDATE usuarios SET rol = $2 WHERE id = $1 RETURNING id, nombre, correo, rol, creado_en", [id, rol]);
+    const f = r.rows[0];
+    return f ? ({ ...f, creado_en: iso(f.creado_en) } as Usuario) : null;
   }
 }
 
@@ -183,10 +195,10 @@ export class ReportesPg implements RepositorioReportes {
   }
 }
 
-const COLUMNAS_PUNTO = `id, nombre, tipo, telefono, direccion, capacidad, ocupacion, activo,
+const COLUMNAS_PUNTO = `id, nombre, tipo, telefono, direccion, capacidad, ocupacion, activo, origen,
   ST_Y(geom) AS latitud, ST_X(geom) AS longitud`;
 /** Mismas columnas con alias "p." para consultas con varias tablas. */
-const COLUMNAS_PUNTO_P = `p.id, p.nombre, p.tipo, p.telefono, p.direccion, p.capacidad, p.ocupacion, p.activo,
+const COLUMNAS_PUNTO_P = `p.id, p.nombre, p.tipo, p.telefono, p.direccion, p.capacidad, p.ocupacion, p.activo, p.origen,
   ST_Y(p.geom) AS latitud, ST_X(p.geom) AS longitud`;
 
 const filaPunto = (f: Record<string, unknown>) =>
@@ -194,6 +206,16 @@ const filaPunto = (f: Record<string, unknown>) =>
 
 export class TerritorioPg implements RepositorioTerritorio {
   constructor(private readonly db: pg.Pool) {}
+
+  async crearPunto(p: PuntoServicio) {
+    const r = await this.db.query(
+      `INSERT INTO puntos_servicio (id, nombre, tipo, telefono, direccion, capacidad, ocupacion, activo, origen, geom)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, ST_SetSRID(ST_MakePoint($10, $11), 4326))
+       RETURNING ${COLUMNAS_PUNTO}`,
+      [p.id, p.nombre, p.tipo, p.telefono, p.direccion, p.capacidad, p.ocupacion, p.activo, p.origen, p.longitud, p.latitud],
+    );
+    return filaPunto(r.rows[0]);
+  }
 
   private async coleccion(sql: string): Promise<GeoJsonColeccion> {
     const r = await this.db.query(sql);

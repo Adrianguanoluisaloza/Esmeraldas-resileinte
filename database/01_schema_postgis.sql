@@ -61,6 +61,7 @@ CREATE TABLE puntos_servicio (
   capacidad      INTEGER      NOT NULL CHECK (capacidad > 0),
   ocupacion      INTEGER      NOT NULL DEFAULT 0 CHECK (ocupacion >= 0),
   activo         BOOLEAN      NOT NULL DEFAULT true,
+  origen         VARCHAR(10)  NOT NULL DEFAULT 'simulado' CHECK (origen IN ('simulado', 'coe')),
   actualizado_en TIMESTAMPTZ  NOT NULL DEFAULT now(),
   geom           GEOMETRY(Point, 4326) NOT NULL
 );

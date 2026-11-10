@@ -1,4 +1,4 @@
-import type { TipoPuntoServicio } from "../../dominio/catalogos.js";
+import type { Rol, TipoPuntoServicio } from "../../dominio/catalogos.js";
 import { randomUUID } from "node:crypto";
 import { cruzaViaBloqueada, esSuministro, type Alerta, type Entrega, type EstadoVia, type HistorialEstado, type ItemInventario, type Suministro } from "../../dominio/operacion.js";
 import type {
@@ -29,6 +29,19 @@ export class UsuariosEnMemoria implements RepositorioUsuarios {
   }
   async crear(u: UsuarioConClave) {
     this.porCorreo.set(u.correo.toLowerCase(), copia(u));
+  }
+  async listar() {
+    return [...this.porCorreo.values()].map(({ clave_hash: _omitir, ...u }) => copia(u));
+  }
+  async cambiarRol(id: string, rol: Rol) {
+    for (const u of this.porCorreo.values()) {
+      if (u.id === id) {
+        u.rol = rol;
+        const { clave_hash: _omitir, ...resto } = u;
+        return copia(resto);
+      }
+    }
+    return null;
   }
   fijarClave(id: string, clave_hash: string) {
     for (const u of this.porCorreo.values()) if (u.id === id) u.clave_hash = clave_hash;
@@ -110,6 +123,11 @@ export class TerritorioEnMemoria implements RepositorioTerritorio {
   private readonly vias = new Map<string, { id: string; nombre: string; estado: EstadoVia; linea: number[][] }>(
     VIAS.map((v) => [v.id, { id: v.id, nombre: v.nombre, estado: v.estado, linea: v.linea.map((p) => [...p]) }]),
   );
+
+  async crearPunto(p: PuntoServicio) {
+    this.puntos.set(p.id, copia(p));
+    return copia(p);
+  }
 
   async zonasGeoJson() {
     return zonasGeoJson();

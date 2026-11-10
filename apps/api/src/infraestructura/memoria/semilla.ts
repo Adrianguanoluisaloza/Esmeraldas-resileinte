@@ -53,11 +53,11 @@ export function viasGeoJson(): GeoJsonColeccion {
 }
 
 export const PUNTOS: PuntoServicio[] = [
-  { id: "a3000000-0000-4000-8000-000000000001", nombre: "Albergue temporal UTLVTE", tipo: "albergue", telefono: "", direccion: "Campus universitario", capacidad: 120, ocupacion: 112, activo: true, latitud: 0.9515, longitud: -79.6732 },
-  { id: "a3000000-0000-4000-8000-000000000002", nombre: "Coliseo Nubia Villacís", tipo: "albergue", telefono: "", direccion: "Centro de la ciudad", capacidad: 200, ocupacion: 70, activo: true, latitud: 0.9635, longitud: -79.6542 },
-  { id: "a3000000-0000-4000-8000-000000000003", nombre: "Unidad educativa Las Palmas", tipo: "albergue", telefono: "", direccion: "Las Palmas", capacidad: 90, ocupacion: 20, activo: true, latitud: 0.988, longitud: -79.647 },
-  { id: "a3000000-0000-4000-8000-000000000004", nombre: "Hospital Delfina Torres de Concha", tipo: "centro_salud", telefono: "", direccion: "Sector San Rafael", capacidad: 150, ocupacion: 138, activo: true, latitud: 0.9428, longitud: -79.6812 },
-  { id: "a3000000-0000-4000-8000-000000000005", nombre: "Centro de salud Las Palmas", tipo: "centro_salud", telefono: "", direccion: "Las Palmas", capacidad: 40, ocupacion: 22, activo: true, latitud: 0.9902, longitud: -79.6455 },
+  { id: "a3000000-0000-4000-8000-000000000001", nombre: "Albergue temporal UTLVTE", origen: "simulado", tipo: "albergue", telefono: "", direccion: "Campus universitario", capacidad: 120, ocupacion: 112, activo: true, latitud: 0.9515, longitud: -79.6732 },
+  { id: "a3000000-0000-4000-8000-000000000002", nombre: "Coliseo Nubia Villacís", origen: "simulado", tipo: "albergue", telefono: "", direccion: "Centro de la ciudad", capacidad: 200, ocupacion: 70, activo: true, latitud: 0.9635, longitud: -79.6542 },
+  { id: "a3000000-0000-4000-8000-000000000003", nombre: "Unidad educativa Las Palmas", origen: "simulado", tipo: "albergue", telefono: "", direccion: "Las Palmas", capacidad: 90, ocupacion: 20, activo: true, latitud: 0.988, longitud: -79.647 },
+  { id: "a3000000-0000-4000-8000-000000000004", nombre: "Hospital Delfina Torres de Concha", origen: "simulado", tipo: "centro_salud", telefono: "", direccion: "Sector San Rafael", capacidad: 150, ocupacion: 138, activo: true, latitud: 0.9428, longitud: -79.6812 },
+  { id: "a3000000-0000-4000-8000-000000000005", nombre: "Centro de salud Las Palmas", origen: "simulado", tipo: "centro_salud", telefono: "", direccion: "Las Palmas", capacidad: 40, ocupacion: 22, activo: true, latitud: 0.9902, longitud: -79.6455 },
 ];
 
 const base = { usuario_id: null, origen: "simulado", ubicacion_aproximada: false, foto_url: null, foto_miniatura_url: null } as const;

@@ -1,4 +1,4 @@
-import { mkdir, writeFile } from "node:fs/promises";
+import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import type { AlmacenFotos } from "../dominio/puertos.js";
 
@@ -12,6 +12,14 @@ export class FotosEnDisco implements AlmacenFotos {
     private readonly carpeta: string,
     private readonly urlPublica: string,
   ) {}
+
+  async leer(nombre: string) {
+    try {
+      return { bytes: new Uint8Array(await readFile(join(this.carpeta, nombre))), tipo: nombre.endsWith(".png") ? "image/png" : "image/jpeg" };
+    } catch {
+      return null;
+    }
+  }
 
   async guardar(reporteId: string, bytes: Uint8Array, extension: "jpg" | "png") {
     await mkdir(this.carpeta, { recursive: true });

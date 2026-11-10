@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { ESTADOS_REPORTE, GRAVEDADES, NECESIDADES, TIPOS_INCIDENTE, TIPOS_PUNTO } from "../dominio/catalogos.js";
+import { ESTADOS_REPORTE, GRAVEDADES, NECESIDADES, ROLES, TIPOS_INCIDENTE, TIPOS_PUNTO } from "../dominio/catalogos.js";
 
 /**
  * Validación de entrada (lo que llega por HTTP). Espejo de contrato/openapi.yaml.
@@ -72,6 +72,19 @@ export const CercanosEntrada = z.object({
   personas: z.coerce.number().int().min(1).max(1000).default(1),
   limite: z.coerce.number().int().min(1).max(20).default(3),
 });
+
+export const PuntoEntrada = z.object({
+  nombre: z.string().trim().min(3).max(160),
+  tipo: z.enum(TIPOS_PUNTO),
+  direccion: z.string().trim().max(200).default(""),
+  telefono: z.string().trim().max(30).default(""),
+  capacidad: z.number().int().min(1).max(100_000),
+  ocupacion: entero(100_000).default(0),
+  latitud: z.number().min(-0.5).max(1.6),
+  longitud: z.number().min(-80.3).max(-78.4),
+}).strict();
+
+export const CambioRolEntrada = z.object({ rol: z.enum(ROLES) }).strict();
 
 export const OcupacionEntrada = z.object({ ocupacion: entero(100_000) }).strict();
 

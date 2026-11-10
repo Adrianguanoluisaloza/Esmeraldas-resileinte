@@ -2,6 +2,9 @@ import type { TipoPuntoServicio } from "./catalogos.js";
 
 export type EstadoCupo = "verde" | "ambar" | "rojo";
 
+/** simulado = escenario de prueba; coe = registrado por el personal del COE. */
+export type OrigenPunto = "simulado" | "coe";
+
 export interface PuntoServicio {
   id: string;
   nombre: string;
@@ -13,6 +16,7 @@ export interface PuntoServicio {
   capacidad: number;
   ocupacion: number;
   activo: boolean;
+  origen: OrigenPunto;
 }
 
 export interface PuntoServicioVista extends PuntoServicio {

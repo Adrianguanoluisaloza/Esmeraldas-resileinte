@@ -4,6 +4,8 @@ import { bodyLimit } from "hono/body-limit";
 import { cors } from "hono/cors";
 import { secureHeaders } from "hono/secure-headers";
 import { limitePorIp } from "./limites.js";
+import { rutasFotos } from "./rutas/fotos.js";
+import { rutasUsuarios } from "./rutas/usuarios.js";
 import { ErrorDominio, type CodigoError } from "../dominio/errores.js";
 import type { Dependencias, Entorno } from "./contexto.js";
 import { rutasAuth } from "./rutas/auth.js";
@@ -85,6 +87,8 @@ export function crearApp(deps: Dependencias) {
   app.route("/auth", rutasAuth(deps));
   app.route("/reportes", rutasReportes(deps));
   app.route("/", rutasTerritorio(deps));
+  app.route("/usuarios", rutasUsuarios(deps));
+  app.route("/fotos", rutasFotos(deps));
   app.route("/", rutasOperacion(deps));
   app.route("/", rutasPendientes(deps));
 

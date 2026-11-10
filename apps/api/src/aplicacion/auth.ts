@@ -1,5 +1,6 @@
 import { createHash, randomBytes, randomUUID } from "node:crypto";
 import { ErrorDominio } from "../dominio/errores.js";
+import type { Rol } from "../dominio/catalogos.js";
 import type { Reloj, RepositorioRestablecimientos, RepositorioUsuarios, ServicioClaves, ServicioCorreo, ServicioTokens, Usuario } from "../dominio/puertos.js";
 
 const MINUTOS_ENLACE = 30;
@@ -50,6 +51,18 @@ export class CasosAuth {
     const usuario: Usuario = { id: randomUUID(), nombre: nombre.trim(), correo: normalizado, rol: "ciudadano", creado_en: this.reloj.ahora().toISOString() };
     await this.usuarios.crear({ ...usuario, clave_hash: await this.claves.cifrar(clave) });
     return { token: await this.tokens.emitir(usuario), usuario };
+  }
+
+  listarUsuarios() {
+    return this.usuarios.listar();
+  }
+
+  /** Solo el administrador llega aquí (lo exige la ruta). No puede cambiarse a sí mismo: evita quedarse sin administradores. */
+  async cambiarRol(actorId: string, id: string, rol: Rol) {
+    if (actorId === id) throw new ErrorDominio("CONFLICTO", "No puedes cambiar tu propio rol");
+    const usuario = await this.usuarios.cambiarRol(id, rol);
+    if (!usuario) throw new ErrorDominio("NO_ENCONTRADO", "Usuario no encontrado");
+    return usuario;
   }
 
   async iniciarSesion(correo: string, clave: string) {

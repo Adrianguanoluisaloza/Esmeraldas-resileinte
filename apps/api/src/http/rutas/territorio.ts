@@ -1,7 +1,7 @@
 import { Hono } from "hono";
 import { ROLES_COE } from "../../dominio/catalogos.js";
 import { leerJson, requiereSesion, validar, type Dependencias, type Entorno } from "../contexto.js";
-import { CercanosEntrada, IdRuta, OcupacionEntrada, PuntosEntrada } from "../esquemas.js";
+import { CercanosEntrada, IdRuta, OcupacionEntrada, PuntoEntrada, PuntosEntrada } from "../esquemas.js";
 
 /** Datos territoriales públicos (mapa) y gestión de cupos (solo COE). */
 export function rutasTerritorio(deps: Dependencias) {
@@ -28,6 +28,11 @@ export function rutasTerritorio(deps: Dependencias) {
   r.get("/puntos-servicio/cercanos", async (c) => {
     const q = validar(CercanosEntrada, c.req.query());
     return c.json(await deps.territorio.cercanos({ latitud: q.lat, longitud: q.lng, tipo: q.tipo, personas: q.personas, limite: q.limite }));
+  });
+
+  r.post("/puntos-servicio", requiereSesion(deps.tokens, ROLES_COE), async (c) => {
+    const datos = await leerJson(c, PuntoEntrada);
+    return c.json(await deps.territorio.crearPunto(c.get("sesion"), datos), 201);
   });
 
   r.patch("/puntos-servicio/:id/ocupacion", requiereSesion(deps.tokens, ROLES_COE), async (c) => {
