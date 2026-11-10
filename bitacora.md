@@ -276,3 +276,9 @@ Este documento registra decisiones, avances, bloqueos y pendientes importantes. 
 - **Decisión:** Política de teselas revisada. La app envía un `User-Agent` propio y estable, se retiró el `.mbtiles` porque el uso offline y la distribución de teselas están prohibidos, y el login ya no descarga teselas detrás de la tarjeta. El mapa sin internet es el vectorial propio.
 - **Validación:** 51 pruebas de API, 14 de Flutter y recorrido local con administrador. Foto real del celular recibida en Oracle con miniatura servida.
 - **Pendientes:** Para uso con tráfico real, cambiar a un proveedor de teselas contratado o propio con `PUBLIC_MAP_TILE_URL`.
+
+## 2026-11-10 — Vías afectadas y sincronización sin internet
+- **Área:** mapas | móvil
+- **Cambio:** Las vías cerradas y parciales se dibujan con borde y etiqueta sobre su tramo. El botón de SMS queda oculto hasta configurar `EMERGENCY_SMS_NUMBER`.
+- **Decisión:** El SMS apuntaba al 911 real por defecto: no se debe enviar a una línea de emergencia sin convenio. Sin datos móviles el reporte queda en el celular y se envía al volver la conexión. El GPS recibe de satélites pero no transmite.
+- **Pendientes:** Definir un número receptor y una pasarela SMS si se quiere recibir reportes sin datos en el mapa.

@@ -101,3 +101,7 @@
 
 /* Mosaicos del mapa sin juntas visibles. */
 .leaflet-container img.leaflet-tile { max-width: none !important; mix-blend-mode: plus-lighter; }
+
+/* Etiqueta de vía afectada, centrada sobre su tramo. */
+.mk-via { position: absolute; transform: translate(-50%, -50%); padding: 2px 6px; border-radius: 4px; background: var(--mk-color); color: #ffffff; font-size: 10.5px; font-weight: 600; white-space: nowrap; box-shadow: 0 0 0 1.5px #ffffff; }
+.op-leyenda__parcial { width: 14px !important; height: 3px !important; border-radius: 2px !important; background: var(--er-warn); }

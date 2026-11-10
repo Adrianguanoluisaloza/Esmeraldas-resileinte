@@ -195,7 +195,8 @@ export function PanelOperaciones() {
           <div className="op-leyenda" aria-hidden="true">
             <span><i className="op-leyenda__sim" /> Simulado</span>
             <span><i className="op-leyenda__ciu" /> Ciudadano</span>
-            <span><i className="op-leyenda__via" /> Vía bloqueada</span>
+            <span><i className="op-leyenda__via" /> Vía cerrada</span>
+            <span><i className="op-leyenda__parcial" /> Paso parcial</span>
           </div>
         </section>
 

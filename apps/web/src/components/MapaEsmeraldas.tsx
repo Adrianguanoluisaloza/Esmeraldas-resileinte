@@ -160,12 +160,33 @@ export function MapaEsmeraldas({
     if (!capa) return;
     capa.clearLayers();
     if (!vias || !mostrarVias) return;
+    const estadoDe = (f?: GeoJSON.Feature) => (f?.properties?.estado as keyof typeof COLOR_VIA) ?? 'habilitada';
+    // Borde blanco debajo: las vías afectadas se leen sobre cualquier color del mapa base.
+    L.geoJSON({ ...vias, features: vias.features.filter((f) => estadoDe(f) !== 'habilitada') } as GeoJSON.FeatureCollection, {
+      interactive: false,
+      style: { color: '#ffffff', weight: 9, opacity: 1, lineCap: 'round', lineJoin: 'round' },
+    }).addTo(capa);
     L.geoJSON(vias, {
       style: (f) => {
-        const estado = (f?.properties?.estado as keyof typeof COLOR_VIA) ?? 'habilitada';
-        return { color: COLOR_VIA[estado] ?? COLOR_VIA.habilitada, weight: estado === 'habilitada' ? 3 : 5, opacity: 0.9, lineCap: 'round', lineJoin: 'round' };
+        const estado = estadoDe(f);
+        return estado === 'habilitada'
+          ? { color: COLOR_VIA.habilitada, weight: 2, opacity: 0.45, lineCap: 'round', lineJoin: 'round' }
+          : { color: COLOR_VIA[estado], weight: 5, opacity: 1, lineCap: 'round', lineJoin: 'round' };
       },
-      onEachFeature: (f, l) => l.bindTooltip(`${e(f.properties?.nombre)} · ${e(f.properties?.estado)}`, { sticky: true }),
+      onEachFeature: (f, l) => {
+        l.bindTooltip(`${e(f.properties?.nombre)} · ${e(f.properties?.estado)}`, { sticky: true });
+        const estado = estadoDe(f);
+        if (estado === 'habilitada' || f.geometry.type !== 'LineString') return;
+        const [lng, lat] = f.geometry.coordinates[Math.floor(f.geometry.coordinates.length / 2)] as [number, number];
+        L.marker([lat, lng], {
+          interactive: false,
+          icon: L.divIcon({
+            className: 'mk-contenedor',
+            html: `<span class="mk-via" style="--mk-color:${COLOR_VIA[estado]}">${estado === 'bloqueada' ? 'Vía cerrada' : 'Paso parcial'}</span>`,
+            iconSize: [0, 0],
+          }),
+        }).addTo(capa);
+      },
     }).addTo(capa);
   }, [vias, mostrarVias]);
 
