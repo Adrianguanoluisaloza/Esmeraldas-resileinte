@@ -4,6 +4,8 @@
 enum RolUsuario {
   ciudadano('ciudadano'),
   operador911('operador_911'),
+  bomberos('bomberos'),
+  policia('policia'),
   admin('admin');
 
   const RolUsuario(this.valor);

@@ -234,6 +234,10 @@ class OperacionesRepository extends ChangeNotifier {
 
   List<ReporteOperacion> reportesVisibles(UsuarioSesion s) {
     if (s.rol.puede(Permiso.reporteVerTodos)) return reportes;
+    final Set<TipoIncidente>? competencia = competenciaInstitucion[s.rol];
+    if (competencia != null) {
+      return reportes.where((r) => competencia.contains(r.tipo)).toList();
+    }
     return reportes.where((r) => r.usuarioId == s.id).toList();
   }
 

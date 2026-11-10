@@ -464,6 +464,8 @@ class _HomeShellPageState extends State<HomeShellPage> {
         );
 
       case RolUsuario.operador911:
+      case RolUsuario.bomberos:
+      case RolUsuario.policia:
         return (
           <Widget>[
             SituacionOperadorPage(

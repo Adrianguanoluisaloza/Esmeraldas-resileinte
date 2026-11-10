@@ -68,12 +68,16 @@ class AppTheme {
   static Color colorRol(RolUsuario r) => switch (r) {
     RolUsuario.ciudadano => colorPrimario,
     RolUsuario.operador911 => colorSemaforoAmbar,
+    RolUsuario.bomberos => colorSemaforoRojo,
+    RolUsuario.policia => colorOrigenOficial,
     RolUsuario.admin => colorOrigenOficial,
   };
 
   static String etiquetaRol(RolUsuario r) => switch (r) {
     RolUsuario.ciudadano => 'Reporte ciudadano',
-    RolUsuario.operador911 => 'Operador 911',
+    RolUsuario.operador911 => 'ECU 911',
+    RolUsuario.bomberos => 'Bomberos',
+    RolUsuario.policia => 'Policía',
     RolUsuario.admin => 'Administrador',
   };
 

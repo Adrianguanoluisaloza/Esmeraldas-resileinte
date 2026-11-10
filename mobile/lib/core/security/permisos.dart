@@ -6,6 +6,7 @@ enum Permiso {
   reporteCrear,
   reporteVerPropios,
   reporteVerTodos,
+  reporteVerCompetencia,
   reporteCambiarEstado,
   puntosVer,
   puntosEditar,
@@ -35,7 +36,32 @@ const Map<RolUsuario, Set<Permiso>> _permisosPorRol =
         Permiso.alertasCrear,
         Permiso.estadisticasVer,
       },
+      RolUsuario.bomberos: _permisosInstitucion,
+      RolUsuario.policia: _permisosInstitucion,
       RolUsuario.admin: <Permiso>{...Permiso.values},
+    };
+
+const Set<Permiso> _permisosInstitucion = <Permiso>{
+  Permiso.reporteCrear,
+  Permiso.reporteVerCompetencia,
+  Permiso.reporteCambiarEstado,
+  Permiso.puntosVer,
+  Permiso.alertasVer,
+};
+
+/// Reportes que atiende cada institución. Igual que `COMPETENCIA_INSTITUCION` en la API.
+const Map<RolUsuario, Set<TipoIncidente>> competenciaInstitucion =
+    <RolUsuario, Set<TipoIncidente>>{
+      RolUsuario.bomberos: <TipoIncidente>{
+        TipoIncidente.inundacion,
+        TipoIncidente.deslizamiento,
+        TipoIncidente.personasAtrapadas,
+        TipoIncidente.danoVivienda,
+      },
+      RolUsuario.policia: <TipoIncidente>{
+        TipoIncidente.viaBloqueada,
+        TipoIncidente.personasAtrapadas,
+      },
     };
 
 extension PermisosRol on RolUsuario {
