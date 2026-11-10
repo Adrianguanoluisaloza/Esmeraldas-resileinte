@@ -1073,15 +1073,17 @@ class _CrearReportePageState extends State<CrearReportePage> {
                         : 'Enviar reporte de emergencia',
                   ),
                 ),
-                const SizedBox(height: 8),
-                OutlinedButton.icon(
-                  onPressed: _capturandoGps ? null : _enviarPuntoGpsPorSms,
-                  icon: const Icon(Icons.sms_outlined, size: 17),
-                  label: const Text(
-                    'Enviar punto GPS por SMS (sin datos)',
-                    style: TextStyle(fontSize: 12),
+                if (AppConfig.smsEmergenciaNumero.isNotEmpty) ...<Widget>[
+                  const SizedBox(height: 8),
+                  OutlinedButton.icon(
+                    onPressed: _capturandoGps ? null : _enviarPuntoGpsPorSms,
+                    icon: const Icon(Icons.sms_outlined, size: 17),
+                    label: const Text(
+                      'Enviar punto GPS por SMS (sin datos)',
+                      style: TextStyle(fontSize: 12),
+                    ),
                   ),
-                ),
+                ],
               ],
             ),
           ),

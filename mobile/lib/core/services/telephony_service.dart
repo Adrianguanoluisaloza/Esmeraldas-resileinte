@@ -63,6 +63,8 @@ class TelephonyService {
       descripcion: descripcion,
     );
 
+    if (destino.isEmpty) return false;
+
     final Telephony telephony = Telephony.instance;
     try {
       final bool? concedido = await telephony.requestPhoneAndSmsPermissions;

@@ -7,8 +7,7 @@ class AppConfig {
 
   static const String _envApiBaseUrl = String.fromEnvironment(
     'API_BASE_URL',
-    defaultValue:
-        'https://api-esmeraldas.cifralabapp.com',
+    defaultValue: 'https://api-esmeraldas.cifralabapp.com',
   );
 
   /// URL base del backend configurada mediante `--dart-define=API_BASE_URL=...`.
@@ -63,9 +62,10 @@ class AppConfig {
   static const double minZoom = 8.0;
 
   /// Número telefónico de emergencia para envío de punto GPS por SMS / llamada.
+  /// Número que recibe el punto GPS por SMS. Vacío desactiva el envío:
+  /// no debe apuntar a una línea de emergencia real sin un convenio.
   static const String smsEmergenciaNumero = String.fromEnvironment(
     'EMERGENCY_SMS_NUMBER',
-    defaultValue: '911',
   );
 
   /// Parámetros de captura offline.
