@@ -5,13 +5,13 @@ Carril: app Flutter (rama `desarrollofranco`). Complementa `docs/movil/indicacio
 
 > [!IMPORTANT]
 > **API PÚBLICA EN VIVO PARA CONECTARTE DESDE OTRA PC O CELULAR:**
-> - **URL base:** `https://seasonal-acceptable-crimes-remember.trycloudflare.com`
+> - **URL base:** `https://api-esmeraldas.cifralabapp.com`
 > - **Comando para compilar/probar tu app apuntando a esta API:**
 >   ```bash
->   flutter run --dart-define=API_BASE_URL=https://seasonal-acceptable-crimes-remember.trycloudflare.com
+>   flutter run --dart-define=API_BASE_URL=https://api-esmeraldas.cifralabapp.com
 >   ```
 > - **Verificación inmediata en navegador/curl:**
->   `curl https://seasonal-acceptable-crimes-remember.trycloudflare.com/salud` (responde `{"estado":"ok"}`)
+>   `curl https://api-esmeraldas.cifralabapp.com/salud` (responde `{"estado":"ok"}`)
 
 
 ## Lo que ya está listo en el backend para ti

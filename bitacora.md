@@ -288,3 +288,10 @@ Este documento registra decisiones, avances, bloqueos y pendientes importantes. 
 - **Cambio:** Lo atendido o descartado sale de la lista y del mapa; lo despachado sigue visible con anillo hueco. Búsqueda en mapa y reportes. Edición de tipo, gravedad y descripción con `PATCH /reportes/{id}`.
 - **Decisión:** Cada edición queda en el historial. Reclasificar el tipo es del ECU 911 y la administración.
 - **Validación:** 54 pruebas de API y recorrido local en navegador. Edición probada contra PostGIS en Oracle con reporte temporal ya borrado.
+
+## 2026-11-10 — Revisión final y propuestas
+- **Área:** producto | documentación
+- **Cambio:** Documentos actualizados con las URL definitivas. Propuestas futuras en `docs/PROPUESTAS.md`.
+- **Decisión:** Enviar reportes sin datos móviles queda como propuesta: SMS con pasarela o canal satelital. La versión actual guarda y sincroniza al recuperar la conexión.
+- **Validación:** 24 comprobaciones en producción: web, login por rol, permisos, capas, PostGIS, fotos, recuperar contraseña, WebSocket, teselas y descarga del APK.
+- **Pendientes:** Presentación. Retirar el túnel temporal cuando todos usen el APK nuevo. Cambiar la clave demo después de la demo.

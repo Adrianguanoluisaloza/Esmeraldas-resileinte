@@ -2,7 +2,9 @@
 
 Plataforma de gestión de emergencias por el fenómeno El Niño en Esmeraldas: reportes ciudadanos con GPS y foto,
 mapa de riesgos, centro de operaciones (COE), albergues, asistencia humanitaria y priorización por sector.
-Hackathon UTLVTE 2026.
+
+- Web: https://esmeraldas-resiliente.pages.dev
+- API: https://api-esmeraldas.cifralabapp.com
 
 | Parte | Tecnología | Carpeta |
 |---|---|---|
@@ -36,5 +38,6 @@ Todo con PostGIS: `cp .env.example .env`, completar las claves y `docker compose
 
 - `AGENTS.md`: reglas del proyecto.
 - `docs/orquestacion/`: tareas por carril (web, móvil, backend).
-- `docs/DISENO.md`, `docs/DESPLIEGUE.md`, `docs/SEGURIDAD.md`.
+- `docs/ARQUITECTURA.md`, `docs/MODELO_DATOS.md`, `docs/ROLES.md`, `docs/MANUAL_USUARIO.md`.
+- `docs/DISENO.md`, `docs/DESPLIEGUE.md`, `docs/SEGURIDAD.md`, `docs/PROPUESTAS.md`.
 - `apps/api/README.md`: endpoints por módulo del reto.

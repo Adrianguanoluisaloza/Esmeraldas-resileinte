@@ -83,6 +83,8 @@ En el `.env` de la API, `CORS_ORIGENES` debe incluir la URL exacta de la web pub
 (por ejemplo un túnel rápido nuevo), hay que volver a compilar y publicar la web. Un túnel con nombre fijo evita eso.
 Nunca publicar sin orden de Adrian. Primero a una rama de prueba.
 
+Producción: API en `https://api-esmeraldas.cifralabapp.com` y web en `https://esmeraldas-resiliente.pages.dev`.
+
 ## 4. Variables
 
 Todas documentadas en `.env.example`. Reglas:
