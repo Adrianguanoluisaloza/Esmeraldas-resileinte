@@ -1,28 +1,22 @@
 ---
-import { Bell, ClipboardList, HandHeart, Map, Siren, Tent, TriangleAlert, Users } from 'lucide-react';
+import { Download } from 'lucide-react';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import CabeceraSitio from '../components/sitio/CabeceraSitio.astro';
+import { PortadaMapa } from '../components/PortadaMapa';
+import { URL_APK } from '../config/enlaces';
 import '../styles/panel.css';
+import '../styles/operaciones.css';
 import '../styles/sitio.css';
 
-const modulos = [
-  { icono: Map, titulo: 'Mapa de riesgos', texto: 'Zonas inundables, vías y albergues sobre OpenStreetMap.' },
-  { icono: Siren, titulo: 'Reporte ciudadano', texto: 'GPS, foto y familia afectada. Funciona sin señal.' },
-  { icono: ClipboardList, titulo: 'Centro de operaciones', texto: 'Incidentes en tiempo real, estados y alertas por sector.' },
-  { icono: Tent, titulo: 'Albergues', texto: 'Cupo con semáforo y el más cercano con espacio.' },
-  { icono: HandHeart, titulo: 'Asistencia', texto: 'Agua, alimentos y medicinas: pendientes y entregas.' },
-  { icono: TriangleAlert, titulo: 'Priorización', texto: 'Sectores ordenados por gravedad, personas y recurrencia.' },
-];
-
 const preguntas = [
-  '¿Qué está sucediendo?',
-  '¿Dónde ocurren las emergencias?',
-  '¿Cuántas personas están afectadas?',
-  '¿Qué sectores son prioritarios?',
-  '¿Qué vías están interrumpidas?',
-  '¿Dónde hay albergues disponibles?',
-  '¿Qué recursos movilizar?',
-  '¿Cómo coordinar la atención?',
+  ['¿Qué está sucediendo en el territorio?', 'Mapa operativo'],
+  ['¿Dónde se producen las emergencias?', 'Reportes georreferenciados'],
+  ['¿Cuántas personas y familias están afectadas?', 'Estadísticas del COE'],
+  ['¿Qué sectores requieren atención prioritaria?', 'Priorización por sector'],
+  ['¿Qué vías se encuentran interrumpidas?', 'Capa de vías'],
+  ['¿Dónde existen albergues disponibles?', 'Semáforo de cupo'],
+  ['¿Qué recursos deben movilizarse?', 'Asistencia e inventario'],
+  ['¿Cómo coordinar la atención de incidentes?', 'Estados e historial en tiempo real'],
 ];
 ---
 
@@ -32,62 +26,46 @@ const preguntas = [
   <main id="contenido">
     <section class="st-heroe">
       <div class="st-heroe__texto">
-        <h1>Gestión de emergencias para Esmeraldas</h1>
-        <p>Reportes ciudadanos, mapa de riesgos y coordinación del COE en una sola plataforma.</p>
+        <p class="st-antetitulo">Provincia de Esmeraldas</p>
+        <h1>Del celular del ciudadano al mapa del COE.</h1>
+        <p class="st-bajada">Quien necesita ayuda reporta aunque no tenga señal. El COE ve dónde es, cuántas personas son y qué hace falta.</p>
         <div class="st-acciones">
           <a class="er-btn er-btn--primario er-btn--lg" href="/login">Ingresar</a>
-          <a class="er-btn er-btn--secundario er-btn--lg" href="#modulos">Ver módulos</a>
+          <a class="er-btn er-btn--secundario er-btn--lg" href={URL_APK}><Download aria-hidden="true" /> Descargar app Android</a>
         </div>
+        <p class="st-nota">No reemplaza al ECU 911. En una emergencia, llama al 911.</p>
       </div>
-
-      <div class="st-ilustracion" aria-hidden="true">
-        <div class="st-anillo st-anillo--1"></div>
-        <div class="st-anillo st-anillo--2"></div>
-        <div class="st-anillo st-anillo--3"></div>
-        <div class="st-nucleo"><span class="pn-marca__logo"></span></div>
-        <div class="st-ficha st-ficha--a">
-          <span class="er-insignia er-insignia--grav-critica"><span class="er-insignia__punto"></span>Crítica</span>
-          <strong>Inundación</strong><span>Isla Piedad</span>
-        </div>
-        <div class="st-ficha st-ficha--b">
-          <span class="er-insignia er-insignia--cupo-verde"><span class="er-insignia__punto"></span>Con cupo</span>
-          <strong>Albergue</strong><span>Coliseo</span>
-        </div>
-        <div class="st-ficha st-ficha--c">
-          <Bell size={16} />
-          <strong>Alerta por sector</strong><span>Río Teaone</span>
-        </div>
-        <div class="st-ficha st-ficha--d">
-          <Users size={16} />
-          <strong>Familia reportada</strong><span>20 de Noviembre</span>
-        </div>
-      </div>
+      <PortadaMapa client:only="react">
+        <div slot="fallback" class="st-tablero st-tablero--cargando"></div>
+      </PortadaMapa>
     </section>
 
-    <section class="st-seccion" id="modulos">
-      <h2>Módulos</h2>
-      <ul class="st-modulos">
-        {modulos.map(({ icono: Icono, titulo, texto }) => (
-          <li class="er-tarjeta st-modulo">
-            <Icono size={22} aria-hidden="true" />
-            <strong>{titulo}</strong>
-            <span>{texto}</span>
-          </li>
+    <section class="st-seccion" id="escenario">
+      <div class="st-encabezado">
+        <h2>Jueves, 06:00. Ocho preguntas, una respuesta cada una.</h2>
+        <p>Seis eventos simultáneos tras una noche de lluvia intensa. Esto debe saber el COE en los primeros minutos.</p>
+      </div>
+      <ol class="st-indice">
+        {preguntas.map(([pregunta, respuesta]) => (
+          <li><span class="st-indice__pregunta">{pregunta}</span><span class="st-indice__respuesta">{respuesta}</span></li>
         ))}
-      </ul>
+      </ol>
     </section>
 
-    <section class="st-seccion st-seccion--alterna" id="escenario">
-      <h2>Escenario Jueves 06:00</h2>
-      <ol class="st-preguntas">
-        {preguntas.map((p) => <li>{p}</li>)}
-      </ol>
+    <section class="st-seccion st-app" id="app">
+      <div class="st-encabezado">
+        <h2>La app sigue funcionando sin señal.</h2>
+        <p>Guarda el reporte y la foto en el celular, ubica por satélite y lo envía cuando vuelve la conexión.</p>
+      </div>
+      <div class="st-app__accion">
+        <a class="er-btn er-btn--primario er-btn--lg" href={URL_APK}><Download aria-hidden="true" /> Descargar APK</a>
+        <p class="st-nota">Android. Al ser un prototipo, el teléfono pedirá permitir la instalación.</p>
+      </div>
     </section>
   </main>
 
   <footer class="st-pie">
     <span>Esmeraldas Resiliente · Hackathon UTLVTE 2026</span>
-    <span>No reemplaza al ECU 911 ni a las alertas oficiales.</span>
     <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">© OpenStreetMap</a>
     <a href="/legal">Legal y licencias</a>
   </footer>

@@ -64,8 +64,8 @@
   --er-focus: #0b6e4f;
 
   /* Tipografía */
-  --er-font: "Geist", "Inter", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  --er-font-mono: "Geist Mono", ui-monospace, "SFMono-Regular", "JetBrains Mono", Menlo, Consolas, monospace;
+  --er-font: "IBM Plex Sans", "Segoe UI Variable", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --er-font-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", "JetBrains Mono", Menlo, Consolas, monospace;
   --er-fs-xs: 11.5px;
   --er-fs-sm: 13px;
   --er-fs-md: 14px;
@@ -90,6 +90,9 @@
   --er-r-full: 999px;
   --er-sombra-1: 0 1px 2px #0000000a;
   --er-sombra-2: 0 2px 8px #13201a14;
+
+  /* Movimiento: salidas rápidas, sin rebotes. */
+  --er-salida: cubic-bezier(.23, 1, .32, 1);
 
   /* Estructura del panel */
   --er-sidebar-w: 224px;

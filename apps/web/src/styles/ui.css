@@ -11,8 +11,9 @@
   min-height: 34px; padding: 6px 12px; border-radius: var(--er-r-sm); border: 1px solid transparent;
   font-size: 13.5px; font-weight: 600; line-height: 1.1; text-decoration: none; white-space: nowrap;
   cursor: pointer; user-select: none;
-  transition: background-color .15s ease, border-color .15s ease, color .15s ease;
+  transition: background-color .15s var(--er-salida), border-color .15s var(--er-salida), color .15s var(--er-salida), transform .12s var(--er-salida);
 }
+.er-btn:active:not(:disabled) { transform: scale(.98); }
 .er-btn svg { width: 15px; height: 15px; flex-shrink: 0; }
 .er-btn:disabled, .er-btn[aria-disabled="true"] {
   background: var(--er-surface-2); color: var(--er-muted); border-color: var(--er-border); cursor: not-allowed;
@@ -35,7 +36,7 @@
 
 /* Insignia (dato real: gravedad, estado, origen, cupo). Nunca decorativa. ------------------------ */
 .er-insignia {
-  display: inline-flex; align-items: center; gap: 5px; padding: 0 7px; border-radius: var(--er-r-full);
+  display: inline-flex; align-items: center; gap: 5px; padding: 0 7px; border-radius: 4px;
   border: 1px solid var(--er-border); background: var(--er-surface-2); color: var(--er-text-2);
   font-size: 11.5px; font-weight: 600; line-height: 20px; white-space: nowrap;
 }
@@ -124,11 +125,11 @@
 .er-tabla-contenedor { overflow-x: auto; border: 1px solid var(--er-border); border-radius: var(--er-r-md); background: var(--er-surface); }
 .er-tabla { width: 100%; border-collapse: collapse; font-size: var(--er-fs-sm); }
 .er-tabla th {
-  position: sticky; top: 0; padding: 8px 12px; background: var(--er-surface-2); color: var(--er-muted);
+  position: sticky; top: 0; padding: 10px 12px; background: var(--er-surface); color: var(--er-muted);
   font-size: 12px; font-weight: 500; text-align: left;
   border-bottom: 1px solid var(--er-border);
 }
-.er-tabla td { padding: 8px 12px; border-bottom: 1px solid var(--er-border); vertical-align: middle; }
+.er-tabla td { padding: 10px 12px; border-bottom: 1px solid var(--er-border); vertical-align: middle; }
 .er-tabla tr:last-child td { border-bottom: 0; }
 .er-tabla tbody tr:hover { background: var(--er-surface-2); }
 
@@ -155,3 +156,10 @@
 .er-cargando { display: grid; place-items: center; gap: var(--er-s3); padding: var(--er-s10); color: var(--er-muted); font-size: var(--er-fs-sm); }
 .er-giro { width: 28px; height: 28px; border-radius: 50%; border: 3px solid var(--er-border); border-top-color: var(--er-primary); animation: er-giro .8s linear infinite; }
 @keyframes er-giro { to { transform: rotate(360deg); } }
+
+.er-derecha { text-align: right; }
+
+/* Respeta a quien pidió menos movimiento en su sistema. */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}

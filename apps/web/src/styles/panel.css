@@ -119,3 +119,21 @@
 .pn-tipo:hover { border-color: var(--er-border-strong); }
 .pn-tipo[aria-pressed="true"] { border-color: var(--er-text); box-shadow: inset 0 0 0 1px var(--er-text); }
 .pn-tipo[aria-pressed="true"] svg { color: var(--er-text); }
+
+/* Reportes con foto ------------------------------------------------------------------------------ */
+.pn-reporte { display: flex; align-items: center; gap: var(--er-s3); min-width: 280px; }
+.pn-miniatura { flex: none; width: 44px; height: 44px; border-radius: var(--er-r-sm); border: 1px solid var(--er-border); object-fit: cover; background: var(--er-surface-2); }
+.pn-miniatura--vacia { display: grid; place-items: center; color: var(--er-muted); }
+.pn-miniatura--vacia svg { width: 15px; height: 15px; }
+.pn-tiempo { white-space: nowrap; color: var(--er-text-2); }
+.pn-barra-filtros--base { align-items: flex-end; }
+.pn-entre { justify-content: space-between; align-items: center; }
+.pn-alta-punto { display: grid; gap: var(--er-s3); animation: er-aparecer .22s var(--er-salida); }
+.pn-rol { width: auto; min-width: 150px; }
+
+/* Cajón y velo: entran rápido y sin rebote. */
+.pn-cajon { animation: pn-entrar .26s cubic-bezier(.32, .72, 0, 1); }
+.pn-velo { animation: er-aparecer-velo .2s ease-out; }
+@keyframes pn-entrar { from { transform: translateX(100%); } }
+@keyframes er-aparecer-velo { from { opacity: 0; } }
+@keyframes er-aparecer { from { opacity: 0; transform: translateY(6px); } }
