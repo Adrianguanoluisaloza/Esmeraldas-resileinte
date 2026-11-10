@@ -10,11 +10,7 @@
 }
 
 .pn-marca { display: flex; align-items: center; gap: var(--er-s2); padding: 6px var(--er-s2); color: var(--er-text); text-decoration: none; }
-.pn-marca__logo {
-  width: 22px; height: 22px; flex-shrink: 0; border-radius: var(--er-r-sm); background: var(--er-primary);
-  /* Escudo simple con recorte: marca sólida sin imagen externa. */
-  clip-path: polygon(50% 0, 100% 18%, 100% 55%, 50% 100%, 0 55%, 0 18%);
-}
+.pn-marca__logo { width: 22px; height: 25px; flex-shrink: 0; background: url('/logo.svg') center / contain no-repeat; }
 .pn-marca__texto { font-size: 14px; font-weight: 600; letter-spacing: -.01em; line-height: 1.2; }
 
 .pn-nav { display: grid; gap: var(--er-s3); }
