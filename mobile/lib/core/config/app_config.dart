@@ -18,6 +18,12 @@ class AppConfig {
     return kIsWeb ? 'http://localhost:3000' : 'http://10.0.2.2:3000';
   }
 
+  /// Indica si la app opera en modo demostración (`--dart-define=MODO_DEMO=...`).
+  static const bool modoDemo = bool.fromEnvironment(
+    'MODO_DEMO',
+    defaultValue: false,
+  );
+
   /// OAuth de Google (cliente configurado en `google-services.json`, proyecto `esmeralsrelesiente`).
   static const String googleClientId = String.fromEnvironment(
     'GOOGLE_CLIENT_ID',

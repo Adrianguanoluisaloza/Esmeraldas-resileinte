@@ -9,13 +9,13 @@ import '../../domain/repositories/auth_repository.dart';
 import '../services/google_auth_service.dart';
 
 /// Implementación del repositorio de autenticación (M2 de `TAREAS_MOVIL_FRANCO.md`).
-/// - Llama a `POST /auth/login`, `POST /auth/registro` y `POST /auth/google` en el backend real.
+/// - Llama a `POST /auth/login`, `POST /auth/registro` y `POST /auth/firebase` en el backend real.
 /// - Guarda `token` y `usuario` en `flutter_secure_storage` (nunca en Hive).
 class SecureStorageAuthRepository implements AuthRepository {
   SecureStorageAuthRepository({
     FlutterSecureStorage? secureStorage,
     Dio? dio,
-    GoogleAuthService? googleAuthService,
+    this.googleAuthService,
   }) : _secureStorage = secureStorage ?? const FlutterSecureStorage(),
        _dio =
            dio ??
@@ -25,15 +25,15 @@ class SecureStorageAuthRepository implements AuthRepository {
                connectTimeout: const Duration(seconds: 6),
                receiveTimeout: const Duration(seconds: 8),
              ),
-           ),
-       _google = googleAuthService ?? GoogleAuthService();
+           );
 
   static const String _keyJwtToken = 'auth_jwt_token';
   static const String _keySesion = 'auth_sesion';
 
   final FlutterSecureStorage _secureStorage;
   final Dio _dio;
-  final GoogleAuthService _google;
+  GoogleAuthService? googleAuthService;
+  GoogleAuthService get _google => googleAuthService ??= GoogleAuthService();
   UsuarioSesion? _sesionCache;
 
   int _intentosFallidos = 0;
@@ -128,20 +128,29 @@ class SecureStorageAuthRepository implements AuthRepository {
   }
 
   @override
-  Future<UsuarioSesion> iniciarSesionConGoogle() async {
-    final String idToken = await _google.obtenerIdToken();
-    if (idToken.isEmpty) {
-      throw const AuthException(
-        'No se recibió el token de autenticación de Google.',
-      );
+  Future<UsuarioSesion?> iniciarSesionConGoogle() async {
+    final String? firebaseIdToken = await _google.obtenerFirebaseIdToken();
+    if (firebaseIdToken == null) {
+      // El usuario canceló la selección de cuenta
+      return null;
     }
     try {
       final Response<dynamic> r = await _dio.post<dynamic>(
-        '/auth/google',
-        data: <String, String>{'id_token': idToken},
+        '/auth/firebase',
+        data: <String, String>{'idToken': firebaseIdToken},
       );
       return await _desdeRespuesta(r.data as Map<String, dynamic>, 'google');
     } on DioException catch (e) {
+      if (e.response?.statusCode == 401) {
+        throw const AuthException(
+          'Token de autenticación de Google inválido o expirado.',
+        );
+      }
+      if (e.response == null) {
+        throw const AuthException(
+          'Sin conexión con el servidor. Revisa tu conexión a internet.',
+        );
+      }
       final dynamic data = e.response?.data;
       final String msg = data is Map && data['mensaje'] != null
           ? '${data['mensaje']}'
@@ -151,10 +160,38 @@ class SecureStorageAuthRepository implements AuthRepository {
   }
 
   @override
+  Future<void> recuperarPassword({required String correo}) async {
+    final String c = correo.trim().toLowerCase();
+    try {
+      await _dio.post<dynamic>(
+        '/auth/recuperar',
+        data: <String, String>{'correo': c},
+      );
+    } on DioException catch (e) {
+      if (e.response?.statusCode == 202) {
+        return;
+      }
+      if (e.response == null) {
+        throw const AuthException(
+          'Sin conexión con el servidor. Revisa tu conexión a internet.',
+        );
+      }
+      final dynamic data = e.response?.data;
+      if (data is Map && data['mensaje'] != null) {
+        throw AuthException('${data['mensaje']}');
+      }
+      throw const AuthException(
+        'No se pudo procesar la solicitud de recuperación.',
+      );
+    }
+  }
+
+  @override
   Future<void> cerrarSesion() async {
     _sesionCache = null;
     await _secureStorage.delete(key: _keyJwtToken);
     await _secureStorage.delete(key: _keySesion);
+    await _google.cerrarSesion();
   }
 
   void _verificarBloqueo() {

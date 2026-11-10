@@ -54,9 +54,14 @@ abstract interface class AuthRepository {
     required String password,
   });
 
-  /// Google (OAuth 2.0 + PKCE). La app obtiene un `id_token` y el servidor lo verifica
-  /// en `POST /auth/google` antes de emitir su propio JWT.
-  Future<UsuarioSesion> iniciarSesionConGoogle();
+  /// Google con Firebase Authentication. La app obtiene un `idToken` de Firebase
+  /// y el servidor lo verifica en `POST /auth/firebase` antes de emitir su propio JWT.
+  /// Si el usuario cancela la selección de cuenta, devuelve `null` sin error.
+  Future<UsuarioSesion?> iniciarSesionConGoogle();
+
+  /// `POST /auth/recuperar`. Pide un enlace para restablecer la contraseña.
+  /// Responde 202 exista o no el correo. La contraseña nueva se crea en la web.
+  Future<void> recuperarPassword({required String correo});
 
   Future<void> cerrarSesion();
 }
