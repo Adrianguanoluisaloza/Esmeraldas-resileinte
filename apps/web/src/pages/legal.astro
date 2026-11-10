@@ -1,0 +1,76 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import CabeceraSitio from '../components/sitio/CabeceraSitio.astro';
+import '../styles/panel.css';
+import '../styles/sitio.css';
+
+const licencias = [
+  ['Leaflet', 'BSD 2-Clause'],
+  ['Astro', 'MIT'],
+  ['React', 'MIT'],
+  ['Lucide', 'ISC'],
+  ['Geist', 'SIL Open Font License 1.1'],
+  ['Hono', 'MIT'],
+  ['PostgreSQL', 'PostgreSQL License'],
+  ['PostGIS', 'GPL 2.0 o posterior'],
+  ['Flutter y flutter_map', 'BSD 3-Clause'],
+];
+---
+
+<BaseLayout titulo="Legal y licencias">
+  <CabeceraSitio />
+  <main id="contenido">
+    <section class="st-seccion">
+      <h1>Legal y licencias</h1>
+
+      <h2>Alcance</h2>
+      <p>
+        Esmeraldas Resiliente es un prototipo académico del Hackathon UTLVTE 2026. No reemplaza al ECU 911, a la
+        Secretaría de Gestión de Riesgos ni a las alertas oficiales. Ante una emergencia, llame al 911.
+      </p>
+      <p>
+        La plataforma separa tres orígenes de información: reporte ciudadano (sin verificar hasta que un operador lo
+        revise), dato simulado (escenario de prueba "Jueves 06:00") y alerta oficial. Los datos marcados como simulados
+        no describen hechos reales.
+      </p>
+
+      <h2>Mapas y datos geográficos</h2>
+      <p>
+        Datos del mapa © colaboradores de
+        <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap</a>,
+        disponibles bajo la licencia
+        <a href="https://opendatacommons.org/licenses/odbl/1-0/" target="_blank" rel="noopener noreferrer">Open Database License (ODbL) 1.0</a>.
+        Las teselas de OpenStreetMap se distribuyen bajo
+        <a href="https://creativecommons.org/licenses/by-sa/2.0/" target="_blank" rel="noopener noreferrer">CC BY-SA 2.0</a>.
+      </p>
+      <p>
+        Este prototipo usa el servidor público de teselas de OpenStreetMap según su
+        <a href="https://operations.osmfoundation.org/policies/tiles/" target="_blank" rel="noopener noreferrer">política de uso</a>.
+        Un despliegue con tráfico real debe cambiar a un proveedor de teselas contratado o propio.
+      </p>
+
+      <h2>Datos personales</h2>
+      <p>Según lo que use cada persona, el sistema guarda:</p>
+      <ul>
+        <li>Cuenta: nombre, correo y clave protegida con hash. Ingreso con Google: los datos que Google entrega para identificar la cuenta.</li>
+        <li>Reporte: ubicación, descripción, foto si se adjunta, número de personas afectadas y necesidades.</li>
+      </ul>
+      <p>
+        Estos datos se usan solo para coordinar la atención de la emergencia. Se puede reportar sin crear una cuenta. Un
+        reporte solo lo ven quien lo envió y el personal autorizado del centro de operaciones. El prototipo busca seguir
+        los principios de la Ley Orgánica de Protección de Datos Personales del Ecuador, y antes de un uso real necesita
+        un responsable de tratamiento designado y una revisión jurídica.
+      </p>
+
+      <h2>Software de terceros</h2>
+      <ul>
+        {licencias.map(([nombre, licencia]) => <li>{nombre}: {licencia}</li>)}
+      </ul>
+    </section>
+  </main>
+
+  <footer class="st-pie">
+    <span>Esmeraldas Resiliente · Hackathon UTLVTE 2026</span>
+    <a href="/">Volver al inicio</a>
+  </footer>
+</BaseLayout>
