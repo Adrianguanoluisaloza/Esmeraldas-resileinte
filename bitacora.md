@@ -197,7 +197,24 @@ Este documento registra decisiones, avances, bloqueos y pendientes importantes. 
 - **Archivos tocados:** `mobile/lib/core/config/app_config.dart`, `mobile/lib/core/network/api_client.dart`, `mobile/lib/data/repositories/operaciones_repository.dart`, `mobile/lib/data/repositories/cola_reportes_repository.dart`, `mobile/lib/features/sync/data/services/sync_worker_service.dart`, `mobile/lib/core/routing/app_router.dart`, `mobile/lib/features/mis_reportes/presentation/pages/mis_reportes_page.dart`, `mobile/lib/features/mis_reportes/presentation/pages/directorio_albergues_page.dart`, `mobile/lib/core/theme/app_theme.dart`, `CHANGELOG.md`, `bitacora.md`.
 - **Pendientes:** Probar en dispositivo físico durante la demostración.
 
-## 2026-11-09 — Eliminación de datos demo, verificación de cola offline, GPS forzado, Telephony SMS y MBTiles de Esmeraldas (`francopcontrol`)
+## 2026-11-09 — Autenticación Google con Firebase, recuperación de clave y GitHub Actions APK (`francopcontrol`)
+- **Área:** mobile | autenticación | ci-cd | seguridad
+- **Cambio:**
+  - Se sustituyó `flutter_appauth` por `google_sign_in` (`^6.2.2`), `firebase_core` (`^3.12.1`) y `firebase_auth` (`^5.5.1`).
+  - Se aplicó el plugin Gradle `com.google.gms.google-services` (`4.4.2`) en `settings.gradle.kts` y `app/build.gradle.kts`.
+  - Se inicializó `Firebase.initializeApp()` en `main.dart`.
+  - Flujo de `GoogleAuthService`: `GoogleSignIn` con `serverClientId = AppConfig.googleClientId`, obtención de credenciales con `GoogleAuthProvider.credential`, autenticación con `FirebaseAuth.signInWithCredential`, obtención del `idToken` de Firebase y llamada a `POST /auth/firebase` intercambiándolo por JWT de sesión.
+  - Se eliminaron todas las referencias a `/auth/google`.
+  - Se añadió la opción "Olvidé mi contraseña" en `LoginPage` conectada a `POST /auth/recuperar` (202), informando siempre que la clave se crea en la web.
+  - Se blindó la cancelación: al cancelar Google, no se muestra ningún error y vuelve al formulario.
+  - Se registraron por CLI las huellas SHA-1 (`33:A4:2B:E7:71:20:B0:46:B4:53:32:5B:F8:08:E4:49:8E:23:91:72`) y SHA-256 en Firebase App `1:644267053650:android:71bc72c7671c740865c58b`, actualizando `google-services.json` con cliente tipo 1.
+  - Se creó el workflow `.github/workflows/build-apk.yml` para compilar el APK en GitHub Actions y distribuirlo mediante Firebase App Distribution a `geo7u7r@gmail.com`.
+- **Decisión:** Mantener Clean Architecture estricta aislando Firebase y Google Sign-In exclusivamente en la capa de datos (`data/`), interactuando con la interfaz mediante interfaces de dominio (`AuthRepository`).
+- **Validación:**
+  - `dart format --set-exit-if-changed lib test` (código 0).
+  - `flutter analyze` ejecutado desde unidad virtual (0 issues).
+  - `flutter test` con 11 pruebas pasando al 100% (incluyendo dobles de Google, cancelaciones, errores de red y 401).
+- **Pendientes:** Verificar la recepción de la APK distribuida a `geo7u7r@gmail.com` tras la ejecución del workflow de GitHub Actions.
 - **Área:** mobile | mapas-offline | geolocalización | sincronización
 - **Cambio:**
   - Se eliminaron por completo `AppConfig.modoDemo`, cuentas demo quemadas en `LoginPage`/`AuthRepositoryImpl` y semillas locales falsas en `OperacionesRepository` y `HiveColaReportesRepository`, operando 100 % contra el backend real y la cola local de Hive.

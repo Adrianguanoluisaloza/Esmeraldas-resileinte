@@ -6,6 +6,11 @@ Todos los cambios relevantes del proyecto se registran aquí. Se sigue una estru
 
 ### Added
 
+- Autenticación Google vía Firebase (`firebase_core`, `firebase_auth`, `google_sign_in`) intercambiando el `idToken` en `POST /auth/firebase` por un token JWT propio.
+- Diálogo y flujo de "Olvidé mi contraseña" en `LoginPage` conectando con `POST /auth/recuperar` (202 aceptado) con mensaje seguro y neutro.
+- Pruebas automatizadas con dobles sin Firebase real ni red (`test/auth_test.dart`) para Google correcto, Google cancelado, error de red y 401 del servidor.
+- Huellas SHA-1 y SHA-256 registradas en Firebase Console para el paquete `ec.esmeraldas.resiliente.mobile` y archivo `google-services.json` actualizado.
+- Flujo de GitHub Actions (`.github/workflows/build-apk.yml`) para compilación de APK release y distribución mediante Firebase App Distribution a `geo7u7r@gmail.com`.
 - Mapa offline en formato MBTiles 1.3 (`mobile/assets/mapas/esmeraldas.mbtiles`, 155 teselas OpenMapTiles/OpenStreetMap de la Provincia de Esmeraldas `z=8..15`) con proveedor híbrido `EsmeraldasHybridTileProvider` y `sqflite`.
 - Envío de punto GPS de emergencia por SMS (`TelephonyService` con `another_telephony`) y captura GPS forzada de hardware (`AndroidSettings(forceLocationManager: true)`) en `LocalLocationService` y `CrearReportePage`.
 - Verificación de máquina de estados de la cola offline (`SyncWorkerService` y `MisReportesPage`): eliminación de todos los datos demo/semillas falsas, validación estricta del contrato Zod (`ReporteEntrada`), reintento manual con `forzar: true` y visualización de errores en la cola.
