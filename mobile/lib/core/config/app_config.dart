@@ -70,6 +70,12 @@ class AppConfig {
 
   /// Parámetros de captura offline.
   static const Duration gpsTimeout = Duration(seconds: 20);
+
+  /// Sin datos el GPS no recibe ayuda de antenas y el primer fijado tarda mucho más.
+  static const Duration gpsTimeoutSinRed = Duration(seconds: 60);
+
+  /// Tiempo durante el que una ubicación ya fijada se considera actual.
+  static const Duration gpsVigencia = Duration(seconds: 90);
   static const int photoMaxDimensionPx = 1280;
   static const int photoCompressQuality = 75;
 

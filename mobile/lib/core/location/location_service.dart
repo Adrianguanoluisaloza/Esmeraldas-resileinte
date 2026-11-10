@@ -23,7 +23,7 @@ class CoordenadaCapturada {
 /// Contrato del servicio de ubicación del dominio.
 abstract interface class LocationService {
   /// Obtiene la ubicación actual forzando lectura de hardware GPS cuando está disponible;
-  /// si agota el tiempo, recurre a la última ubicación conocida del GPS o al centro de Esmeraldas.
+  /// si agota el tiempo, recurre a la última ubicación conocida. Devuelve null si no hay ninguna.
   Future<CoordenadaCapturada?> capturarUbicacionConRespaldo();
 
   /// Calcula la distancia en kilómetros entre dos coordenadas (fórmula de Haversine)
@@ -41,12 +41,11 @@ abstract interface class LocationService {
 class LocalLocationService implements LocationService {
   const LocalLocationService();
 
-  static const CoordenadaCapturada _respaldoEsmeraldas = CoordenadaCapturada(
-    latitud: AppConfig.esmeraldasCenterLat,
-    longitud: AppConfig.esmeraldasCenterLng,
-    precisionMetros: 12.0,
-    esAproximada: true,
-  );
+  // Sin datos móviles el GPS tarda en fijar: el resultado se reutiliza y las
+  // peticiones simultáneas comparten la misma búsqueda de satélites.
+  static Future<CoordenadaCapturada?>? _busquedaEnCurso;
+  static CoordenadaCapturada? _ultimoFijo;
+  static DateTime? _ultimoFijoEn;
 
   /// Verifica si la coordenada cae dentro del recuadro geográfico de la provincia de Esmeraldas
   /// exigido por el backend (`lat` entre -0.5 y 1.6, `lon` entre -80.3 y -78.4).
@@ -55,7 +54,21 @@ class LocalLocationService implements LocationService {
   }
 
   @override
-  Future<CoordenadaCapturada?> capturarUbicacionConRespaldo() async {
+  Future<CoordenadaCapturada?> capturarUbicacionConRespaldo() {
+    final CoordenadaCapturada? fijo = _ultimoFijo;
+    final DateTime? fijoEn = _ultimoFijoEn;
+    if (fijo != null &&
+        fijoEn != null &&
+        DateTime.now().difference(fijoEn) < AppConfig.gpsVigencia) {
+      return Future<CoordenadaCapturada?>.value(fijo);
+    }
+    return _busquedaEnCurso ??= _buscarUbicacion().whenComplete(() {
+      _busquedaEnCurso = null;
+    });
+  }
+
+  /// Devuelve null si no hay ubicación real: nunca inventa un punto.
+  Future<CoordenadaCapturada?> _buscarUbicacion() async {
     try {
       final bool habilitado = await Geolocator.isLocationServiceEnabled()
           .timeout(const Duration(seconds: 2));
@@ -64,6 +77,7 @@ class LocalLocationService implements LocationService {
           const Duration(milliseconds: 800),
           onTimeout: () => false,
         );
+        return null;
       }
 
       LocationPermission permiso = await Geolocator.checkPermission().timeout(
@@ -76,7 +90,7 @@ class LocalLocationService implements LocationService {
       }
       if (permiso == LocationPermission.denied ||
           permiso == LocationPermission.deniedForever) {
-        return _respaldoEsmeraldas;
+        return null;
       }
 
       final LocationSettings settings =
@@ -86,12 +100,12 @@ class LocalLocationService implements LocationService {
               distanceFilter: 0,
               forceLocationManager: true,
               intervalDuration: const Duration(seconds: 1),
-              timeLimit: const Duration(seconds: 10),
+              timeLimit: AppConfig.gpsTimeoutSinRed,
             )
-          : const LocationSettings(
+          : LocationSettings(
               accuracy: LocationAccuracy.best,
               distanceFilter: 0,
-              timeLimit: Duration(seconds: 10),
+              timeLimit: AppConfig.gpsTimeoutSinRed,
             );
 
       try {
@@ -99,15 +113,18 @@ class LocalLocationService implements LocationService {
           locationSettings: settings,
         );
         if (estaEnProvinciaEsmeraldas(pos.latitude, pos.longitude)) {
-          return CoordenadaCapturada(
+          final CoordenadaCapturada fijo = CoordenadaCapturada(
             latitud: pos.latitude,
             longitud: pos.longitude,
             precisionMetros: pos.accuracy > 0 ? pos.accuracy : 8.0,
             esAproximada: false,
           );
+          _ultimoFijo = fijo;
+          _ultimoFijoEn = DateTime.now();
+          return fijo;
         }
       } catch (_) {
-        // Si el fix satelital directo tarda más de 10 s bajo techo, consulta la última posición de hardware GPS
+        // Sin cielo despejado puede no fijar: se consulta la última posición conocida.
       }
 
       final Position? ultimaPos = await Geolocator.getLastKnownPosition(
@@ -125,9 +142,9 @@ class LocalLocationService implements LocationService {
         );
       }
 
-      return _respaldoEsmeraldas;
+      return null;
     } catch (_) {
-      return _respaldoEsmeraldas;
+      return null;
     }
   }
 

@@ -271,13 +271,14 @@ class _CrearReportePageState extends State<CrearReportePage> {
     );
   }
 
-  Future<CoordenadaCapturada> _resolverCoordenadaConGpsForzado() async {
+  Future<CoordenadaCapturada?> _resolverCoordenadaConGpsForzado() async {
     if (_ubicacionFijadaManualmente && _puntoMarcadoEnMapa != null) {
       return CoordenadaCapturada(
         latitud: _puntoMarcadoEnMapa!.latitude,
         longitud: _puntoMarcadoEnMapa!.longitude,
-        precisionMetros: 10.0,
-        esAproximada: false,
+        precisionMetros: 50.0,
+        // Marcado a mano: el COE debe saber que no viene del GPS.
+        esAproximada: true,
       );
     }
 
@@ -289,13 +290,7 @@ class _CrearReportePageState extends State<CrearReportePage> {
       return gpsFresco;
     }
 
-    return _coordenada ??
-        const CoordenadaCapturada(
-          latitud: AppConfig.esmeraldasCenterLat,
-          longitud: AppConfig.esmeraldasCenterLng,
-          precisionMetros: 50.0,
-          esAproximada: true,
-        );
+    return _coordenada;
   }
 
   Future<void> _guardarReporteEnCola() async {
@@ -303,8 +298,20 @@ class _CrearReportePageState extends State<CrearReportePage> {
     setState(() => _enviandoReporte = true);
     try {
       // Fuerza captura GPS real del dispositivo si el usuario no fijó un pin manual
-      final CoordenadaCapturada coordenadaFinal =
+      final CoordenadaCapturada? coordenadaFinal =
           await _resolverCoordenadaConGpsForzado();
+      if (coordenadaFinal == null) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text(
+                'Sin señal GPS. Toca el mapa para marcar el lugar del reporte.',
+              ),
+            ),
+          );
+        }
+        return;
+      }
 
       await widget.crearReporteUseCase.ejecutar(
         DatosNuevoReporte(
@@ -352,8 +359,20 @@ class _CrearReportePageState extends State<CrearReportePage> {
   Future<void> _enviarPuntoGpsPorSms() async {
     setState(() => _capturandoGps = true);
     try {
-      final CoordenadaCapturada coord =
+      final CoordenadaCapturada? coord =
           await _resolverCoordenadaConGpsForzado();
+      if (coord == null) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text(
+                'Sin señal GPS. Toca el mapa para marcar el lugar antes de enviar el SMS.',
+              ),
+            ),
+          );
+        }
+        return;
+      }
       final int totalPersonas = (_ninos + _adultosMayores) > _personasAfectadas
           ? (_ninos + _adultosMayores)
           : (_personasAfectadas > 0 ? _personasAfectadas : 1);
@@ -1050,7 +1069,7 @@ class _CrearReportePageState extends State<CrearReportePage> {
                   icon: const Icon(Icons.send_rounded, size: 18),
                   label: Text(
                     _enviandoReporte
-                        ? 'Capturando GPS y enviando...'
+                        ? 'Buscando satélites y guardando...'
                         : 'Enviar reporte de emergencia',
                   ),
                 ),

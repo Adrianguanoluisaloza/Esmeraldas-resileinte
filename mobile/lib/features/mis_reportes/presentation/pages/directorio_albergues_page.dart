@@ -82,14 +82,20 @@ class _DirectorioAlberguesPageState extends State<DirectorioAlberguesPage> {
       _cargando = true;
     });
     try {
-      final CoordenadaCapturada coord =
-          await widget.locationService.capturarUbicacionConRespaldo() ??
-          const CoordenadaCapturada(
-            latitud: AppConfig.esmeraldasCenterLat,
-            longitud: AppConfig.esmeraldasCenterLng,
-            precisionMetros: 15,
-            esAproximada: false,
+      final CoordenadaCapturada? coord = await widget.locationService
+          .capturarUbicacionConRespaldo();
+      if (coord == null) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text(
+                'Sin señal GPS. Intenta junto a una ventana o al aire libre.',
+              ),
+            ),
           );
+        }
+        return;
+      }
       if (widget.tieneConexionReal && widget.apiClient != null) {
         final List<PuntoServicioModel> cercanos = await widget.apiClient!
             .obtenerPuntosCercanos(
