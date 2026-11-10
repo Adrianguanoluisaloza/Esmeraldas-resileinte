@@ -7,8 +7,10 @@ import type {
   RepositorioAlertas,
   RepositorioAsistencia,
   RepositorioReportes,
+  RepositorioRestablecimientos,
   RepositorioTerritorio,
   RepositorioUsuarios,
+  SolicitudRestablecimiento,
   UsuarioConClave,
 } from "../../dominio/puertos.js";
 import type { PuntoServicio } from "../../dominio/puntoServicio.js";
@@ -27,6 +29,25 @@ export class UsuariosEnMemoria implements RepositorioUsuarios {
   }
   async crear(u: UsuarioConClave) {
     this.porCorreo.set(u.correo.toLowerCase(), copia(u));
+  }
+  fijarClave(id: string, clave_hash: string) {
+    for (const u of this.porCorreo.values()) if (u.id === id) u.clave_hash = clave_hash;
+  }
+}
+
+export class RestablecimientosEnMemoria implements RepositorioRestablecimientos {
+  private readonly datos = new Map<string, SolicitudRestablecimiento & { usado: boolean }>();
+  constructor(private readonly usuarios: UsuariosEnMemoria) {}
+  async crear(s: SolicitudRestablecimiento) {
+    for (const previa of this.datos.values()) if (previa.usuario_id === s.usuario_id) previa.usado = true;
+    this.datos.set(s.token_hash, { ...s, usado: false });
+  }
+  async consumir(token_hash: string, ahora: string, clave_hash: string) {
+    const s = this.datos.get(token_hash);
+    if (!s || s.usado || Date.parse(s.expira_en) <= Date.parse(ahora)) return false;
+    s.usado = true;
+    this.usuarios.fijarClave(s.usuario_id, clave_hash);
+    return true;
   }
 }
 

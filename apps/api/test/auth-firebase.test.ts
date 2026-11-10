@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { CasosAuth } from "../src/aplicacion/auth.js";
-import type { RepositorioUsuarios, ServicioClaves, ServicioTokens, Usuario } from "../src/dominio/puertos.js";
+import type { RepositorioRestablecimientos, RepositorioUsuarios, ServicioClaves, ServicioCorreo, ServicioTokens, Usuario } from "../src/dominio/puertos.js";
 
 type Guardado = Usuario & { clave_hash: string };
 
@@ -12,7 +12,7 @@ function armar(existentes: Guardado[] = []) {
     crear: async (u: Guardado) => { usuarios.push(u); },
   } as unknown as RepositorioUsuarios;
   const tokens = { emitir: async (u: Usuario) => `jwt-${u.id}`, verificar: async () => null } as unknown as ServicioTokens;
-  const casos = new CasosAuth(repo, {} as ServicioClaves, tokens, { ahora: () => new Date("2026-11-10T00:00:00Z") });
+  const casos = new CasosAuth(repo, {} as ServicioClaves, tokens, { ahora: () => new Date("2026-11-10T00:00:00Z") }, {} as RepositorioRestablecimientos, {} as ServicioCorreo, "http://web.test");
   return { casos, usuarios };
 }
 

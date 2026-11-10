@@ -4,11 +4,12 @@ import { CasosOperacion } from "./aplicacion/operacion.js";
 import { CasosReportes } from "./aplicacion/reportes.js";
 import { CasosTerritorio } from "./aplicacion/territorio.js";
 import type { Config } from "./config.js";
-import type { RepositorioAlertas, RepositorioAsistencia, RepositorioReportes, RepositorioTerritorio, RepositorioUsuarios } from "./dominio/puertos.js";
+import type { RepositorioAlertas, RepositorioAsistencia, RepositorioReportes, RepositorioRestablecimientos, RepositorioTerritorio, RepositorioUsuarios, ServicioCorreo } from "./dominio/puertos.js";
 import type { Dependencias } from "./http/contexto.js";
+import { CorreoSinConfigurar, CorreoSmtp } from "./infraestructura/correo.js";
 import { FotosEnDisco } from "./infraestructura/fotosDisco.js";
-import { AlertasEnMemoria, AsistenciaEnMemoria, ReportesEnMemoria, TerritorioEnMemoria, UsuariosEnMemoria } from "./infraestructura/memoria/repositorios.js";
-import { AlertasPg, AsistenciaPg, ReportesPg, TerritorioPg, UsuariosPg, crearPool } from "./infraestructura/postgres/repositorios.js";
+import { AlertasEnMemoria, AsistenciaEnMemoria, ReportesEnMemoria, RestablecimientosEnMemoria, TerritorioEnMemoria, UsuariosEnMemoria } from "./infraestructura/memoria/repositorios.js";
+import { AlertasPg, AsistenciaPg, ReportesPg, RestablecimientosPg, TerritorioPg, UsuariosPg, crearPool } from "./infraestructura/postgres/repositorios.js";
 import { ClavesScrypt } from "./infraestructura/seguridad/claves.js";
 import { TokensDual } from "./infraestructura/seguridad/tokensDual.js";
 import { TokensFirebase } from "./infraestructura/seguridad/tokensFirebase.js";
@@ -35,7 +36,12 @@ export function componer(config: Config) {
     tokens = new TokensDual(tokensJwt, new TokensFirebase(firebaseApp));
   }
 
+  const correo: ServicioCorreo = config.SMTP_HOST && config.SMTP_USUARIO && config.SMTP_CLAVE && config.CORREO_REMITENTE
+    ? new CorreoSmtp(config.SMTP_HOST, config.SMTP_PUERTO, config.SMTP_USUARIO, config.SMTP_CLAVE, config.CORREO_REMITENTE)
+    : new CorreoSinConfigurar(config.APP_ENV !== "production");
+
   let usuarios: RepositorioUsuarios;
+  let restablecimientos: RepositorioRestablecimientos;
   let reportes: RepositorioReportes;
   let territorio: RepositorioTerritorio;
   let alertas: RepositorioAlertas;
@@ -46,6 +52,7 @@ export function componer(config: Config) {
   if (config.ALMACEN === "postgres") {
     const pool = crearPool(config.DATABASE_URL!);
     usuarios = new UsuariosPg(pool);
+    restablecimientos = new RestablecimientosPg(pool);
     reportes = new ReportesPg(pool);
     territorio = new TerritorioPg(pool);
     alertas = new AlertasPg(pool);
@@ -53,7 +60,9 @@ export function componer(config: Config) {
     comprobarAlmacen = async () => (await pool.query("SELECT 1 AS ok")).rows[0]?.ok === 1;
     cerrar = () => pool.end();
   } else {
-    usuarios = new UsuariosEnMemoria();
+    const usuariosRam = new UsuariosEnMemoria();
+    usuarios = usuariosRam;
+    restablecimientos = new RestablecimientosEnMemoria(usuariosRam);
     reportes = new ReportesEnMemoria();
     territorio = new TerritorioEnMemoria();
     alertas = new AlertasEnMemoria();
@@ -63,7 +72,7 @@ export function componer(config: Config) {
   }
 
   const deps: Dependencias = {
-    auth: new CasosAuth(usuarios, claves, tokens, relojSistema),
+    auth: new CasosAuth(usuarios, claves, tokens, relojSistema, restablecimientos, correo, config.URL_WEB),
     reportes: new CasosReportes(reportes, territorio, bus, relojSistema),
     territorio: new CasosTerritorio(territorio, bus),
     operacion: new CasosOperacion(reportes, territorio, alertas, asistencia, bus, relojSistema),

@@ -2,14 +2,14 @@ import { Hono } from "hono";
 import { z } from "zod";
 import { ErrorDominio } from "../../dominio/errores.js";
 import { leerJson, type Dependencias, type Entorno } from "../contexto.js";
-import { LoginEntrada, RegistroEntrada } from "../esquemas.js";
+import { LoginEntrada, RecuperarEntrada, RegistroEntrada, RestablecerEntrada } from "../esquemas.js";
 
 /** Límite simple contra fuerza bruta: 10 intentos por correo cada 10 minutos (por instancia). */
 const VENTANA_MS = 10 * 60 * 1000;
 const MAX_INTENTOS = 10;
 const intentos = new Map<string, { n: number; desde: number }>();
 
-function controlarIntentos(correo: string) {
+function controlarIntentos(correo: string, maximo = MAX_INTENTOS) {
   const ahora = Date.now();
   const clave = correo.toLowerCase();
   const actual = intentos.get(clave);
@@ -18,7 +18,7 @@ function controlarIntentos(correo: string) {
     return;
   }
   actual.n += 1;
-  if (actual.n > MAX_INTENTOS) throw new ErrorDominio("SIN_PERMISO", "Demasiados intentos. Espera unos minutos.");
+  if (actual.n > maximo) throw new ErrorDominio("SIN_PERMISO", "Demasiados intentos. Espera unos minutos.");
 }
 
 export function rutasAuth(deps: Dependencias) {
@@ -33,6 +33,22 @@ export function rutasAuth(deps: Dependencias) {
   r.post("/registro", async (c) => {
     const { nombre, correo, password } = await leerJson(c, RegistroEntrada);
     return c.json(await deps.auth.registrar(nombre, correo, password), 201);
+  });
+
+  r.post("/recuperar", async (c) => {
+    const { correo } = await leerJson(c, RecuperarEntrada);
+    controlarIntentos(`recuperar:${correo}`, 3);
+    // Sin esperar: la respuesta tarda lo mismo exista o no el correo.
+    deps.auth.solicitarRestablecimiento(correo).catch((e: unknown) => {
+      console.error(JSON.stringify({ evento: "restablecimiento_fallido", error: e instanceof Error ? e.name : "desconocido" }));
+    });
+    return c.body(null, 202);
+  });
+
+  r.post("/restablecer", async (c) => {
+    const { token, password } = await leerJson(c, RestablecerEntrada);
+    await deps.auth.restablecerClave(token, password);
+    return c.body(null, 204);
   });
 
   /**

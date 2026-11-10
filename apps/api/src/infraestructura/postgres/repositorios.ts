@@ -8,8 +8,10 @@ import type {
   FiltroReportes,
   GeoJsonColeccion,
   RepositorioReportes,
+  RepositorioRestablecimientos,
   RepositorioTerritorio,
   RepositorioUsuarios,
+  SolicitudRestablecimiento,
   UsuarioConClave,
 } from "../../dominio/puertos.js";
 import type { PuntoServicio } from "../../dominio/puntoServicio.js";
@@ -60,6 +62,32 @@ export class UsuariosPg implements RepositorioUsuarios {
       "INSERT INTO usuarios (id, nombre, correo, rol, clave_hash, creado_en) VALUES ($1, $2, $3, $4, $5, $6)",
       [u.id, u.nombre, u.correo, u.rol, u.clave_hash, u.creado_en],
     );
+  }
+}
+
+export class RestablecimientosPg implements RepositorioRestablecimientos {
+  constructor(private readonly db: pg.Pool) {}
+
+  async crear(s: SolicitudRestablecimiento) {
+    await this.db.query(
+      `WITH previas AS (UPDATE restablecimientos SET usado_en = $4 WHERE usuario_id = $1 AND usado_en IS NULL)
+       INSERT INTO restablecimientos (usuario_id, token_hash, expira_en, creado_en) VALUES ($1, $2, $3, $4)`,
+      [s.usuario_id, s.token_hash, s.expira_en, s.creado_en],
+    );
+  }
+
+  async consumir(token_hash: string, ahora: string, clave_hash: string) {
+    // Una sola sentencia: dos peticiones simultáneas con el mismo token no pueden usarlo las dos.
+    const r = await this.db.query(
+      `WITH token AS (
+         UPDATE restablecimientos SET usado_en = $2
+         WHERE token_hash = $1 AND usado_en IS NULL AND expira_en > $2
+         RETURNING usuario_id
+       )
+       UPDATE usuarios u SET clave_hash = $3 FROM token WHERE u.id = token.usuario_id`,
+      [token_hash, ahora, clave_hash],
+    );
+    return r.rowCount === 1;
   }
 }
 

@@ -27,6 +27,24 @@ export interface RepositorioUsuarios {
   crear(usuario: UsuarioConClave): Promise<void>;
 }
 
+export interface SolicitudRestablecimiento {
+  usuario_id: string;
+  token_hash: string;
+  expira_en: string;
+  creado_en: string;
+}
+
+export interface RepositorioRestablecimientos {
+  /** Guarda la solicitud y deja sin efecto las anteriores del mismo usuario. */
+  crear(solicitud: SolicitudRestablecimiento): Promise<void>;
+  /** En una sola operación marca el token como usado y cambia la clave. false si no existe, venció o ya se usó. */
+  consumir(token_hash: string, ahora: string, clave_hash: string): Promise<boolean>;
+}
+
+export interface ServicioCorreo {
+  enviarRestablecimiento(destino: string, nombre: string, enlace: string): Promise<void>;
+}
+
 export interface FiltroReportes {
   estado?: EstadoReporte;
   tipo?: TipoIncidente;

@@ -1,6 +1,12 @@
-import { randomUUID } from "node:crypto";
+import { createHash, randomBytes, randomUUID } from "node:crypto";
 import { ErrorDominio } from "../dominio/errores.js";
-import type { Reloj, RepositorioUsuarios, ServicioClaves, ServicioTokens, Usuario } from "../dominio/puertos.js";
+import type { Reloj, RepositorioRestablecimientos, RepositorioUsuarios, ServicioClaves, ServicioCorreo, ServicioTokens, Usuario } from "../dominio/puertos.js";
+
+const MINUTOS_ENLACE = 30;
+/** Cuentas sin buzón real: no se les envía correo. */
+const SIN_BUZON = ["@demo.esmeraldas-resiliente.ec", "@firebase.local"];
+
+const hashToken = (token: string) => createHash("sha256").update(token).digest("hex");
 
 export class CasosAuth {
   constructor(
@@ -8,7 +14,34 @@ export class CasosAuth {
     private readonly claves: ServicioClaves,
     private readonly tokens: ServicioTokens,
     private readonly reloj: Reloj,
+    private readonly restablecimientos: RepositorioRestablecimientos,
+    private readonly correo: ServicioCorreo,
+    private readonly urlWeb: string,
   ) {}
+
+  /** Si el correo no existe no hace nada: quien pregunta no puede saber qué correos están registrados. */
+  async solicitarRestablecimiento(correo: string) {
+    const normalizado = correo.trim().toLowerCase();
+    if (SIN_BUZON.some((d) => normalizado.endsWith(d))) return;
+    const usuario = await this.usuarios.buscarPorCorreo(normalizado);
+    if (!usuario) return;
+    const ahora = this.reloj.ahora();
+    const token = randomBytes(32).toString("base64url");
+    await this.restablecimientos.crear({
+      usuario_id: usuario.id,
+      // Solo se guarda el hash: quien lea la base no puede usar el enlace.
+      token_hash: hashToken(token),
+      expira_en: new Date(ahora.getTime() + MINUTOS_ENLACE * 60_000).toISOString(),
+      creado_en: ahora.toISOString(),
+    });
+    // El token va en el fragmento (#): no llega a registros de servidores ni a cabeceras Referer.
+    await this.correo.enviarRestablecimiento(usuario.correo, usuario.nombre, `${this.urlWeb}/restablecer/#token=${token}`);
+  }
+
+  async restablecerClave(token: string, clave: string) {
+    const ok = await this.restablecimientos.consumir(hashToken(token), this.reloj.ahora().toISOString(), await this.claves.cifrar(clave));
+    if (!ok) throw new ErrorDominio("VALIDACION", "Enlace inválido o vencido");
+  }
 
   /** El registro público siempre crea ciudadanos. Operadores y admin se crean por script. */
   async registrar(nombre: string, correo: string, clave: string) {

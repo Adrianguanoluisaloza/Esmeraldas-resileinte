@@ -16,6 +16,17 @@ CREATE TABLE usuarios (
 );
 CREATE UNIQUE INDEX usuarios_correo_unico ON usuarios (lower(correo));
 
+-- Enlaces para restablecer contraseña. Solo se guarda el hash del token.
+CREATE TABLE restablecimientos (
+  id           UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  usuario_id   UUID        NOT NULL REFERENCES usuarios (id) ON DELETE CASCADE,
+  token_hash   CHAR(64)    NOT NULL UNIQUE,
+  expira_en    TIMESTAMPTZ NOT NULL,
+  usado_en     TIMESTAMPTZ,
+  creado_en    TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX restablecimientos_vigentes ON restablecimientos (usuario_id) WHERE usado_en IS NULL;
+
 -- Módulo 1: zonas de riesgo (polígonos) ---------------------------------------------------------
 CREATE TABLE zonas_riesgo (
   id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),

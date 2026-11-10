@@ -19,6 +19,13 @@ export const RegistroEntrada = z.object({
   password: z.string().min(8).max(200),
 }).strict();
 
+export const RecuperarEntrada = z.object({ correo: z.email().max(254) }).strict();
+
+export const RestablecerEntrada = z.object({
+  token: z.string().min(20).max(200),
+  password: z.string().min(8).max(200),
+}).strict();
+
 export const ReporteEntrada = z.object({
   id: z.uuid(),
   tipo: z.enum(TIPOS_INCIDENTE),

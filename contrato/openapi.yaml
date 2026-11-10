@@ -60,6 +60,74 @@ paths:
         '409':
           description: Correo ya registrado
 
+  /auth/recuperar:
+    post:
+      summary: Pedir un enlace para restablecer la contraseña
+      description: Responde 202 exista o no el correo, para no revelar qué correos están registrados.
+      tags: [Autenticación]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [correo]
+              properties:
+                correo:
+                  type: string
+                  format: email
+      responses:
+        '202':
+          description: Solicitud recibida
+
+  /auth/restablecer:
+    post:
+      summary: Crear una contraseña nueva con el token del enlace
+      tags: [Autenticación]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [token, password]
+              properties:
+                token:
+                  type: string
+                password:
+                  type: string
+                  format: password
+                  minLength: 8
+      responses:
+        '204':
+          description: Contraseña actualizada
+        '400':
+          description: Enlace inválido, vencido o ya usado
+
+  /auth/firebase:
+    post:
+      summary: Cambiar un idToken de Firebase (ingreso con Google) por un token JWT propio
+      tags: [Autenticación]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [idToken]
+              properties:
+                idToken:
+                  type: string
+      responses:
+        '200':
+          description: Sesión iniciada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '401':
+          description: Token de Firebase inválido o vencido
+
   /auth/login:
     post:
       summary: Iniciar sesión y obtener token JWT

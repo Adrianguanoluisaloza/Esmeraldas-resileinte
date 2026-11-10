@@ -14,6 +14,14 @@ const Esquema = z.object({
   JWT_MINUTOS: z.coerce.number().int().min(5).max(24 * 60).default(12 * 60),
   /** ID del proyecto Firebase para verificar tokens de Google Sign-In (opcional). */
   FIREBASE_PROJECT_ID: z.string().optional(),
+  /** URL pública de la web, para armar el enlace de restablecer contraseña. Nunca se toma de la petición. */
+  URL_WEB: z.string().regex(/^https?:\/\/[a-z0-9.-]+(:\d{1,5})?$/i, "URL_WEB debe ser solo esquema y dominio").default("http://localhost:4321"),
+  /** Correo saliente por SMTP (Oracle Email Delivery u otro). Sin esto la API no envía correos. */
+  SMTP_HOST: z.string().optional(),
+  SMTP_PUERTO: z.coerce.number().int().min(1).max(65535).default(587),
+  SMTP_USUARIO: z.string().optional(),
+  SMTP_CLAVE: z.string().optional(),
+  CORREO_REMITENTE: z.string().optional(),
   /** Orígenes permitidos separados por coma (la web de Astro y el preview de Cloudflare). */
   CORS_ORIGENES: z.string().default("http://localhost:4321"),
   /** true solo si la API está detrás de Cloudflare o un proxy propio (para leer la IP real). */
