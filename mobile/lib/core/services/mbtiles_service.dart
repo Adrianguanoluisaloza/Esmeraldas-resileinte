@@ -7,6 +7,8 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
 
+import '../config/app_config.dart';
+
 /// Servicio y proveedor de teselas offline basado en el archivo `assets/mapas/esmeraldas.mbtiles`
 /// (especificación MBTiles 1.3 / OpenMapTiles + OpenStreetMap de la Provincia de Esmeraldas).
 class EsmeraldasMbTilesService {
@@ -101,7 +103,10 @@ class EsmeraldasMbTilesService {
     _inicializando = true;
     try {
       final Directory dir = await getApplicationSupportDirectory();
-      final File archivoDestino = File('${dir.path}/esmeraldas.mbtiles');
+      // El paquete anterior solo tenía imágenes de error del proveedor: se borra de los equipos.
+      final File paqueteDanado = File('${dir.path}/esmeraldas.mbtiles');
+      if (await paqueteDanado.exists()) await paqueteDanado.delete();
+      final File archivoDestino = File('${dir.path}/esmeraldas_v2.mbtiles');
       if (!await archivoDestino.exists() ||
           await archivoDestino.length() == 0) {
         final ByteData data = await rootBundle.load(_assetPath);
@@ -169,7 +174,14 @@ class EsmeraldasMbTilesService {
 /// 3. Si está sin conexión y fuera del área empaquetada, devuelve un PNG transparente sin lanzar excepciones de red.
 class EsmeraldasHybridTileProvider extends TileProvider {
   EsmeraldasHybridTileProvider({required this.tieneConexion})
-    : _networkProvider = NetworkTileProvider();
+    : _networkProvider = NetworkTileProvider(
+        // TileLayer solo pone el User-Agent en este proveedor híbrido, no en el interno.
+        // Sin un identificador propio, OpenStreetMap bloquea las teselas.
+        headers: <String, String>{
+          'User-Agent':
+              'EsmeraldasResiliente/1.0 (${AppConfig.osmUserAgentPackageName})',
+        },
+      );
 
   final bool tieneConexion;
   final NetworkTileProvider _networkProvider;

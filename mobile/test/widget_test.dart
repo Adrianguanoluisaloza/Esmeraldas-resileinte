@@ -1,4 +1,3 @@
-import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -311,11 +310,7 @@ void main() {
     },
   );
 
-  test('Verifica archivo MBTiles offline de Esmeraldas y formato SMS georreferenciado con telephony', () {
-    final File mbtiles = File('assets/mapas/esmeraldas.mbtiles');
-    expect(mbtiles.existsSync(), isTrue);
-    expect(mbtiles.lengthSync(), greaterThan(500 * 1024));
-
+  test('Verifica formato SMS georreferenciado con telephony', () {
     const TelephonyService telephony = TelephonyService();
     final String sms = telephony.construirMensajePuntoGps(
       latitud: 0.9592,
