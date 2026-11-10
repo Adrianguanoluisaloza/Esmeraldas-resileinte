@@ -8,7 +8,7 @@ class AppConfig {
   static const String _envApiBaseUrl = String.fromEnvironment(
     'API_BASE_URL',
     defaultValue:
-        'https://seasonal-acceptable-crimes-remember.trycloudflare.com',
+        'https://api-esmeraldas.cifralabapp.com',
   );
 
   /// URL base del backend configurada mediante `--dart-define=API_BASE_URL=...`.

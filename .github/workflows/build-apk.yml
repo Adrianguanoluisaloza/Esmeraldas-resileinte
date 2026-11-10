@@ -71,7 +71,7 @@ jobs:
           export ANDROID_KEYSTORE_PATH="$RUNNER_TEMP/esmeraldas.jks"
           cd mobile
           flutter build apk --release \
-            --dart-define=API_BASE_URL=https://empire-extensive-origins-observe.trycloudflare.com \
+            --dart-define=API_BASE_URL=https://api-esmeraldas.cifralabapp.com \
             --dart-define=MODO_DEMO=false \
             --dart-define=GOOGLE_CLIENT_ID=644267053650-hdva73c46tut51k2tjrgk23ul4n4r5ve.apps.googleusercontent.com
 
