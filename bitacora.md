@@ -249,3 +249,10 @@ Este documento registra decisiones, avances, bloqueos y pendientes importantes. 
 - **Decisión:** Web y API se trabajan en la carpeta `esmeraldas-adrian` para no pisar a Gemini en `francopcontrol`. Punto de control en `punto-control-pc-lab`.
 - **Validación:** 46 pruebas de API, 11 de Flutter, `flutter analyze` sin problemas y build web. Recorrido local con administrador: reporte con miniatura, roles y formulario de albergue. SMTP verificado desde Oracle.
 - **Pendientes:** Probar en el celular Google, GPS en modo avión y foto. El mapa sin internet es el vectorial simplificado. Túnel temporal: si cambia la URL hay que recompilar web y APK.
+
+## 2026-11-10 — Roles por institución
+- **Área:** backend | web | seguridad
+- **Cambio:** Se agregan los roles `bomberos` y `policia` junto a ECU 911, ciudadano y administrador. Cada institución ve y atiende solo los reportes de su competencia, también en tiempo real. La Policía actualiza vías. Matriz en `docs/ROLES.md` y en la pantalla de usuarios.
+- **Decisión:** La regla vive en el servidor (`COMPETENCIA_INSTITUCION`). La web solo oculta lo que el servidor ya rechaza. Las cuentas son de demostración: no implican convenio con esas instituciones.
+- **Validación:** 51 pruebas de API.
+- **Pendientes:** En la app móvil un rol desconocido entra como ciudadano: falta agregar Bomberos y Policía a `RolUsuario`.
