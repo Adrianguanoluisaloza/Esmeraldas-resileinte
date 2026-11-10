@@ -11,18 +11,26 @@
 .st-btn-oscuro:hover { background: var(--er-text-2); }
 
 /* Héroe: el mapa real del producto ocupa el lugar de la ilustración. */
-.st-heroe { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); min-height: calc(100dvh - 60px); }
-.st-heroe__texto { display: flex; flex-direction: column; justify-content: center; align-items: flex-start; padding: var(--er-s10) var(--er-s10) var(--er-s10) max(var(--er-s4), calc((100vw - 1240px) / 2)); }
+.st-heroe, .st-app-heroe { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); align-items: center; gap: var(--er-s10); max-width: 1240px; margin: 0 auto; padding: 64px var(--er-s4); }
+.st-heroe__texto { display: flex; flex-direction: column; align-items: flex-start; }
 .st-heroe__texto > * { animation: er-aparecer .36s var(--er-salida) backwards; }
 .st-heroe__texto > :nth-child(2) { animation-delay: 40ms; }
 .st-heroe h1 { max-width: 13ch; font-size: clamp(36px, 4.6vw, 60px); font-weight: 600; letter-spacing: -0.03em; line-height: 1.04; text-wrap: balance; }
+.st-bajada { margin-top: var(--er-s5); max-width: 42ch; font-size: 17px; line-height: 1.55; color: var(--er-text-2); text-wrap: pretty; }
 .st-acciones { display: flex; flex-wrap: wrap; gap: var(--er-s3); margin-top: var(--er-s6); }
 .st-nota { margin-top: var(--er-s4); font-size: var(--er-fs-sm); color: var(--er-muted); }
 
-.st-tablero { display: flex; flex-direction: column; min-height: 100%; border-left: 1px solid var(--er-border); background: var(--er-surface); animation: er-aparecer .42s var(--er-salida) 80ms backwards; }
-.st-tablero--cargando { background: var(--er-surface-2); }
-.st-tablero__mapa { flex: 1; min-height: 340px; }
-.st-tablero__mapa .leaflet-container { cursor: default; }
+.st-video { display: block; width: 100%; aspect-ratio: 16 / 9; object-fit: cover; border: 1px solid var(--er-border-strong); border-radius: var(--er-r-lg); background: var(--er-surface-2); animation: er-aparecer .42s var(--er-salida) 80ms backwards; }
+
+.st-franja { list-style: none; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); max-width: 1240px; margin: 0 auto; padding: 0 var(--er-s4) 64px; gap: var(--er-s6); }
+.st-franja li { display: grid; gap: 2px; padding-top: var(--er-s3); border-top: 1px solid var(--er-border-strong); }
+.st-franja strong { font-weight: 600; }
+.st-franja span { font-size: var(--er-fs-sm); color: var(--er-text-2); }
+
+/* Página de la app móvil */
+.st-telefonos { position: relative; display: flex; justify-content: center; padding-right: 15%; }
+.st-telefono { position: relative; z-index: 1; width: min(290px, 62%); height: auto; border: 7px solid var(--er-surface-3); border-radius: 30px; background: var(--er-surface); }
+.st-telefono--detras { position: absolute; z-index: 0; right: 4%; top: 7%; width: min(250px, 50%); }
 
 /* Secciones ----------------------------------------------------------------------------------------------- */
 .st-seccion { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: var(--er-s10); max-width: 1240px; margin: 0 auto; padding: 72px var(--er-s4); border-top: 1px solid var(--er-border); }
@@ -72,13 +80,11 @@
 
 /* Responsive ---------------------------------------------------------------------------------------------- */
 @media (max-width: 900px) {
-  .st-heroe, .st-seccion { grid-template-columns: minmax(0, 1fr); gap: var(--er-s6); }
-  .st-heroe { min-height: 0; gap: 0; }
-  .st-heroe__texto { padding: var(--er-s8) var(--er-s4); }
-  .st-tablero { border-left: 0; border-top: 1px solid var(--er-border); }
+  .st-heroe, .st-app-heroe, .st-seccion { grid-template-columns: minmax(0, 1fr); gap: var(--er-s6); }
+  .st-heroe, .st-app-heroe { padding-top: var(--er-s8); padding-bottom: var(--er-s8); }
+  .st-franja { grid-template-columns: repeat(2, minmax(0, 1fr)); padding-bottom: var(--er-s8); }
   .st-actores { grid-template-columns: minmax(0, 1fr); }
   .st-seccion { padding-top: var(--er-s8); padding-bottom: var(--er-s8); }
-  .st-tablero__mapa { flex: none; height: 340px; }
   .st-nav { display: none; }
   .st-cabecera { justify-content: space-between; }
   .st-app__accion { justify-self: start; text-align: left; }

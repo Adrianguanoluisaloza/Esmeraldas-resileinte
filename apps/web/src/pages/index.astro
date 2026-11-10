@@ -1,12 +1,16 @@
 ---
-import { Download, Flame, Phone, Shield, Users } from 'lucide-react';
+import { Flame, Phone, Shield, Users } from 'lucide-react';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import CabeceraSitio from '../components/sitio/CabeceraSitio.astro';
-import { PortadaMapa } from '../components/PortadaMapa';
-import { URL_APK } from '../config/enlaces';
 import '../styles/panel.css';
-import '../styles/operaciones.css';
 import '../styles/sitio.css';
+
+const capacidades = [
+  ['Mapa de riesgos', 'Zonas, vías y albergues sobre OpenStreetMap.'],
+  ['Funciona sin señal', 'El reporte se guarda y sale al reconectar.'],
+  ['Tiempo real', 'Cada reporte llega al panel en segundos.'],
+  ['Por institución', 'Cada rol ve lo que le corresponde.'],
+];
 
 const pasos = [
   ['Reporta', 'Tipo de emergencia, ubicación, foto y familia afectada. Sin señal, el reporte espera en el celular.'],
@@ -29,14 +33,20 @@ const actores = [
     <section class="st-heroe">
       <div class="st-heroe__texto">
         <h1>Del celular del ciudadano al mapa del COE.</h1>
+        <p class="st-bajada">Reportes con GPS y foto, incluso sin señal. ECU 911, Bomberos y Policía coordinan sobre el mismo mapa.</p>
         <div class="st-acciones">
           <a class="er-btn er-btn--primario er-btn--lg" href="/login">Ingresar</a>
+          <a class="er-btn er-btn--secundario er-btn--lg" href="/app">Conocer la app</a>
         </div>
       </div>
-      <PortadaMapa client:only="react">
-        <div slot="fallback" class="st-tablero st-tablero--cargando"></div>
-      </PortadaMapa>
+      <video id="st-video" class="st-video" autoplay muted loop playsinline preload="metadata" poster="/video/panel.jpg" aria-label="Demostración del panel: un reporte ciudadano llega al mapa, se despacha y se marca como atendido">
+        <source src="/video/panel.mp4" type="video/mp4" />
+      </video>
     </section>
+
+    <ul class="st-franja">
+      {capacidades.map(([titulo, texto]) => <li><strong>{titulo}</strong><span>{texto}</span></li>)}
+    </ul>
 
     <section class="st-seccion" id="como-funciona">
       <div class="st-encabezado"><h2>Un reporte, una respuesta coordinada.</h2></div>
@@ -51,17 +61,6 @@ const actores = [
         {actores.map(({ icono: Icono, nombre, texto }) => <li><Icono size={18} aria-hidden="true" /><strong>{nombre}</strong><span>{texto}</span></li>)}
       </ul>
     </section>
-
-    <section class="st-seccion st-app" id="app">
-      <div class="st-encabezado">
-        <h2>La app sigue funcionando sin señal.</h2>
-        <p>Guarda el reporte y la foto en el celular, ubica por satélite y lo envía cuando vuelve la conexión.</p>
-      </div>
-      <div class="st-app__accion">
-        <a class="er-btn er-btn--primario er-btn--lg" href={URL_APK}><Download aria-hidden="true" /> Descargar APK</a>
-        <p class="st-nota">Android. El teléfono pedirá permitir la instalación.</p>
-      </div>
-    </section>
   </main>
 
   <footer class="st-pie">
@@ -70,3 +69,7 @@ const actores = [
     <a href="/legal">Legal y licencias</a>
   </footer>
 </BaseLayout>
+
+<script is:inline>
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) document.getElementById('st-video')?.pause();
+</script>

@@ -1,0 +1,62 @@
+---
+import { Camera, Download, Hospital, Satellite, WifiOff } from 'lucide-react';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import CabeceraSitio from '../components/sitio/CabeceraSitio.astro';
+import { URL_APK } from '../config/enlaces';
+import '../styles/panel.css';
+import '../styles/sitio.css';
+
+const funciones = [
+  { icono: Satellite, titulo: 'Ubicación por satélite', texto: 'El GPS marca tu posición aunque no tengas datos.' },
+  { icono: WifiOff, titulo: 'Funciona sin señal', texto: 'El reporte se guarda en el celular y sale solo al volver la conexión.' },
+  { icono: Camera, titulo: 'Foto de lo que ocurre', texto: 'Se comprime para enviarse rápido con poca señal.' },
+  { icono: Hospital, titulo: 'Albergues y salud', texto: 'Encuentra el punto más cercano con cupo para tu familia.' },
+];
+
+const pasos = [
+  'Descarga el archivo en tu celular Android.',
+  'Ábrelo y permite la instalación desde esa fuente.',
+  'Entra con tu cuenta, o reporta sin cuenta en una emergencia.',
+];
+---
+
+<BaseLayout titulo="App móvil" descripcion="Reporta emergencias en Esmeraldas desde tu celular, incluso sin señal.">
+  <CabeceraSitio />
+
+  <main id="contenido">
+    <section class="st-app-heroe">
+      <div class="st-heroe__texto">
+        <h1>Reporta aunque no tengas señal.</h1>
+        <p class="st-bajada">Tu ubicación, una foto y quiénes necesitan ayuda. Si no hay internet, la app lo guarda y lo envía cuando vuelve la conexión.</p>
+        <div class="st-acciones">
+          <a class="er-btn er-btn--primario er-btn--lg" href={URL_APK}><Download aria-hidden="true" /> Descargar para Android</a>
+        </div>
+        <p class="st-nota">En una emergencia, llama al 911.</p>
+      </div>
+      <div class="st-telefonos">
+        <img class="st-telefono" src="/app/mapa.jpg" alt="Pantalla de la app con el mapa de Esmeraldas y el botón Reportar emergencia" width="430" height="875" />
+        <img class="st-telefono st-telefono--detras" src="/app/albergues.jpg" alt="Pantalla de la app con alertas por sector y albergues con cupo" width="430" height="875" loading="lazy" />
+      </div>
+    </section>
+
+    <section class="st-seccion">
+      <div class="st-encabezado"><h2>Hecha para cuando todo falla.</h2></div>
+      <ul class="st-actores">
+        {funciones.map(({ icono: Icono, titulo, texto }) => <li><Icono size={18} aria-hidden="true" /><strong>{titulo}</strong><span>{texto}</span></li>)}
+      </ul>
+    </section>
+
+    <section class="st-seccion">
+      <div class="st-encabezado"><h2>Instálala en tres pasos.</h2></div>
+      <ol class="st-pasos">
+        {pasos.map((paso) => <li><strong>{paso}</strong></li>)}
+      </ol>
+    </section>
+  </main>
+
+  <footer class="st-pie">
+    <span>Esmeraldas Resiliente. No reemplaza al ECU 911: en una emergencia, llama al 911.</span>
+    <a href="/">Inicio</a>
+    <a href="/legal">Legal y licencias</a>
+  </footer>
+</BaseLayout>
