@@ -82,5 +82,5 @@ jobs:
           appId: 1:644267053650:android:71bc72c7671c740865c58b
           token: ${{ secrets.FIREBASE_TOKEN }}
           file: mobile/build/app/outputs/flutter-apk/app-release.apk
-          testers: geo7u7r@gmail.com
+          testers: geo7u7r@gmail.com, eliasadrianlozadaguanoluisa@gmail.com
           releaseNotes: "Build automático de Esmeraldas Resiliente con autenticación Firebase y Google"
