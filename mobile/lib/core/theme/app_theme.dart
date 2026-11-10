@@ -184,7 +184,7 @@ class InsigniaOrigenDato extends StatelessWidget {
         : AppTheme.colorOrigenSimulado;
     final String texto =
         etiquetaPersonalizada ??
-        (esOficial ? 'Alerta oficial' : 'Simulacro');
+        (esOficial ? 'Alerta oficial' : 'Dato simulado');
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),

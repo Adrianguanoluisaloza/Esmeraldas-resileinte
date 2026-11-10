@@ -894,83 +894,82 @@ class _PuntosAlertasOperadorPageState extends State<PuntosAlertasOperadorPage> {
                 ),
               ),
             const SizedBox(height: 8),
-            ...widget.repo.alertas.map(
-              (AlertaSector a) {
-                final bool esSimulacro = !a.oficial;
-                String mensaje = a.mensaje.trim();
-                if (esSimulacro && mensaje.toLowerCase().startsWith('simulacro:')) {
-                  mensaje = mensaje.substring('simulacro:'.length).trim();
-                }
-                final Color colorAlerta = esSimulacro
-                    ? AppTheme.colorOrigenSimulado
-                    : AppTheme.colorSemaforoRojo;
-                return Padding(
-                  padding: const EdgeInsets.only(bottom: 8),
-                  child: Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
+            ...widget.repo.alertas.map((AlertaSector a) {
+              final bool esSimulacro = !a.oficial;
+              String mensaje = a.mensaje.trim();
+              if (esSimulacro &&
+                  mensaje.toLowerCase().startsWith('simulacro:')) {
+                mensaje = mensaje.substring('simulacro:'.length).trim();
+              }
+              final Color colorAlerta = esSimulacro
+                  ? AppTheme.colorOrigenSimulado
+                  : AppTheme.colorSemaforoRojo;
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 8),
+                child: Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: esSimulacro
+                        ? const Color(0xFFF7F5FE)
+                        : const Color(0xFFFDF2F2),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(
                       color: esSimulacro
-                          ? const Color(0xFFF7F5FE)
-                          : const Color(0xFFFDF2F2),
-                      borderRadius: BorderRadius.circular(10),
-                      border: Border.all(
-                        color: esSimulacro
-                            ? const Color(0xFFE9E4F8)
-                            : const Color(0xFFF9D5D5),
-                      ),
+                          ? const Color(0xFFE9E4F8)
+                          : const Color(0xFFF9D5D5),
                     ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: <Widget>[
-                        Row(
-                          children: <Widget>[
-                            Icon(
-                              Icons.warning_amber_rounded,
-                              size: 18,
-                              color: colorAlerta,
-                            ),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: Text(
-                                '${a.sector} · ${a.nivel.etiqueta}',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.w700,
-                                  fontSize: 13,
-                                  color: colorAlerta,
-                                ),
-                              ),
-                            ),
-                            Text(
-                              esSimulacro ? 'Simulacro' : 'Alerta oficial',
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: <Widget>[
+                      Row(
+                        children: <Widget>[
+                          Icon(
+                            Icons.warning_amber_rounded,
+                            size: 18,
+                            color: colorAlerta,
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              '${a.sector} · ${a.nivel.etiqueta}',
                               style: TextStyle(
-                                fontSize: 11,
                                 fontWeight: FontWeight.w700,
+                                fontSize: 13,
                                 color: colorAlerta,
                               ),
                             ),
-                          ],
-                        ),
-                        if (mensaje.isNotEmpty) ...<Widget>[
-                          const SizedBox(height: 4),
+                          ),
                           Text(
-                            mensaje,
-                            style: const TextStyle(fontSize: 12, height: 1.3),
+                            esSimulacro ? 'Simulacro' : 'Alerta oficial',
+                            style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w700,
+                              color: colorAlerta,
+                            ),
                           ),
                         ],
-                        const SizedBox(height: 2),
+                      ),
+                      if (mensaje.isNotEmpty) ...<Widget>[
+                        const SizedBox(height: 4),
                         Text(
-                          'por ${a.creadaPor}',
-                          style: const TextStyle(
-                            fontSize: 10.5,
-                            color: AppTheme.colorTextoSecundario,
-                          ),
+                          mensaje,
+                          style: const TextStyle(fontSize: 12, height: 1.3),
                         ),
                       ],
-                    ),
+                      const SizedBox(height: 2),
+                      Text(
+                        'por ${a.creadaPor}',
+                        style: const TextStyle(
+                          fontSize: 10.5,
+                          color: AppTheme.colorTextoSecundario,
+                        ),
+                      ),
+                    ],
                   ),
-                );
-              },
-            ),
+                ),
+              );
+            }),
           ],
         );
       },

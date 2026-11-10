@@ -169,7 +169,8 @@ class _DirectorioAlberguesPageState extends State<DirectorioAlberguesPage> {
                   (alerta['titulo'] ?? alerta['sector'] ?? 'Alerta COE')
                       .toString();
               String mensaje = '${alerta['mensaje'] ?? ''}'.trim();
-              if (esSimulacro && mensaje.toLowerCase().startsWith('simulacro:')) {
+              if (esSimulacro &&
+                  mensaje.toLowerCase().startsWith('simulacro:')) {
                 mensaje = mensaje.substring('simulacro:'.length).trim();
               }
               return Padding(
@@ -204,15 +205,14 @@ class _DirectorioAlberguesPageState extends State<DirectorioAlberguesPage> {
                               ),
                             ),
                           ),
-                          if (esSimulacro)
-                            Text(
-                              'Simulacro',
-                              style: TextStyle(
-                                fontSize: 11,
-                                fontWeight: FontWeight.w700,
-                                color: colorAlerta,
-                              ),
+                          Text(
+                            esSimulacro ? 'Simulacro' : 'Alerta oficial',
+                            style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w700,
+                              color: colorAlerta,
                             ),
+                          ),
                         ],
                       ),
                       if (mensaje.isNotEmpty) ...<Widget>[
