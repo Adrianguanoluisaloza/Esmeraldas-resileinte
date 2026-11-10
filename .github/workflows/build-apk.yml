@@ -34,9 +34,13 @@ jobs:
 
       - name: Restaurar google-services.json
         run: |
-          if [ -n "${{ secrets.GOOGLE_SERVICES_JSON }}" ]; then
-            echo "${{ secrets.GOOGLE_SERVICES_JSON }}" > mobile/android/app/google-services.json
+          if [ -n "${{ secrets.GOOGLE_SERVICES_JSON_BASE64 }}" ]; then
+            echo "${{ secrets.GOOGLE_SERVICES_JSON_BASE64 }}" | base64 -d > mobile/android/app/google-services.json
+          elif [ -n "${{ secrets.GOOGLE_SERVICES_JSON }}" ]; then
+            printf '%s\n' "${{ secrets.GOOGLE_SERVICES_JSON }}" > mobile/android/app/google-services.json
           fi
+          test -s mobile/android/app/google-services.json || { echo "Error: google-services.json vacio o no creado"; exit 1; }
+          head -n 5 mobile/android/app/google-services.json
 
       - name: Instalar dependencias de Flutter
         run: |
