@@ -809,104 +809,109 @@ class _CrearReportePageState extends State<CrearReportePage> {
     final bool tieneFoto = _fotoCapturada != null;
     final LatLng coordMostrada = _coordenadaActiva;
 
-    return ListView(
-      padding: const EdgeInsets.fromLTRB(14, 90, 14, 16),
-      children: <Widget>[
-        Align(
-          alignment: Alignment.centerLeft,
-          child: FilledButton.tonalIcon(
-            style: FilledButton.styleFrom(
-              backgroundColor: Colors.white,
-              foregroundColor: AppTheme.colorTexto,
-              minimumSize: const Size(0, 36),
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            ),
-            onPressed: () {
-              setState(() => _paso = _PasoReporte.mapaInicial);
-            },
-            icon: const Icon(Icons.arrow_back, size: 16),
-            label: const Text(
-              'Cambiar punto en el mapa',
-              style: TextStyle(fontSize: 12),
+    return Container(
+      color: AppTheme.colorFondo,
+      child: ListView(
+        padding: const EdgeInsets.fromLTRB(14, 90, 14, 16),
+        children: <Widget>[
+          Align(
+            alignment: Alignment.centerLeft,
+            child: FilledButton.tonalIcon(
+              style: FilledButton.styleFrom(
+                backgroundColor: Colors.white,
+                foregroundColor: AppTheme.colorTexto,
+                minimumSize: const Size(0, 36),
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              ),
+              onPressed: () {
+                setState(() => _paso = _PasoReporte.mapaInicial);
+              },
+              icon: const Icon(Icons.arrow_back, size: 16),
+              label: const Text(
+                'Cambiar punto en el mapa',
+                style: TextStyle(fontSize: 12),
+              ),
             ),
           ),
-        ),
-        const SizedBox(height: 8),
+          const SizedBox(height: 8),
 
-        // 1. ¿Qué está pasando?
-        Card(
-          child: Padding(
-            padding: const EdgeInsets.all(14),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                const Text(
-                  '¿Qué está pasando?',
-                  style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700),
-                ),
-                const Text(
-                  'Selecciona el tipo de emergencia y su gravedad.',
-                  style: TextStyle(
-                    fontSize: 11,
-                    color: AppTheme.colorTextoSecundario,
+          // 1. ¿Qué está pasando?
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(14),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  const Text(
+                    '¿Qué está pasando?',
+                    style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700),
                   ),
-                ),
-                const SizedBox(height: 10),
-                GridView.count(
-                  crossAxisCount: 3,
-                  mainAxisSpacing: 8,
-                  crossAxisSpacing: 8,
-                  childAspectRatio: 1.18,
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  children: TipoIncidente.values.map((TipoIncidente tipo) {
-                    final bool sel = _tipoSeleccionado == tipo;
-                    return InkWell(
-                      borderRadius: BorderRadius.circular(8),
-                      onTap: () => setState(() => _tipoSeleccionado = tipo),
-                      child: AnimatedContainer(
-                        duration: const Duration(milliseconds: 140),
-                        padding: const EdgeInsets.all(6),
-                        decoration: BoxDecoration(
-                          color: sel ? Colors.white : AppTheme.colorCampo,
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(
-                            color: sel
-                                ? AppTheme.colorPrimario
-                                : AppTheme.colorBorde,
-                            width: sel ? 1.8 : 1,
+                  const Text(
+                    'Selecciona el tipo de emergencia y su gravedad.',
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: AppTheme.colorTextoSecundario,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  GridView.count(
+                    crossAxisCount: 3,
+                    mainAxisSpacing: 6,
+                    crossAxisSpacing: 6,
+                    childAspectRatio: 1.35,
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    children: TipoIncidente.values.map((TipoIncidente tipo) {
+                      final bool sel = _tipoSeleccionado == tipo;
+                      return InkWell(
+                        borderRadius: BorderRadius.circular(8),
+                        onTap: () => setState(() => _tipoSeleccionado = tipo),
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 140),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 4,
+                            vertical: 4,
                           ),
-                        ),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: <Widget>[
-                            Icon(
-                              _iconosTipo[tipo] ?? Icons.warning_amber,
-                              size: 23,
+                          decoration: BoxDecoration(
+                            color: sel ? Colors.white : AppTheme.colorCampo,
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(
                               color: sel
                                   ? AppTheme.colorPrimario
-                                  : AppTheme.colorTextoApagado,
+                                  : AppTheme.colorBorde,
+                              width: sel ? 1.8 : 1,
                             ),
-                            const SizedBox(height: 4),
-                            Text(
-                              tipo.etiqueta,
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                fontSize: 10.5,
-                                fontWeight: sel
-                                    ? FontWeight.w700
-                                    : FontWeight.w500,
+                          ),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: <Widget>[
+                              Icon(
+                                _iconosTipo[tipo] ?? Icons.warning_amber,
+                                size: 20,
                                 color: sel
-                                    ? AppTheme.colorTexto
-                                    : AppTheme.colorTextoSecundario,
+                                    ? AppTheme.colorPrimario
+                                    : AppTheme.colorTextoApagado,
                               ),
-                            ),
-                          ],
+                              const SizedBox(height: 3),
+                              Text(
+                                tipo.etiqueta,
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  fontSize: 10.5,
+                                  fontWeight: sel
+                                      ? FontWeight.w700
+                                      : FontWeight.w500,
+                                  color: sel
+                                      ? AppTheme.colorTexto
+                                      : AppTheme.colorTextoSecundario,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
-                      ),
-                    );
-                  }).toList(),
-                ),
+                      );
+                    }).toList(),
+                  ),
                 const SizedBox(height: 12),
                 SegmentedButton<GravedadIncidente>(
                   segments: GravedadIncidente.values
@@ -986,7 +991,7 @@ class _CrearReportePageState extends State<CrearReportePage> {
                 subtitle: Text(
                   tieneFoto
                       ? 'Toca para cambiar o quitar la evidencia fotográfica'
-                      : 'Pide permiso de cámara y guarda fuera de Hive',
+                      : 'Evidencia fotográfica del incidente (opcional)',
                   style: const TextStyle(fontSize: 11),
                 ),
                 trailing: Icon(
@@ -1089,6 +1094,7 @@ class _CrearReportePageState extends State<CrearReportePage> {
           ),
         ),
       ],
-    );
-  }
+    ),
+  );
+}
 }

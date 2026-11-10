@@ -61,8 +61,8 @@ class AppTheme {
   /// Etiqueta accesible para el semáforo de cupo (M5: nunca solo color).
   static String etiquetaCupo(double ratio) => ratio < 0.7
       ? 'Con cupo'
-      : ratio < 0.9
-      ? 'Casi lleno'
+      : ratio < 1.0
+      ? 'Casi sin cupo'
       : 'Lleno';
 
   static Color colorRol(RolUsuario r) => switch (r) {
@@ -74,11 +74,11 @@ class AppTheme {
   };
 
   static String etiquetaRol(RolUsuario r) => switch (r) {
-    RolUsuario.ciudadano => 'Reporte ciudadano',
+    RolUsuario.ciudadano => 'Ciudadano',
     RolUsuario.operador911 => 'ECU 911',
     RolUsuario.bomberos => 'Bomberos',
     RolUsuario.policia => 'Policía',
-    RolUsuario.admin => 'Administrador',
+    RolUsuario.admin => 'Admin',
   };
 
   static ThemeData get lightTheme {
@@ -166,7 +166,7 @@ class AppTheme {
   }
 }
 
-/// Insignia para diferenciar Dato simulado (borde discontinuo `#5B4BC4`) y Alerta oficial (`#1F4FB8`).
+/// Insignia para diferenciar Dato simulado y Alerta oficial.
 class InsigniaOrigenDato extends StatelessWidget {
   const InsigniaOrigenDato({
     super.key,
@@ -184,74 +184,34 @@ class InsigniaOrigenDato extends StatelessWidget {
         : AppTheme.colorOrigenSimulado;
     final String texto =
         etiquetaPersonalizada ??
-        (esOficial ? 'Alerta oficial' : 'Dato simulado');
+        (esOficial ? 'Alerta oficial' : 'Simulacro');
 
-    return CustomPaint(
-      painter: _BordeDiscontinuoPainter(color: color, discontinuo: !esOficial),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-        decoration: BoxDecoration(
-          color: color.withValues(alpha: 0.10),
-          borderRadius: BorderRadius.circular(6),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: <Widget>[
-            Icon(
-              esOficial ? Icons.verified_outlined : Icons.science_outlined,
-              size: 13,
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.10),
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(color: color.withValues(alpha: 0.25)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: <Widget>[
+          Icon(
+            esOficial ? Icons.verified_outlined : Icons.science_outlined,
+            size: 13,
+            color: color,
+          ),
+          const SizedBox(width: 4),
+          Text(
+            texto,
+            style: TextStyle(
+              fontSize: 10.5,
+              fontWeight: FontWeight.w700,
               color: color,
             ),
-            const SizedBox(width: 4),
-            Text(
-              texto,
-              style: TextStyle(
-                fontSize: 10.5,
-                fontWeight: FontWeight.w700,
-                color: color,
-              ),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
-}
-
-class _BordeDiscontinuoPainter extends CustomPainter {
-  const _BordeDiscontinuoPainter({
-    required this.color,
-    required this.discontinuo,
-  });
-
-  final Color color;
-  final bool discontinuo;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final Paint paint = Paint()
-      ..color = color
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.2;
-    final RRect rrect = RRect.fromRectAndRadius(
-      Offset.zero & size,
-      const Radius.circular(6),
-    );
-    if (!discontinuo) {
-      canvas.drawRRect(rrect, paint);
-      return;
-    }
-    for (final dynamic metric in (Path()..addRRect(rrect)).computeMetrics()) {
-      double d = 0;
-      while (d < (metric.length as double)) {
-        final double fin = (d + 4).clamp(0.0, metric.length as double);
-        canvas.drawPath(metric.extractPath(d, fin) as Path, paint);
-        d += 7;
-      }
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant _BordeDiscontinuoPainter oldDelegate) =>
-      oldDelegate.color != color || oldDelegate.discontinuo != discontinuo;
 }

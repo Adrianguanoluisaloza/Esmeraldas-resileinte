@@ -49,6 +49,14 @@ Todos los cambios relevantes del proyecto se registran aquí. Se sigue una estru
 
 ### Changed
 
+- Refinamiento visual y ergonómico en la app móvil (Puntos A y B):
+  - Semáforo de cupo en albergues (`AppTheme.etiquetaCupo`): ratio < 1.0 muestra "Casi sin cupo" (antes "Lleno"), reservando "Lleno" exclusivamente cuando no hay plazas libres.
+  - Ocultamiento de `· Tel:` en albergues cuando no hay teléfono registrado (ciudadano y operador).
+  - Alertas en Albergues y Operador: reemplazado el recuadro punteado morado por bloques sólidos suaves (`#F7F5FE` simulacro y `#FDF2F2` oficial) con etiqueta en texto plano y eliminación del prefijo redundante "Simulacro:".
+  - Barra superior: etiqueta del rol ciudadano simplificada a "Ciudadano" para evitar solapamientos con el botón "Online" / "Offline".
+  - Mapa: la etiqueta "Tu ubicación" se oculta automáticamente cuando se marca un incidente para no tapar el pin.
+  - Formulario de reporte: contenedor con fondo sólido para evitar transparencias del mapa entre tarjetas; cuadrícula de tipos de emergencia compactada (ratio 1.35 e iconos de 20 px); subtítulo de foto actualizado a "Evidencia fotográfica del incidente (opcional)"; se preserva el tamaño del botón de reporte.
+  - Gestión de usuarios (Admin): botón "Crear usuario" con icono y tamaño estándar; botones de acción diferenciados en color (desactivar en rojo suave, activar en tonal); botón de salida de sesión destacado.
 - Interfaz compacta estilo Vercel (Geist, tamaños menores, sin sombras); mapa operativo sin contadores y en una sola pantalla.
 - El login ya no entra en modo local sin servidor: muestra el error de conexión con la URL de la API.
 

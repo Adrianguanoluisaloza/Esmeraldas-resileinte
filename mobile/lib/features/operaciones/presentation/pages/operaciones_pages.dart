@@ -66,7 +66,7 @@ class SituacionOperadorPage extends StatelessWidget {
             'Vías bloq.',
           ),
           (
-            '${repo.puntos.where((p) => p.ratioOcupacion < 0.9).length}',
+            '${repo.puntos.where((p) => p.ratioOcupacion < 1.0).length}',
             'Con cupo',
           ),
         ];
@@ -712,7 +712,7 @@ class _PuntosAlertasOperadorPageState extends State<PuntosAlertasOperadorPage> {
                       ),
                     ),
                     subtitle: Text(
-                      '${p.ocupacion}/${p.capacidad} · Tel: ${p.telefono}',
+                      '${p.ocupacion}/${p.capacidad}${p.telefono.trim().isNotEmpty ? ' · Tel: ${p.telefono.trim()}' : ''}',
                       style: const TextStyle(fontSize: 11.5),
                     ),
                     trailing: editaCupo
@@ -895,33 +895,81 @@ class _PuntosAlertasOperadorPageState extends State<PuntosAlertasOperadorPage> {
               ),
             const SizedBox(height: 8),
             ...widget.repo.alertas.map(
-              (AlertaSector a) => Padding(
-                padding: const EdgeInsets.only(bottom: 6),
-                child: Card(
-                  child: ListTile(
-                    leading: const Icon(
-                      Icons.warning_amber_rounded,
-                      color: AppTheme.colorSemaforoAmbar,
+              (AlertaSector a) {
+                final bool esSimulacro = !a.oficial;
+                String mensaje = a.mensaje.trim();
+                if (esSimulacro && mensaje.toLowerCase().startsWith('simulacro:')) {
+                  mensaje = mensaje.substring('simulacro:'.length).trim();
+                }
+                final Color colorAlerta = esSimulacro
+                    ? AppTheme.colorOrigenSimulado
+                    : AppTheme.colorSemaforoRojo;
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 8),
+                  child: Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: esSimulacro
+                          ? const Color(0xFFF7F5FE)
+                          : const Color(0xFFFDF2F2),
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(
+                        color: esSimulacro
+                            ? const Color(0xFFE9E4F8)
+                            : const Color(0xFFF9D5D5),
+                      ),
                     ),
-                    title: Row(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: <Widget>[
-                        Expanded(
-                          child: Text(
-                            '${a.sector} · ${a.nivel.etiqueta}',
-                            style: const TextStyle(
-                              fontWeight: FontWeight.w700,
-                              fontSize: 13,
+                        Row(
+                          children: <Widget>[
+                            Icon(
+                              Icons.warning_amber_rounded,
+                              size: 18,
+                              color: colorAlerta,
                             ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                '${a.sector} · ${a.nivel.etiqueta}',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.w700,
+                                  fontSize: 13,
+                                  color: colorAlerta,
+                                ),
+                              ),
+                            ),
+                            Text(
+                              esSimulacro ? 'Simulacro' : 'Alerta oficial',
+                              style: TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w700,
+                                color: colorAlerta,
+                              ),
+                            ),
+                          ],
+                        ),
+                        if (mensaje.isNotEmpty) ...<Widget>[
+                          const SizedBox(height: 4),
+                          Text(
+                            mensaje,
+                            style: const TextStyle(fontSize: 12, height: 1.3),
+                          ),
+                        ],
+                        const SizedBox(height: 2),
+                        Text(
+                          'por ${a.creadaPor}',
+                          style: const TextStyle(
+                            fontSize: 10.5,
+                            color: AppTheme.colorTextoSecundario,
                           ),
                         ),
-                        InsigniaOrigenDato(esOficial: a.oficial),
                       ],
                     ),
-                    subtitle: Text('${a.mensaje}\npor ${a.creadaPor}'),
-                    isThreeLine: true,
                   ),
-                ),
-              ),
+                );
+              },
             ),
           ],
         );

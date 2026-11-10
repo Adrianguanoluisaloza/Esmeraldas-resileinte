@@ -122,9 +122,13 @@ class _UsuariosAdminPageState extends State<UsuariosAdminPage> {
                         onChanged: (v) => setState(() => _rol = v!),
                       ),
                       const SizedBox(height: 10),
-                      FilledButton(
+                      FilledButton.icon(
+                        style: FilledButton.styleFrom(
+                          minimumSize: const Size.fromHeight(44),
+                        ),
                         onPressed: _crear,
-                        child: const Text('Crear usuario'),
+                        icon: const Icon(Icons.person_add_outlined, size: 18),
+                        label: const Text('Crear usuario'),
                       ),
                     ],
                   ),
@@ -150,13 +154,30 @@ class _UsuariosAdminPageState extends State<UsuariosAdminPage> {
                             'Sesión actual',
                             style: TextStyle(fontSize: 11),
                           )
-                        : OutlinedButton(
+                        : u.activo
+                        ? OutlinedButton(
                             style: OutlinedButton.styleFrom(
-                              minimumSize: const Size(90, 36),
+                              minimumSize: const Size(96, 36),
+                              foregroundColor: AppTheme.colorSemaforoRojo,
+                              side: const BorderSide(color: Color(0xFFF9D5D5)),
                             ),
                             onPressed: () =>
                                 widget.repo.alternarUsuario(widget.sesion, u),
-                            child: Text(u.activo ? 'Desactivar' : 'Activar'),
+                            child: const Text(
+                              'Desactivar',
+                              style: TextStyle(fontSize: 11.5),
+                            ),
+                          )
+                        : FilledButton.tonal(
+                            style: FilledButton.styleFrom(
+                              minimumSize: const Size(96, 36),
+                            ),
+                            onPressed: () =>
+                                widget.repo.alternarUsuario(widget.sesion, u),
+                            child: const Text(
+                              'Activar',
+                              style: TextStyle(fontSize: 11.5),
+                            ),
                           ),
                   ),
                 ),
@@ -223,6 +244,9 @@ class SeguridadCuentaPage extends StatelessWidget {
                 ),
                 isThreeLine: true,
                 trailing: TextButton.icon(
+                  style: TextButton.styleFrom(
+                    foregroundColor: AppTheme.colorSemaforoRojo,
+                  ),
                   onPressed: onCerrarSesion,
                   icon: const Icon(Icons.logout, size: 18),
                   label: const Text('Salir'),

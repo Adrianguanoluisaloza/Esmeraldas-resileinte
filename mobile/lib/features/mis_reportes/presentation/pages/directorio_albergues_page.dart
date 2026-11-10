@@ -168,16 +168,23 @@ class _DirectorioAlberguesPageState extends State<DirectorioAlberguesPage> {
               final String encabezado =
                   (alerta['titulo'] ?? alerta['sector'] ?? 'Alerta COE')
                       .toString();
+              String mensaje = '${alerta['mensaje'] ?? ''}'.trim();
+              if (esSimulacro && mensaje.toLowerCase().startsWith('simulacro:')) {
+                mensaje = mensaje.substring('simulacro:'.length).trim();
+              }
               return Padding(
                 padding: const EdgeInsets.only(bottom: 10),
                 child: Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(12),
+                    color: esSimulacro
+                        ? const Color(0xFFF7F5FE)
+                        : const Color(0xFFFDF2F2),
+                    borderRadius: BorderRadius.circular(10),
                     border: Border.all(
-                      color: colorAlerta,
-                      width: esSimulacro ? 1.5 : 2,
+                      color: esSimulacro
+                          ? const Color(0xFFE9E4F8)
+                          : const Color(0xFFF9D5D5),
                     ),
                   ),
                   child: Column(
@@ -198,19 +205,23 @@ class _DirectorioAlberguesPageState extends State<DirectorioAlberguesPage> {
                             ),
                           ),
                           if (esSimulacro)
-                            const InsigniaOrigenDato(
-                              esOficial: false,
-                              etiquetaPersonalizada: 'Simulacro',
-                            )
-                          else
-                            const InsigniaOrigenDato(esOficial: true),
+                            Text(
+                              'Simulacro',
+                              style: TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w700,
+                                color: colorAlerta,
+                              ),
+                            ),
                         ],
                       ),
-                      const SizedBox(height: 4),
-                      Text(
-                        '${alerta['mensaje'] ?? ''}',
-                        style: const TextStyle(fontSize: 12),
-                      ),
+                      if (mensaje.isNotEmpty) ...<Widget>[
+                        const SizedBox(height: 4),
+                        Text(
+                          mensaje,
+                          style: const TextStyle(fontSize: 12, height: 1.3),
+                        ),
+                      ],
                     ],
                   ),
                 ),
@@ -328,7 +339,7 @@ class _DirectorioAlberguesPageState extends State<DirectorioAlberguesPage> {
                     ),
                     subtitle: Text(
                       '${p.tipo.etiqueta} · Libres: ${p.cuposDisponibles}/${p.capacidad}\n'
-                      'A ${distanciaKm.toStringAsFixed(1)} km · Tel: ${p.telefono}',
+                      'A ${distanciaKm.toStringAsFixed(1)} km${p.telefono.trim().isNotEmpty ? ' · Tel: ${p.telefono.trim()}' : ''}',
                       style: const TextStyle(fontSize: 11.5),
                     ),
                     isThreeLine: true,

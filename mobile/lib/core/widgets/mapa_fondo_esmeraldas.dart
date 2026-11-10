@@ -219,25 +219,27 @@ class MapaFondoEsmeraldas extends StatelessWidget {
                             ),
                           ),
                         ),
-                        const SizedBox(height: 2),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 5,
-                            vertical: 1,
-                          ),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(3),
-                            border: Border.all(color: AppTheme.colorBorde),
-                          ),
-                          child: const Text(
-                            'Tu ubicación',
-                            style: TextStyle(
-                              fontSize: 9,
-                              fontWeight: FontWeight.w600,
+                        if (ubicacionIncidenteMarcado == null) ...<Widget>[
+                          const SizedBox(height: 2),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 5,
+                              vertical: 1,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(3),
+                              border: Border.all(color: AppTheme.colorBorde),
+                            ),
+                            child: const Text(
+                              'Tu ubicación',
+                              style: TextStyle(
+                                fontSize: 9,
+                                fontWeight: FontWeight.w600,
+                              ),
                             ),
                           ),
-                        ),
+                        ],
                       ],
                     ),
                   ),

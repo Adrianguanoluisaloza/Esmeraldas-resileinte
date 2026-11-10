@@ -225,3 +225,18 @@ Este documento registra decisiones, avances, bloqueos y pendientes importantes. 
 - **Decisión:** Usar `sqflite` para leer el archivo `.mbtiles` empaquetado en `assets/mapas/esmeraldas.mbtiles` y ajustar `JVM_11` para `:another_telephony` en `mobile/android/build.gradle.kts`.
 - **Validación:** `flutter analyze --no-pub` (`No issues found!`) y `flutter test --no-pub` (`3/3 All tests passed!`).
 - **Pendientes:** Compilar e instalar el APK final cuando se indique.
+
+## 2026-11-10 — Refinamiento visual y de interfaz (Puntos A y B del APK)
+- **Área:** mobile | ui-ux
+- **Cambio:**
+  - Se ajustó `AppTheme.etiquetaCupo` para clasificar albergues con ratio < 1.0 como "Casi sin cupo" (evitando que albergues como UTLVTE con 8 plazas libres figuren como "Lleno").
+  - Se modificó `AppTheme.etiquetaRol` para que `RolUsuario.ciudadano` muestre "Ciudadano" en lugar de "Reporte ciudadano", resolviendo el solapamiento con el botón de conectividad en la AppBar.
+  - Se estilizaron las alertas en `DirectorioAlberguesPage` y `PuntosAlertasOperadorPage` como bloques sólidos suaves (`#F7F5FE` simulacro, `#FDF2F2` oficial) sin recuadro punteado ni borde morado discontinuo, deduplicando el prefijo "Simulacro:" en el cuerpo del mensaje.
+  - Se condicionó la visualización de `· Tel: ` en albergues para ocultarse cuando el campo esté vacío.
+  - En `MapaFondoEsmeraldas`, se oculta la etiqueta de texto "Tu ubicación" cuando hay un punto de incidente marcado para evitar taparlo.
+  - En `CrearReportePage`, se aplicó un contenedor con `AppTheme.colorFondo` para evitar transparencias del mapa bajo las tarjetas, se compactaron los 6 botones de tipo de emergencia (`childAspectRatio: 1.35`, iconos de 20 px) y se cambió el subtítulo de la cámara a "Evidencia fotográfica del incidente (opcional)", manteniendo el tamaño original del botón de reporte.
+  - En `UsuariosAdminPage`, se estandarizó el botón "Crear usuario" con icono y altura de 44 px, y se diferenciaron los botones de activar (tonal) y desactivar (alerta roja suave). En `SeguridadCuentaPage`, se destacó el botón de cierre de sesión.
+- **Decisión:** Mantener una apariencia sólida y limpia idéntica a la versión web, sin bordes discontinuos y con proporciones ergonómicas para dispositivos móviles.
+- **Archivos tocados:** `mobile/lib/core/theme/app_theme.dart`, `mobile/lib/core/widgets/mapa_fondo_esmeraldas.dart`, `mobile/lib/features/mis_reportes/presentation/pages/directorio_albergues_page.dart`, `mobile/lib/features/reporte/presentation/pages/crear_reporte_page.dart`, `mobile/lib/features/operaciones/presentation/pages/operaciones_pages.dart`, `mobile/lib/features/admin/presentation/pages/admin_pages.dart`, `CHANGELOG.md`, `bitacora.md`.
+- **Validación:** Revisión de diffs de código y consistencia de tipos Dart.
+- **Pendientes:** Generar nueva build del APK para validar visualmente en dispositivo físico.
