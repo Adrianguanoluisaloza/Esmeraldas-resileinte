@@ -2,7 +2,7 @@
 /** Cabecera de las páginas públicas (portada y acceso). */
 import { Download } from 'lucide-react';
 import { URL_APK } from '../../config/enlaces';
-const enPaginaApp = Astro.url.pathname.replace(//+$/, '') === '/app';
+const enPaginaApp = Astro.url.pathname.replace(/\/+$/, '') === '/app';
 ---
 
 <header class="st-cabecera">
