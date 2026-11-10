@@ -38,10 +38,11 @@ export class CasosAuth {
     let encontrado = await this.usuarios.buscarPorCorreo(correo);
     if (!encontrado) {
       const nuevoUsuario: Usuario = {
-        id: sesion.id,
-        nombre: sesion.nombre,
+        // El uid de Firebase no es un UUID: la base usa su propio identificador.
+        id: randomUUID(),
+        nombre: sesion.nombre.slice(0, 120),
         correo,
-        rol: sesion.rol ?? "ciudadano",
+        rol: "ciudadano",
         creado_en: this.reloj.ahora().toISOString(),
       };
       // clave_hash vacío: este usuario no puede iniciar sesión con correo+clave

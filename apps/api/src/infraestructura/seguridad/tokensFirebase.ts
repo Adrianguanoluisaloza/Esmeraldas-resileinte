@@ -16,9 +16,11 @@ export class TokensFirebase implements ServicioTokens {
     throw new Error("TokensFirebase no emite tokens; usa TokensJwt para eso.");
   }
 
-  async verificar(token: string): Promise<Pick<Usuario, "id" | "rol" | "nombre"> | null> {
+  async verificar(token: string): Promise<(Pick<Usuario, "id" | "rol" | "nombre"> & { correo?: string }) | null> {
     try {
-      const decoded = await getAuth(this.app).verifyIdToken(token, true);
+      // Sin comprobar revocación: eso exige credenciales de administrador que el servidor no tiene.
+      // La firma, el proyecto y la expiración se validan igual con las claves públicas de Google.
+      const decoded = await getAuth(this.app).verifyIdToken(token);
       // El rol viene en un custom claim que el backend puede haber seteado,
       // o cae a "ciudadano" por defecto para usuarios nuevos de Firebase.
       const rol: Rol = ROLES.includes(decoded["rol"] as Rol) ? (decoded["rol"] as Rol) : "ciudadano";
@@ -26,6 +28,8 @@ export class TokensFirebase implements ServicioTokens {
         id: decoded.uid,
         rol,
         nombre: decoded.name ?? decoded.email ?? decoded.uid,
+        // Solo un correo verificado puede enlazarse con una cuenta existente.
+        ...(decoded.email && decoded.email_verified ? { correo: decoded.email } : {}),
       };
     } catch {
       return null;
