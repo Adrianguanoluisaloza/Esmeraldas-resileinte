@@ -98,6 +98,16 @@ export class ReportesEnMemoria implements RepositorioReportes {
     ]);
     return copia(r);
   }
+  async editar(id: string, cambios: Partial<Pick<Reporte, "tipo" | "gravedad" | "descripcion">>, nota: string, operador: { id: string; nombre: string }) {
+    const r = this.datos.get(id);
+    if (!r) return null;
+    Object.assign(r, cambios);
+    this.cambios.set(id, [
+      ...(this.cambios.get(id) ?? []),
+      { id: randomUUID(), estado_anterior: r.estado, estado_nuevo: r.estado, operador_nombre: operador.nombre, nota, fecha: new Date().toISOString() },
+    ]);
+    return copia(r);
+  }
   async historial(id: string) {
     return copia(this.cambios.get(id) ?? []);
   }

@@ -180,6 +180,35 @@ export class ReportesPg implements RepositorioReportes {
     }
   }
 
+  async editar(id: string, c: Partial<Pick<Reporte, "tipo" | "gravedad" | "descripcion">>, nota: string, operador: { id: string; nombre: string }) {
+    const cliente = await this.db.connect();
+    try {
+      await cliente.query("BEGIN");
+      const previo = await cliente.query("SELECT estado FROM reportes WHERE id = $1 FOR UPDATE", [id]);
+      if (!previo.rows[0]) {
+        await cliente.query("ROLLBACK");
+        return null;
+      }
+      await cliente.query(
+        "UPDATE reportes SET tipo = COALESCE($2, tipo), gravedad = COALESCE($3, gravedad), descripcion = COALESCE($4, descripcion) WHERE id = $1",
+        [id, c.tipo ?? null, c.gravedad ?? null, c.descripcion ?? null],
+      );
+      await cliente.query(
+        `INSERT INTO reportes_historial (reporte_id, estado_anterior, estado_nuevo, operador_id, nota)
+         VALUES ($1, $2, $2, $3, $4)`,
+        [id, previo.rows[0].estado, operador.id, nota],
+      );
+      const r = await cliente.query(`SELECT ${COLUMNAS_REPORTE} FROM reportes WHERE id = $1`, [id]);
+      await cliente.query("COMMIT");
+      return filaReporte(r.rows[0]);
+    } catch (e) {
+      await cliente.query("ROLLBACK");
+      throw e;
+    } finally {
+      cliente.release();
+    }
+  }
+
   async historial(id: string): Promise<HistorialEstado[]> {
     const r = await this.db.query(
       `SELECT h.id, h.estado_anterior, h.estado_nuevo, u.nombre AS operador_nombre, h.nota, h.fecha

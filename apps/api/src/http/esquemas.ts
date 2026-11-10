@@ -54,6 +54,12 @@ export const FiltroReportesEntrada = z.object({
   pagina: z.coerce.number().int().min(1).max(10_000).default(1),
 });
 
+export const EdicionReporteEntrada = z.object({
+  tipo: z.enum(TIPOS_INCIDENTE).optional(),
+  gravedad: z.enum(GRAVEDADES).optional(),
+  descripcion: z.string().trim().min(3).max(1000).optional(),
+}).strict().refine((d) => Object.keys(d).length > 0, "Sin cambios");
+
 export const CambioEstadoEntrada = z.object({
   estado: z.enum(ESTADOS_REPORTE),
   nota: z.string().trim().max(500).optional(),

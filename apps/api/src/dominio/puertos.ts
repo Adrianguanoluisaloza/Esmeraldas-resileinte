@@ -66,6 +66,8 @@ export interface RepositorioReportes {
   buscar(id: string): Promise<Reporte | null>;
   listar(filtro: FiltroReportes): Promise<{ total: number; items: Reporte[] }>;
   actualizarEstado(id: string, cambios: Pick<Reporte, "estado" | "verificado">, nota: string | null, operador: { id: string; nombre: string }): Promise<Reporte | null>;
+  /** Corrige datos del reporte y deja la nota en el historial, en una sola transacción. */
+  editar(id: string, cambios: Partial<Pick<Reporte, "tipo" | "gravedad" | "descripcion">>, nota: string, operador: { id: string; nombre: string }): Promise<Reporte | null>;
   guardarFoto(id: string, url: string, miniaturaUrl: string): Promise<Reporte | null>;
   historial(id: string): Promise<HistorialEstado[]>;
 }

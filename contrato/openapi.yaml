@@ -276,6 +276,34 @@ paths:
         '404':
           description: Reporte no encontrado
 
+  /reportes/{id}:
+    patch:
+      summary: Corregir tipo, gravedad o descripción de un reporte
+      description: Cada cambio queda en el historial. Reclasificar el tipo es del ECU 911 y la administración.
+      tags: [Reportes]
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                tipo: { $ref: '#/components/schemas/TipoIncidente' }
+                gravedad: { $ref: '#/components/schemas/Gravedad' }
+                descripcion: { type: string, minLength: 3, maxLength: 1000 }
+      responses:
+        '200':
+          description: Reporte actualizado
+        '403':
+          description: Fuera de la competencia del rol
+
   /reportes/{id}/estado:
     patch:
       summary: Actualizar estado de atención de un reporte (Solo Operador 911 / Admin)

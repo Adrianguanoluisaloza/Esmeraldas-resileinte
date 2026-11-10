@@ -85,3 +85,29 @@ test("roles: en tiempo real cada institución recibe solo su competencia", () =>
   assert.equal(puedeVer({ id: "p", rol: "policia", nombre: "" }, evento("otro")), false);
   assert.equal(puedeVer({ id: "c", rol: "ciudadano", nombre: "" }, evento("inundacion")), false);
 });
+
+test("edición: ECU 911 corrige y queda en el historial", async () => {
+  const t = await token("operador_911");
+  const r = (await reportes(t)).find((x) => x.tipo === "inundacion")!;
+  const e = await pedir("PATCH", `/reportes/${r.id}`, t, { gravedad: "baja", descripcion: "Descripcion corregida" });
+  assert.equal(e.status, 200);
+  assert.equal(e.json.gravedad, "baja");
+  const d = await pedir("GET", `/reportes/${r.id}`, t);
+  assert.match(d.json.historial.at(-1).nota, /gravedad/);
+});
+
+test("edición: bomberos corrige lo suyo pero no reclasifica el tipo", async () => {
+  const t = await token("bomberos");
+  const r = (await reportes(t)).find((x) => x.tipo === "inundacion")!;
+  assert.equal((await pedir("PATCH", `/reportes/${r.id}`, t, { gravedad: "media" })).status, 200);
+  assert.equal((await pedir("PATCH", `/reportes/${r.id}`, t, { tipo: "otro" })).status, 403);
+  const ajeno = (await reportes(await token("operador_911"))).find((x) => x.tipo === "via_bloqueada")!;
+  assert.equal((await pedir("PATCH", `/reportes/${ajeno.id}`, t, { gravedad: "media" })).status, 403);
+});
+
+test("edición: el ciudadano no edita y un cuerpo vacío se rechaza", async () => {
+  const ecu = await token("operador_911");
+  const r = (await reportes(ecu))[0]!;
+  assert.equal((await pedir("PATCH", `/reportes/${r.id}`, await token("ciudadano"), { gravedad: "media" })).status, 403);
+  assert.equal((await pedir("PATCH", `/reportes/${r.id}`, ecu, {})).status, 400);
+});

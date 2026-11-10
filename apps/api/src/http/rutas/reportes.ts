@@ -2,7 +2,7 @@ import { Hono } from "hono";
 import { ErrorDominio } from "../../dominio/errores.js";
 import { detectarImagen } from "../../infraestructura/fotosDisco.js";
 import { leerJson, requiereSesion, sesionDe, sesionOpcional, validar, type Dependencias, type Entorno } from "../contexto.js";
-import { CambioEstadoEntrada, FiltroReportesEntrada, IdRuta, ReporteEntrada } from "../esquemas.js";
+import { CambioEstadoEntrada, EdicionReporteEntrada, FiltroReportesEntrada, IdRuta, ReporteEntrada } from "../esquemas.js";
 
 const FOTO_MAX_BYTES = 2 * 1024 * 1024;
 
@@ -37,6 +37,12 @@ export function rutasReportes(deps: Dependencias) {
   r.get("/:id", conSesion, async (c) => {
     const { id } = validar(IdRuta, c.req.param());
     return c.json(await deps.reportes.detalleConHistorial(c.get("sesion"), id));
+  });
+
+  r.patch("/:id", conSesion, async (c) => {
+    const { id } = validar(IdRuta, c.req.param());
+    const e = await leerJson(c, EdicionReporteEntrada);
+    return c.json(await deps.reportes.editar(c.get("sesion"), id, e));
   });
 
   r.patch("/:id/estado", conSesion, async (c) => {

@@ -1,5 +1,6 @@
 import { COMPETENCIA_INSTITUCION, esPersonalCoe, puedeAtenderTipo, type EstadoReporte } from "../dominio/catalogos.js";
 import { ErrorDominio } from "../dominio/errores.js";
+import type { Gravedad, TipoIncidente } from "../dominio/catalogos.js";
 import type { FiltroReportes, PublicadorEventos, Reloj, RepositorioReportes, RepositorioTerritorio, Usuario } from "../dominio/puertos.js";
 import { validarTransicion, type Reporte, type ReporteNuevo } from "../dominio/reporte.js";
 
@@ -82,6 +83,24 @@ export class CasosReportes {
   async detalleConHistorial(actor: Actor, id: string) {
     const r = await this.detalle(actor, id);
     return { ...r, historial: await this.reportes.historial(id) };
+  }
+
+  async editar(actor: Actor & { nombre?: string }, id: string, datos: { tipo?: TipoIncidente; gravedad?: Gravedad; descripcion?: string }) {
+    if (!esPersonalCoe(actor.rol) && !COMPETENCIA_INSTITUCION[actor.rol]) throw new ErrorDominio("SIN_PERMISO", "Tu rol no gestiona reportes");
+    const actual = await this.reportes.buscar(id);
+    if (!actual) throw new ErrorDominio("NO_ENCONTRADO", "Reporte no encontrado");
+    if (!puedeAtenderTipo(actor.rol, actual.tipo)) throw new ErrorDominio("SIN_PERMISO", "Este reporte no es competencia de tu institución");
+    if (datos.tipo && datos.tipo !== actual.tipo && !esPersonalCoe(actor.rol)) throw new ErrorDominio("SIN_PERMISO", "Reclasificar el tipo corresponde al ECU 911");
+    const detalle = [
+      datos.tipo && datos.tipo !== actual.tipo ? `tipo: ${actual.tipo} a ${datos.tipo}` : null,
+      datos.gravedad && datos.gravedad !== actual.gravedad ? `gravedad: ${actual.gravedad} a ${datos.gravedad}` : null,
+      datos.descripcion && datos.descripcion !== actual.descripcion ? "descripción corregida" : null,
+    ].filter(Boolean).join(", ");
+    if (!detalle) return actual;
+    const r = await this.reportes.editar(id, datos, `Editado: ${detalle}`.slice(0, 500), { id: actor.id, nombre: actor.nombre ?? "" });
+    if (!r) throw new ErrorDominio("NO_ENCONTRADO", "Reporte no encontrado");
+    this.eventos.publicar({ tipo: "reporte.estado", datos: r });
+    return r;
   }
 
   async cambiarEstado(actor: Actor & { nombre?: string }, id: string, estado: EstadoReporte, nota: string | null, verificado: boolean): Promise<Reporte> {
