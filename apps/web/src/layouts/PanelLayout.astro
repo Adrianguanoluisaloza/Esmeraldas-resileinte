@@ -6,7 +6,7 @@
  * `roles` = quién puede abrir la página. Si otra persona entra, se la manda a su inicio.
  * Esto es comodidad de interfaz, NO seguridad: la API vuelve a validar el rol en cada petición.
  */
-import { LogOut, Menu, MoonStar } from 'lucide-react';
+import { LogOut, Menu, MoonStar, PanelLeftClose } from 'lucide-react';
 import BaseLayout from './BaseLayout.astro';
 import IconoNav from '../components/panel/IconoNav.astro';
 import { NAVEGACION } from '../config/navegacion';
@@ -43,6 +43,7 @@ const rutaActual = Astro.url.pathname.replace(/\/+$/, '') || '/';
                   <a
                     class="pn-enlace"
                     href={item.ruta}
+                    title={item.etiqueta}
                     aria-current={rutaActual === item.ruta ? 'page' : undefined}
                   >
                     <IconoNav nombre={item.icono} />
@@ -56,9 +57,13 @@ const rutaActual = Astro.url.pathname.replace(/\/+$/, '') || '/';
       </nav>
 
       <div class="pn-lateral__pie">
-        <button class="er-btn er-btn--fantasma er-btn--sm er-btn--bloque" type="button" id="pn-tema">
+        <button class="er-btn er-btn--fantasma er-btn--sm pn-tema" type="button" id="pn-tema" title="Cambiar tema">
           <MoonStar size={16} aria-hidden="true" />
           <span id="pn-tema-texto">Automático</span>
+        </button>
+        <button class="er-btn er-btn--fantasma er-btn--icono pn-plegar" type="button" id="pn-plegar" aria-pressed="false" title="Plegar menú">
+          <PanelLeftClose size={16} aria-hidden="true" />
+          <span class="er-sr">Plegar menú</span>
         </button>
       </div>
     </aside>
@@ -144,6 +149,26 @@ const rutaActual = Astro.url.pathname.replace(/\/+$/, '') || '/';
   abrir.addEventListener('click', () => alternar(!lateral.classList.contains('pn-lateral--abierto')));
   velo.addEventListener('click', () => alternar(false));
   document.addEventListener('keydown', (e) => e.key === 'Escape' && alternar(false));
+
+  // Menú plegado en escritorio; se recuerda entre pantallas.
+  const plegar = document.getElementById('pn-plegar')!;
+  const aplicarPlegado = (plegado: boolean) => {
+    raiz.classList.toggle('pn--plegado', plegado);
+    plegar.setAttribute('aria-pressed', String(plegado));
+    plegar.title = plegado ? 'Expandir menú' : 'Plegar menú';
+    // El mapa recalcula su tamaño al cambiar el ancho disponible.
+    window.dispatchEvent(new Event('resize'));
+  };
+  try {
+    aplicarPlegado(localStorage.getItem('er-menu') === 'plegado');
+  } catch {}
+  plegar.addEventListener('click', () => {
+    const plegado = !raiz.classList.contains('pn--plegado');
+    aplicarPlegado(plegado);
+    try {
+      localStorage.setItem('er-menu', plegado ? 'plegado' : 'abierto');
+    } catch {}
+  });
 
   // Tema: automático -> claro -> oscuro.
   const ORDEN = ['auto', 'light', 'dark'] as const;

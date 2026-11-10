@@ -110,7 +110,7 @@ export function TablaReportes({ modo = 'coe' }: { modo?: 'coe' | 'ciudadano' }) 
 
       {visibles && visibles.length > 0 && (
         <div className="er-tabla-contenedor">
-          <table className="er-tabla">
+          <table className="er-tabla pn-tabla-reportes">
             <thead>
               <tr>
                 <th scope="col">Incidente</th>

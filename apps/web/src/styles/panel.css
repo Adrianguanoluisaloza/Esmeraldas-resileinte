@@ -26,7 +26,8 @@
 .pn-enlace[aria-current="page"] { background: var(--er-surface-2); color: var(--er-text); font-weight: 600; }
 .pn-enlace[aria-current="page"] svg { color: var(--er-primary); }
 
-.pn-lateral__pie { margin-top: auto; display: grid; gap: var(--er-s2); }
+.pn-lateral__pie { margin-top: auto; display: flex; align-items: center; gap: var(--er-s1); }
+.pn-tema { flex: 1; justify-content: flex-start; }
 
 /* Zona principal ------------------------------------------------------------------------------------- */
 .pn-principal { display: flex; flex-direction: column; min-width: 0; }
@@ -148,3 +149,41 @@
 }
 .pn-sin-borde { border: 0; border-radius: 0; }
 .st-demo .er-segmentos { flex-wrap: wrap; justify-content: center; }
+
+/* Menú plegado ------------------------------------------------------------------------------------- */
+@media (min-width: 901px) {
+  .pn--plegado { grid-template-columns: 60px minmax(0, 1fr); }
+  .pn--plegado .pn-marca { justify-content: center; }
+  .pn--plegado .pn-marca__texto, .pn--plegado .pn-grupo__titulo, .pn--plegado .pn-enlace span, .pn--plegado #pn-tema-texto { display: none; }
+  .pn--plegado .pn-enlace { justify-content: center; }
+  .pn--plegado .pn-lateral__pie { flex-direction: column; }
+  .pn--plegado .pn-tema { justify-content: center; }
+  .pn--plegado .pn-plegar svg { transform: scaleX(-1); }
+}
+@media (max-width: 900px) { .pn-plegar { display: none; } }
+
+/* Reportes como tarjetas en el celular ------------------------------------------------------------- */
+@media (max-width: 720px) {
+  .pn-tabla-reportes thead { display: none; }
+  .pn-tabla-reportes, .pn-tabla-reportes tbody { display: block; }
+  .pn-tabla-reportes tr { display: flex; flex-wrap: wrap; align-items: center; gap: var(--er-s2); padding: var(--er-s3); border-bottom: 1px solid var(--er-border); }
+  .pn-tabla-reportes tr:last-child { border-bottom: 0; }
+  .pn-tabla-reportes td { padding: 0; border: 0; }
+  .pn-tabla-reportes td:first-child { flex: 1 0 100%; }
+  .pn-tabla-reportes .pn-reporte { min-width: 0; }
+  .pn-tabla-reportes td.er-derecha { text-align: left; }
+  .pn-tabla-reportes td.er-derecha::before { content: "Personas: "; color: var(--er-muted); }
+  .pn-tabla-reportes .pn-tiempo { margin-left: auto; }
+}
+
+/* Áreas táctiles cómodas y sin zoom automático al escribir ------------------------------------------ */
+@media (pointer: coarse) {
+  .er-btn { min-height: 44px; }
+  .er-btn--sm { min-height: 40px; }
+  .er-btn--icono { width: 44px; }
+  .er-segmento { min-height: 36px; }
+  .er-entrada, .er-select, .er-area { min-height: 44px; font-size: 16px; }
+}
+
+/* Evita que una tabla ancha empuje la página en pantallas chicas. */
+.pn-contenido > *, .pn-bloque > * { min-width: 0; }

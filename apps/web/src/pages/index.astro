@@ -1,5 +1,5 @@
 ---
-import { Download } from 'lucide-react';
+import { Download, Flame, Phone, Shield, Users } from 'lucide-react';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import CabeceraSitio from '../components/sitio/CabeceraSitio.astro';
 import { PortadaMapa } from '../components/PortadaMapa';
@@ -8,6 +8,18 @@ import '../styles/panel.css';
 import '../styles/operaciones.css';
 import '../styles/sitio.css';
 
+const pasos = [
+  ['Reporta', 'Tipo de emergencia, ubicación, foto y familia afectada. Sin señal, el reporte espera en el celular.'],
+  ['Llega a quien corresponde', 'Cada institución recibe en su panel, en tiempo real, los incidentes que atiende.'],
+  ['Se atiende y se sigue', 'Despacho, estado e historial quedan registrados para el centro de operaciones y para quien reportó.'],
+];
+
+const actores = [
+  { icono: Users, nombre: 'Ciudadanía', texto: 'Reporta, sigue su caso y encuentra el albergue con cupo más cercano.' },
+  { icono: Phone, nombre: 'ECU 911', texto: 'Ve todo el territorio, despacha y emite alertas por sector.' },
+  { icono: Flame, nombre: 'Bomberos', texto: 'Atiende inundaciones, deslizamientos, rescates y viviendas dañadas.' },
+  { icono: Shield, nombre: 'Policía', texto: 'Atiende vías bloqueadas y rescates, y actualiza el estado de las vías.' },
+];
 ---
 
 <BaseLayout titulo="Inicio">
@@ -27,6 +39,20 @@ import '../styles/sitio.css';
       <PortadaMapa client:only="react">
         <div slot="fallback" class="st-tablero st-tablero--cargando"></div>
       </PortadaMapa>
+    </section>
+
+    <section class="st-seccion" id="como-funciona">
+      <div class="st-encabezado"><h2>Un reporte, una respuesta coordinada.</h2></div>
+      <ol class="st-pasos">
+        {pasos.map(([titulo, texto]) => <li><strong>{titulo}</strong><span>{texto}</span></li>)}
+      </ol>
+    </section>
+
+    <section class="st-seccion" id="instituciones">
+      <div class="st-encabezado"><h2>Cada quien ve lo que le corresponde.</h2></div>
+      <ul class="st-actores">
+        {actores.map(({ icono: Icono, nombre, texto }) => <li><Icono size={18} aria-hidden="true" /><strong>{nombre}</strong><span>{texto}</span></li>)}
+      </ul>
     </section>
 
     <section class="st-seccion st-app" id="app">

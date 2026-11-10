@@ -27,7 +27,7 @@ export function PortadaMapa() {
   return (
     <figure className="st-tablero">
       <div className="st-tablero__mapa op-mapa-tarjeta">
-        <MapaEsmeraldas reportes={[]} puntosServicio={puntos} zonas={zonas} vias={vias} onSeleccionarReporte={() => {}} />
+        <MapaEsmeraldas reportes={[]} puntosServicio={puntos} zonas={zonas} vias={vias} onSeleccionarReporte={() => {}} soloVista />
       </div>
       <figcaption className="st-tablero__pie">
         <dl className="st-cifras">
