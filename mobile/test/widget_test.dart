@@ -178,6 +178,9 @@ class FakeApiClient implements ApiClient {
 
 class FakeAuthRepository implements AuthRepository {
   UsuarioSesion? sesion;
+  bool googleCancela = false;
+  Exception? googleError;
+  String? ultimoCorreoRecuperado;
 
   @override
   Future<UsuarioSesion?> obtenerSesionActual() async => sesion;
@@ -215,7 +218,9 @@ class FakeAuthRepository implements AuthRepository {
   }
 
   @override
-  Future<UsuarioSesion> iniciarSesionConGoogle() async {
+  Future<UsuarioSesion?> iniciarSesionConGoogle() async {
+    if (googleError != null) throw googleError!;
+    if (googleCancela) return null;
     return sesion = UsuarioSesion(
       id: 'g1',
       nombre: 'Google Demo',
@@ -224,6 +229,11 @@ class FakeAuthRepository implements AuthRepository {
       expiraEn: DateTime.now().toUtc().add(const Duration(minutes: 15)),
       proveedor: 'google',
     );
+  }
+
+  @override
+  Future<void> recuperarPassword({required String correo}) async {
+    ultimoCorreoRecuperado = correo;
   }
 
   @override
