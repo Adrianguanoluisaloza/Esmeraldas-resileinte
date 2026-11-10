@@ -1,4 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:google_sign_in/google_sign_in.dart';
 
 import '../../../../core/config/app_config.dart';
@@ -11,10 +12,17 @@ import '../../domain/repositories/auth_repository.dart';
 /// 3. FirebaseAuth.signInWithCredential
 /// 4. user.getIdToken() -> token de Firebase para enviar a POST /auth/firebase
 class GoogleAuthService {
-  GoogleAuthService({this.googleSignIn, this.firebaseAuth});
+  GoogleAuthService({
+    this.googleSignIn,
+    this.firebaseAuth,
+    this.esWeb = kIsWeb,
+  });
 
   final GoogleSignIn? googleSignIn;
   final FirebaseAuth? firebaseAuth;
+
+  /// En el navegador se usa la ventana emergente de Firebase.
+  final bool esWeb;
 
   GoogleSignIn get _resolvedGoogleSignIn =>
       googleSignIn ??
@@ -31,6 +39,8 @@ class GoogleAuthService {
   /// Obtiene el idToken de Firebase tras autenticar con Google.
   /// Si el usuario cancela la selección de cuenta, retorna `null`.
   Future<String?> obtenerFirebaseIdToken() async {
+    if (esWeb) return _obtenerTokenConVentana();
+
     if (!configurado) {
       throw const AuthException(
         'Google no está configurado. Usa --dart-define=GOOGLE_CLIENT_ID=...',
@@ -71,17 +81,7 @@ class GoogleAuthService {
 
       final UserCredential userCredential = await _resolvedFirebaseAuth
           .signInWithCredential(credential);
-      final User? user = userCredential.user;
-      if (user == null) {
-        throw const AuthException('No se pudo autenticar en Firebase.');
-      }
-
-      final String? firebaseIdToken = await user.getIdToken();
-      if (firebaseIdToken == null || firebaseIdToken.isEmpty) {
-        throw const AuthException('Firebase no devolvió un token de sesión.');
-      }
-
-      return firebaseIdToken;
+      return await _tokenDe(userCredential.user);
     } on FirebaseAuthException catch (e) {
       throw AuthException('Error de Firebase: ${e.message ?? e.code}');
     } catch (e) {
@@ -90,14 +90,54 @@ class GoogleAuthService {
     }
   }
 
-  Future<void> cerrarSesion() async {
+  Future<String?> _obtenerTokenConVentana() async {
+    final GoogleAuthProvider proveedor = GoogleAuthProvider()
+      ..setCustomParameters(<String, String>{'prompt': 'select_account'});
+
     try {
-      if (googleSignIn != null) {
-        await googleSignIn!.signOut();
-      } else {
-        await _resolvedGoogleSignIn.signOut();
+      final UserCredential credencial = await _resolvedFirebaseAuth
+          .signInWithPopup(proveedor);
+      return await _tokenDe(credencial.user);
+    } on FirebaseAuthException catch (e) {
+      if (e.code == 'popup-closed-by-user' ||
+          e.code == 'cancelled-popup-request') {
+        return null;
       }
-    } catch (_) {}
+      if (e.code == 'popup-blocked') {
+        throw const AuthException(
+          'El navegador bloqueó la ventana de Google. Permite las ventanas emergentes.',
+        );
+      }
+      throw AuthException('Error de Firebase: ${e.message ?? e.code}');
+    } catch (e) {
+      if (e is AuthException) rethrow;
+      throw AuthException('Error al autenticar con Google: $e');
+    }
+  }
+
+  Future<String> _tokenDe(User? user) async {
+    if (user == null) {
+      throw const AuthException('No se pudo autenticar en Firebase.');
+    }
+
+    final String? firebaseIdToken = await user.getIdToken();
+    if (firebaseIdToken == null || firebaseIdToken.isEmpty) {
+      throw const AuthException('Firebase no devolvió un token de sesión.');
+    }
+
+    return firebaseIdToken;
+  }
+
+  Future<void> cerrarSesion() async {
+    if (!esWeb) {
+      try {
+        if (googleSignIn != null) {
+          await googleSignIn!.signOut();
+        } else {
+          await _resolvedGoogleSignIn.signOut();
+        }
+      } catch (_) {}
+    }
     try {
       if (firebaseAuth != null) {
         await firebaseAuth!.signOut();
