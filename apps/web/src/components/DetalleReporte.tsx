@@ -4,6 +4,7 @@ import type { EstadoReporte, ReporteMapa } from '../types/mapa';
 import * as api from '../lib/api';
 import { ETIQUETA_ESTADO, ETIQUETA_NECESIDAD, ETIQUETA_TIPO, fechaHoraLocal, tituloReporte } from '../lib/catalogos';
 import { Aviso, Boton, Cargando } from './ui/Basicos';
+import { EditarReporte } from './EditarReporte';
 import { InsigniaEstado, InsigniaGravedad, InsigniaOrigen } from './ui/Insignias';
 
 const BASE_API = (import.meta.env.PUBLIC_API_URL as string | undefined)?.replace(/\/+$/, '') ?? 'http://localhost:3000';
@@ -19,6 +20,7 @@ export function DetalleReporte({ id, puedeGestionar, alCerrar, alCambiar }: {
   const [error, setError] = useState<string | null>(null);
   const [nota, setNota] = useState('');
   const [guardando, setGuardando] = useState(false);
+  const [editando, setEditando] = useState(false);
   const cerrarRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
@@ -71,7 +73,19 @@ export function DetalleReporte({ id, puedeGestionar, alCerrar, alCambiar }: {
                 {r.origen && <InsigniaOrigen valor={r.origen} />}
               </div>
               <p className="pn-sub">{ETIQUETA_TIPO[r.tipo]}{r.sector ? ` · ${r.sector}` : ''} · {fechaHoraLocal(r.capturado_en)}</p>
-              <p>{r.descripcion}</p>
+              {editando ? (
+                <EditarReporte
+                  reporte={r}
+                  alCancelar={() => setEditando(false)}
+                  alGuardar={async (nuevo) => {
+                    alCambiar(nuevo);
+                    setEditando(false);
+                    setR(await api.obtenerReporte(r.id));
+                  }}
+                />
+              ) : (
+                <p>{r.descripcion}</p>
+              )}
               {r.foto_url && <img className="pn-foto" src={`${BASE_API}${r.foto_url}`} alt={`Foto del reporte: ${tituloReporte(r)}`} loading="lazy" />}
 
               <dl className="op-datos">
@@ -89,6 +103,7 @@ export function DetalleReporte({ id, puedeGestionar, alCerrar, alCambiar }: {
 
               {puedeGestionar && (
                 <div className="op-acciones">
+                  {!editando && <Boton variante="fantasma" tamano="sm" bloque onClick={() => setEditando(true)}>Editar reporte</Boton>}
                   <label className="er-campo">
                     <span className="er-etiqueta">Nota</span>
                     <input className="er-entrada" maxLength={500} value={nota} onChange={(e) => setNota(e.target.value)} />

@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Camera } from 'lucide-react';
 import type { EstadoReporte, Gravedad, ReporteMapa } from '../types/mapa';
 import * as api from '../lib/api';
-import { ETIQUETA_TIPO, compararPorFeed, fechaHoraLocal, haceTiempo, tituloReporte } from '../lib/catalogos';
+import { ETIQUETA_TIPO, coincideBusqueda, compararPorFeed, fechaHoraLocal, haceTiempo, tituloReporte } from '../lib/catalogos';
 import { Aviso, AvisoRespaldo, Cargando, EstadoVacio } from './ui/Basicos';
 import { DetalleReporte } from './DetalleReporte';
 import { InsigniaEstado, InsigniaGravedad, InsigniaOrigen } from './ui/Insignias';
@@ -22,6 +22,7 @@ export function TablaReportes({ modo = 'coe' }: { modo?: 'coe' | 'ciudadano' }) 
   const [estado, setEstado] = useState<EstadoReporte | ''>('');
   const [origen, setOrigen] = useState<FiltroOrigen>('todos');
   const [abierto, setAbierto] = useState<string | null>(null);
+  const [busqueda, setBusqueda] = useState('');
 
   const cargar = useCallback(() => {
     return api
@@ -58,8 +59,8 @@ export function TablaReportes({ modo = 'coe' }: { modo?: 'coe' | 'ciudadano' }) 
   }, [cargar, respaldo, modo]);
 
   const visibles = useMemo(
-    () => items?.filter((r) => origen === 'todos' || r.origen === origen).sort(compararPorFeed) ?? null,
-    [items, origen],
+    () => items?.filter((r) => (origen === 'todos' || r.origen === origen) && coincideBusqueda(r, busqueda)).sort(compararPorFeed) ?? null,
+    [items, origen, busqueda],
   );
 
   return (
@@ -68,6 +69,10 @@ export function TablaReportes({ modo = 'coe' }: { modo?: 'coe' | 'ciudadano' }) 
       {error && <Aviso tipo="peligro" titulo="Algo falló">{error}</Aviso>}
 
       <div className="pn-barra-filtros pn-barra-filtros--base">
+        <label className="er-campo">
+          <span className="er-etiqueta">Buscar</span>
+          <input className="er-entrada" type="search" value={busqueda} onChange={(e) => setBusqueda(e.target.value)} />
+        </label>
         {modo === 'coe' && (
           <div className="er-campo">
             <span className="er-etiqueta">Origen</span>

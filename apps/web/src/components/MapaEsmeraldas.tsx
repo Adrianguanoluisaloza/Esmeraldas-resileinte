@@ -47,7 +47,7 @@ const TESELAS = (import.meta.env.PUBLIC_MAP_TILE_URL as string | undefined) ?? '
 
 function iconoReporte(r: ReporteMapa, seleccionado: boolean): L.DivIcon {
   const tam = seleccionado ? 20 : 14;
-  const clases = ['mk-reporte', `mk-reporte--${r.gravedad}`, seleccionado && 'mk-reporte--sel', r.origen === 'simulado' && 'mk-reporte--sim']
+  const clases = ['mk-reporte', `mk-reporte--${r.gravedad}`, seleccionado && 'mk-reporte--sel', r.origen === 'simulado' && 'mk-reporte--sim', r.estado === 'en_proceso' && 'mk-reporte--proceso']
     .filter(Boolean)
     .join(' ');
   return L.divIcon({

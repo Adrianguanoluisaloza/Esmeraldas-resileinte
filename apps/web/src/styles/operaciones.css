@@ -105,3 +105,11 @@
 /* Etiqueta de vía afectada, centrada sobre su tramo. */
 .mk-via { position: absolute; transform: translate(-50%, -50%); padding: 2px 6px; border-radius: 4px; background: var(--mk-color); color: #ffffff; font-size: 10.5px; font-weight: 600; white-space: nowrap; box-shadow: 0 0 0 1.5px #ffffff; }
 .op-leyenda__parcial { width: 14px !important; height: 3px !important; border-radius: 2px !important; background: var(--er-warn); }
+
+/* Búsqueda y estado de atención. */
+.op-buscar { position: relative; flex: 1 1 170px; max-width: 260px; }
+.op-buscar svg { position: absolute; left: 9px; top: 50%; width: 14px; height: 14px; transform: translateY(-50%); color: var(--er-muted); pointer-events: none; }
+.op-buscar .er-entrada { min-height: 30px; padding: 3px 8px 3px 29px; font-size: 12.5px; }
+/* Despachado: anillo hueco, sigue visible hasta que se marque atendido. */
+.mk-reporte--proceso { background: #ffffff; box-shadow: inset 0 0 0 3px var(--mk-color), 0 1px 3px #00000059; }
+.op-leyenda__proceso { background: #ffffff; box-shadow: inset 0 0 0 2.5px var(--er-grav-alta); }

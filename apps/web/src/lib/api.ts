@@ -129,6 +129,10 @@ export function cambiarEstadoReporte(id: string, estado: EstadoReporte, nota?: s
   });
 }
 
+export function editarReporte(id: string, cambios: Partial<Pick<ReporteMapa, 'tipo' | 'gravedad' | 'descripcion'>>) {
+  return pedir<ReporteMapa>(`/reportes/${encodeURIComponent(id)}`, { method: 'PATCH', body: JSON.stringify(cambios) });
+}
+
 export function listarPuntos(tipo?: 'albergue' | 'centro_salud') {
   return conRespaldo(
     () => pedir<PuntoServicioMapa[]>(`/puntos-servicio${tipo ? `?tipo=${tipo}` : ''}`),

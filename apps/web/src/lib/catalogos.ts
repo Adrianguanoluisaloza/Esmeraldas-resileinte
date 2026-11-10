@@ -108,6 +108,13 @@ export function haceTiempo(iso: string): string {
   return minutos < 60 ? `Hace ${minutos} min` : `Hace ${Math.round(minutos / 60)} h`;
 }
 
+/** Búsqueda sin distinguir mayúsculas ni tildes, en título, descripción y sector. */
+export function coincideBusqueda(r: ReporteMapa, texto: string): boolean {
+  const limpiar = (s: string) => s.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase();
+  const q = limpiar(texto.trim());
+  return !q || limpiar([tituloReporte(r), r.descripcion, r.sector ?? '', ETIQUETA_TIPO[r.tipo]].join(' ')).includes(q);
+}
+
 const esReal = (r: Pick<ReporteMapa, 'origen'>) => (r.origen === 'simulado' ? 0 : 1);
 
 /** Reportes reales primero y, dentro de cada grupo, el más reciente. */
