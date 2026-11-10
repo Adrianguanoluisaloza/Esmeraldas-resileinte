@@ -263,3 +263,9 @@ Este documento registra decisiones, avances, bloqueos y pendientes importantes. 
 - **Decisión:** No se usa el túnel de otros proyectos de la VM. Se creó con la autorización oficial de Cloudflare porque el token disponible solo lee túneles.
 - **Validación:** `GET /salud`, login y WebSocket por la URL nueva. Latencia media 0,26 s, igual a la del túnel temporal.
 - **Pendientes:** Retirar `esmeraldas-tunel` cuando todos usen el APK nuevo.
+
+## 2026-11-10 — Logo y reglas del proyecto
+- **Área:** web | documentación
+- **Cambio:** Logo de escudo con río redibujado en vector para la web y el favicon. `AGENTS.md` actualizado con servidor, cuentas, roles y reglas de commits.
+- **Decisión:** Se redibuja el logo elegido porque los archivos traían fondo oscuro y brillo. Se quitan los detalles que se pierden en tamaño pequeño.
+- **Pendientes:** Ícono de la app Android y logo en sus pantallas. Agente de IA para `/reportes/{id}/clasificar`. Presentación.

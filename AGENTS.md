@@ -5,7 +5,7 @@
 1. Este archivo.
 2. `docs/orquestacion/README.md`: quién hace qué y cómo se toma una tarea.
 3. Tu carril: `docs/orquestacion/TAREAS_WEB.md`, `TAREAS_MOVIL_FRANCO.md` o `TAREAS_BACKEND.md`.
-4. Diseño: `docs/DISENO.md`. Despliegue: `docs/DESPLIEGUE.md`. Seguridad: `docs/SEGURIDAD.md`. Contrato: `contrato/openapi.yaml`.
+4. Diseño: `docs/DISENO.md`. Despliegue: `docs/DESPLIEGUE.md`. Seguridad: `docs/SEGURIDAD.md`. Contrato: `contrato/openapi.yaml`. Roles: `docs/ROLES.md`. Arquitectura y datos: `docs/ARQUITECTURA.md`, `docs/MODELO_DATOS.md`. Uso: `docs/MANUAL_USUARIO.md`.
 
 Reto oficial: https://educaysoft.org/Hackathon/reto.html (rúbrica: funcionalidad 25, innovación 15,
 arquitectura 15, mapas 15, IA 10, usabilidad 10, impacto 10). Escenario de prueba: "Jueves 06:00 AM".
@@ -21,6 +21,8 @@ arquitectura 15, mapas 15, IA 10, usabilidad 10, impacto 10). Escenario de prueb
 7. Sin secretos en el repo. Solo variables `PUBLIC_*` llegan al navegador.
 8. Diseño sólido y limpio: tokens `--er-*`, sin degradados ni hex sueltos (ver `docs/DISENO.md`).
 9. Registrar cada tarea grande en `CHANGELOG.md` y `bitacora.md`.
+10. Commits sin `Co-Authored-By` ni menciones a asistentes de IA.
+11. La web habla del producto, no del concurso. Las respuestas del reto quedan en `RESPUESTAS_RETO.md`, que no se sube.
 
 ## Objetivo
 
@@ -36,7 +38,9 @@ Construir una plataforma escalable con una aplicación móvil en Flutter y una p
 - **Infraestructura web:** Cloudflare Pages para el despliegue web; Cloudflare Workers solo para lógica de servidor o integraciones que lo necesiten.
 - **Backend:** Hono + TypeScript en Node 22 (`apps/api`), Clean Architecture, validación con zod, JWT, WebSocket. Soporta doble modo: PostgreSQL 16 + PostGIS para producción/Docker, y modo memoria (`ALMACEN=memoria`) para desarrollo y demos inmediatas.
 - **Base de datos:** PostgreSQL 16 + PostGIS (`database/`), con `docker-compose.yml` en la raíz.
-- **Servidor:** VM de Oracle Cloud con Docker; HTTPS con Cloudflare Tunnel. Detalle en `docs/DESPLIEGUE.md`.
+- **Servidor:** VM de Oracle Cloud (ARM) con Docker aislado del resto de proyectos de la VM; HTTPS con el túnel `esmeraldas-api` en `https://api-esmeraldas.cifralabapp.com`. Detalle en `docs/DESPLIEGUE.md`.
+- **Cuentas:** correo y contraseña viven en nuestra API y PostgreSQL. Firebase se usa solo para ingresar con Google. El correo de restablecer sale por SMTP.
+- **Roles:** ciudadano, ECU 911 (`operador_911`), Bomberos, Policía y administrador. La regla la aplica el servidor (`docs/ROLES.md`).
 - **Distribución de la aplicación:** automatizar builds firmadas para Android e iOS mediante CI/CD y publicar en Google Play y App Store Connect según los entornos configurados.
 
 ## Estructura esperada

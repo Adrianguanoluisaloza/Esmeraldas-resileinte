@@ -6,6 +6,10 @@ Todos los cambios relevantes del proyecto se registran aquí. Se sigue una estru
 
 ### Added
 
+- Logo nuevo de escudo con río en la web y el favicon.
+- URL fija de la API: `https://api-esmeraldas.cifralabapp.com`.
+- Documentación: arquitectura, modelo de datos con diagrama entidad-relación, manual de usuario y matriz de roles.
+- App móvil: roles de Bomberos y Policía con incidentes por competencia.
 - Roles de Bomberos y Policía: cada institución ve y atiende solo los reportes de su competencia.
 - Portada con mapa real y botón para descargar la app Android. Reportes del celular primero, con miniatura y actualización en vivo.
 - Registro de albergues por el COE, pantalla de usuarios y roles para el administrador, y correo con diseño para restablecer la contraseña.
