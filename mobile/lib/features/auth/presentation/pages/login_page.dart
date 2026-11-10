@@ -105,7 +105,10 @@ class _LoginPageState extends State<LoginPage> {
     return Scaffold(
       body: Stack(
         children: <Widget>[
-          const Positioned.fill(child: MapaFondoEsmeraldas()),
+          // Fondo vectorial: no descarga teselas detrás de la tarjeta, donde la atribución quedaría tapada.
+          const Positioned.fill(
+            child: MapaFondoEsmeraldas(tieneConexion: false),
+          ),
           SafeArea(
             child: ListView(
               padding: const EdgeInsets.all(18),

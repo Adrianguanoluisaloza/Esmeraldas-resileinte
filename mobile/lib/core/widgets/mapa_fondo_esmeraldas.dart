@@ -307,9 +307,7 @@ class MapaFondoEsmeraldas extends StatelessWidget {
               border: Border.all(color: AppTheme.colorBorde),
             ),
             child: Text(
-              (!tieneConexion && usarMbtilesLocal)
-                  ? 'MBTiles Offline Esmeraldas · ${AppConfig.osmAttribution}'
-                  : AppConfig.osmAttribution,
+              AppConfig.osmAttribution,
               style: const TextStyle(fontSize: 10, color: AppTheme.colorTexto),
             ),
           ),
