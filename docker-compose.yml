@@ -7,6 +7,9 @@ name: esmeraldas-resiliente
 services:
   db:
     container_name: esmeraldas-db
+    # Tope de recursos: la VM aloja otros proyectos y este no debe afectarlos.
+    cpus: "1.5"
+    mem_limit: 2g
     # Imagen propia: funciona en x86 y en la VM ARM de Oracle (ver database/Dockerfile).
     build: ./database
     image: esmeraldas-postgis:16-3
@@ -34,6 +37,8 @@ services:
 
   api:
     container_name: esmeraldas-api
+    cpus: "1.5"
+    mem_limit: 1g
     build: ./apps/api
     restart: unless-stopped
     networks:
