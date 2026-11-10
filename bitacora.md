@@ -301,3 +301,10 @@ Este documento registra decisiones, avances, bloqueos y pendientes importantes. 
 - **Cambio:** La portada muestra un video del panel real grabado en local con datos de prueba. Nueva página `/app` con capturas, funciones y pasos de instalación.
 - **Decisión:** De las capturas públicas se borró la ubicación real del celular y el botón flotante del sistema. No se usan imágenes de terceros.
 - **Validación:** Typecheck y build. Revisión de portada y `/app` en producción.
+
+## 2026-11-10
+- **Área:** producto
+- **Cambio:** Presentación de 5 minutos con guion de demostración y documentación técnica consolidada en `docs/DOCUMENTACION_TECNICA.md`.
+- **Decisión:** La IA, el envío por SMS o satélite y los convenios institucionales se presentan como siguiente etapa, no como hechos.
+- **Validación:** Rutas contrastadas con `contrato/openapi.yaml` y tablas con `database/01_schema_postgis.sql`. La presentación no se ensayó en la sala.
+- **Pendientes:** Después de la demostración: retirar el túnel antiguo y cambiar la contraseña de demostración. Franco sigue con la interfaz de la app.
