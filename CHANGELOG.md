@@ -6,6 +6,8 @@ Todos los cambios relevantes del proyecto se registran aquí. Se sigue una estru
 
 ### Added
 
+- Mapa con vías reales de OpenStreetMap y zonas de forma natural. Menú lateral plegable y portada renovada.
+- App móvil con logo nuevo y cumplimiento de la política de teselas de OpenStreetMap.
 - Logo nuevo de escudo con río en la web y el favicon.
 - URL fija de la API: `https://api-esmeraldas.cifralabapp.com`.
 - Documentación: arquitectura, modelo de datos con diagrama entidad-relación, manual de usuario y matriz de roles.
