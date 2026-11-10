@@ -120,16 +120,12 @@ class _LoginPageState extends State<LoginPage> {
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(color: AppTheme.colorBorde),
                   ),
-                  child: const Row(
+                  child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: <Widget>[
-                      Icon(
-                        Icons.shield,
-                        color: AppTheme.colorSemaforoRojo,
-                        size: 20,
-                      ),
-                      SizedBox(width: 6),
-                      Text(
+                      Image.asset('assets/logo.png', width: 20, height: 23),
+                      const SizedBox(width: 6),
+                      const Text(
                         'ESMERALDAS ',
                         style: TextStyle(
                           fontWeight: FontWeight.w800,
@@ -137,7 +133,7 @@ class _LoginPageState extends State<LoginPage> {
                           fontSize: 14,
                         ),
                       ),
-                      Text(
+                      const Text(
                         'RESILIENTE',
                         style: TextStyle(
                           fontWeight: FontWeight.w800,

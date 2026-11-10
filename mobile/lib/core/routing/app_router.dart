@@ -270,11 +270,7 @@ class _HomeShellPageState extends State<HomeShellPage> {
           title: Row(
             mainAxisSize: MainAxisSize.min,
             children: <Widget>[
-              const Icon(
-                Icons.shield,
-                color: AppTheme.colorSemaforoRojo,
-                size: 18,
-              ),
+              Image.asset('assets/logo.png', width: 18, height: 21),
               const SizedBox(width: 5),
               const Text('ESMERALDAS '),
               const Text(
