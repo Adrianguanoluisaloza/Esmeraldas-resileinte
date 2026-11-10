@@ -160,7 +160,7 @@ export function AlertasVigentes() {
             <InsigniaGravedad valor={a.nivel} />
             <div className="pn-alerta__texto">
               <strong>{a.sector}</strong>
-              <span>{a.mensaje.replace(/^Simulacro:\s*/i, '')}</span>
+              <span>{a.mensaje.replace(/^Simulacro:\s*(.)/i, (_, letra: string) => letra.toUpperCase())}</span>
             </div>
             <span className="pn-alerta__origen">{a.origen === 'oficial' ? 'Alerta oficial' : 'Simulacro'}</span>
           </li>
