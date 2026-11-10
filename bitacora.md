@@ -350,3 +350,10 @@ Este documento registra decisiones, avances, bloqueos y pendientes importantes. 
 - **Decisión:** Solo 911 se muestra con botón de llamada; 101, 102, el fijo de Bomberos y Cruz Roja no tienen fuente oficial confirmada y quedan "por confirmar" (regla 6). La sugerencia de IA no modifica el reporte y es solo para el personal. La clave de Gemini va solo en el `.env` del servidor.
 - **Validación:** API `npm run ci` con 61 pruebas en verde; Flutter `analyze` sin problemas y 24 pruebas en verde; web compila y pasa `tsc`. APK de `2f608a2` compilada por GitHub Actions y subida al release `app-movil` y al USB.
 - **Pendientes:** Poner `GEMINI_API_KEY` en el `.env` de Oracle y reconstruir la API. Publicar la web en producción. Confirmar los teléfonos de Bomberos, Policía y Cruz Roja. Nueva APK con estos cambios.
+
+## 2026-11-10
+- **Área:** infraestructura | producto
+- **Cambio:** API nueva desplegada en Oracle (respaldo previo `respaldo-esmeraldas-20261110-1531.tgz` en `/home/ubuntu`). `GEMINI_API_KEY` cargada en el `.env` del servidor (copia anterior en `.env.antes-gemini`). Web publicada en producción con el pin rojo y el botón de IA. APK `6f8cfc1` en el release `app-movil` y en el USB.
+- **Validación:** Prueba dentro del contenedor con un reporte de Isla Piedad: Gemini devolvió `personas_atrapadas`, gravedad `critica`, confianza 0.8 y una explicación en español. `/salud` responde 200.
+- **Corrección:** la web cortaba la IA a los 8 s (Gemini tardó 9,7 s); ahora `clasificarReporte` espera hasta 30 s. APK `6f8cfc1` enviada también a Firebase App Distribution por el workflow.
+- **Pendientes:** Confirmar teléfonos de Bomberos, Policía y Cruz Roja.

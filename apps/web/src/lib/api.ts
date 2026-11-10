@@ -53,14 +53,14 @@ export interface Resultado<T> {
   respaldo: boolean;
 }
 
-async function pedir<T>(ruta: string, init: RequestInit = {}): Promise<T> {
+async function pedir<T>(ruta: string, init: RequestInit = {}, tiempoMaxMs = TIEMPO_MAX_MS): Promise<T> {
   const headers = new Headers(init.headers);
   const token = obtenerTokenActual();
   if (token) headers.set('Authorization', `Bearer ${token}`);
   if (init.body && !(init.body instanceof FormData)) headers.set('Content-Type', 'application/json');
   let res: Response;
   try {
-    res = await fetch(`${BASE}${ruta}`, { ...init, headers, signal: AbortSignal.timeout(TIEMPO_MAX_MS) });
+    res = await fetch(`${BASE}${ruta}`, { ...init, headers, signal: AbortSignal.timeout(tiempoMaxMs) });
   } catch {
     throw new ErrorApi('SIN_CONEXION', MENSAJE_ERROR.SIN_CONEXION);
   }
@@ -207,7 +207,8 @@ export interface SugerenciaIA {
 }
 
 export function clasificarReporte(id: string) {
-  return pedir<SugerenciaIA>(`/reportes/${encodeURIComponent(id)}/clasificar`, { method: 'POST' });
+  // El modelo tarda entre 5 y 15 s (más con foto); la API corta a los 25 s.
+  return pedir<SugerenciaIA>(`/reportes/${encodeURIComponent(id)}/clasificar`, { method: 'POST' }, 30_000);
 }
 
 export function obtenerReporte(id: string) {
