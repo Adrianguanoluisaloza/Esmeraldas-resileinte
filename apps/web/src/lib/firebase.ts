@@ -2,18 +2,16 @@ import { initializeApp, getApps, type FirebaseApp } from "firebase/app";
 import { getAuth, GoogleAuthProvider } from "firebase/auth";
 
 /**
- * Config del proyecto Firebase: esmeralsrelesiente (644267053650).
+ * Config del proyecto Firebase (reemplazar con los valores de tu proyecto en Firebase Console).
  * Solo variables PUBLIC_* — nunca secretos aquí.
- * El apiKey de Firebase para web es público por diseño (Google lo documenta así);
- * la seguridad real está en las reglas de Firebase y en el backend que verifica el token.
  */
 const firebaseConfig = {
-  apiKey: "AIzaSyAciUc8fEt_QPj6inaZPR7Sfby60HBP-aQ",
-  authDomain: "esmeralsrelesiente.firebaseapp.com",
-  projectId: "esmeralsrelesiente",
-  storageBucket: "esmeralsrelesiente.firebasestorage.app",
-  messagingSenderId: "644267053650",
-  appId: "1:644267053650:android:71bc72c7671c740865c58b",
+  apiKey: "REEMPLAZAR_CON_FIREBASE_API_KEY",
+  authDomain: "tu-proyecto.firebaseapp.com",
+  projectId: "tu-proyecto",
+  storageBucket: "tu-proyecto.firebasestorage.app",
+  messagingSenderId: "000000000000",
+  appId: "1:000000000000:web:0000000000000000000000",
 };
 
 let app: FirebaseApp;

@@ -68,7 +68,7 @@ Al terminar, la API y la base seguían sanas, con 0 reinicios y sin falta de mem
 | Firebase Authentication | Ingreso con Google | USD 0 | 50 000 usuarios activos al mes en plan Spark |
 | Gmail SMTP | Correo de restablecer | USD 0 | Unos 500 correos al día en cuenta personal |
 | OpenStreetMap | Teselas del mapa | USD 0 | Uso justo, no es para tráfico masivo |
-| Dominio `cifralabapp.com` | Subdominio de la API | Sin dato | Compartido con otro proyecto. Revisar la factura |
+| Dominio `tu-dominio.com` | Subdominio de la API | Sin dato | Compartido con otro proyecto. Revisar la factura |
 
 **Total hoy: USD 0 a 26.98 al mes, más el dominio.**
 

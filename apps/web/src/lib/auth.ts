@@ -14,7 +14,7 @@ export interface RespuestaAuth {
 }
 
 // Cuentas de demostración. Deben coincidir con apps/api/src/demo.ts y con DEMO_PASSWORD del backend.
-// Son públicas a propósito (demo del hackathon); en producción se crean con otra clave.
+// Cuentas públicas de demostración; en producción se crean con otra clave.
 export const CLAVE_DEMO = 'demo-resiliente-2026';
 
 // Usuarios de demostración para el escenario de emergencias

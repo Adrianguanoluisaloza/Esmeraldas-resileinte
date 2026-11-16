@@ -3,8 +3,8 @@
 Plataforma de gestión de emergencias por el fenómeno El Niño en Esmeraldas: reportes ciudadanos con GPS y foto,
 mapa de riesgos, centro de operaciones (COE), albergues, asistencia humanitaria y priorización por sector.
 
-- Web: https://esmeraldas-resiliente.pages.dev
-- API: https://api-esmeraldas.cifralabapp.com
+- Web: https://tu-sitio.pages.dev
+- API: https://api.tu-dominio.com
 
 | Parte | Tecnología | Carpeta |
 |---|---|---|

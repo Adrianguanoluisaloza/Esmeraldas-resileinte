@@ -3,7 +3,7 @@ import type { Rol } from "./dominio/catalogos.js";
 import type { RepositorioUsuarios, ServicioClaves } from "./dominio/puertos.js";
 
 /**
- * Cuentas de la demo del hackathon. Mismos correos que apps/web/src/lib/auth.ts (USUARIOS_DEMO).
+ * Cuentas de demostración. Mismos correos que apps/web/src/lib/auth.ts (USUARIOS_DEMO).
  * La clave sale de DEMO_PASSWORD: nunca se guarda en el código del backend.
  */
 export const CUENTAS_DEMO: Array<{ nombre: string; correo: string; rol: Rol }> = [

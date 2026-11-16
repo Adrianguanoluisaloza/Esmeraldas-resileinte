@@ -25,7 +25,7 @@ Todos los cambios relevantes del proyecto se registran aquí. Se sigue una estru
 - Mapa con vías reales de OpenStreetMap y zonas de forma natural. Menú lateral plegable y portada renovada.
 - App móvil con logo nuevo y cumplimiento de la política de teselas de OpenStreetMap.
 - Logo nuevo de escudo con río en la web y el favicon.
-- URL fija de la API: `https://api-esmeraldas.cifralabapp.com`.
+- URL fija de la API: `https://api.tu-dominio.com`.
 - Documentación: arquitectura, modelo de datos con diagrama entidad-relación, manual de usuario y matriz de roles.
 - App móvil: roles de Bomberos y Policía con incidentes por competencia.
 - Roles de Bomberos y Policía: cada institución ve y atiende solo los reportes de su competencia.
@@ -33,13 +33,13 @@ Todos los cambios relevantes del proyecto se registran aquí. Se sigue una estru
 - Registro de albergues por el COE, pantalla de usuarios y roles para el administrador, y correo con diseño para restablecer la contraseña.
 - Restablecer contraseña con enlace de un solo uso en API y web (`/auth/recuperar`, `/auth/restablecer`, página `/restablecer`). Registro web con confirmación de contraseña.
 - API y PostGIS en Oracle Cloud con Docker aislado, imagen de base compatible con ARM (`database/Dockerfile`) y túnel propio.
-- Web publicada en producción en `esmeraldas-resiliente.pages.dev` y página `/legal` con licencias, atribución de OpenStreetMap y privacidad.
+- Web publicada en producción en `tu-sitio.pages.dev` y página `/legal` con licencias, atribución de OpenStreetMap y privacidad.
 - Firebase Auth integrado en backend, web y móvil: autenticación dual JWT propio + Firebase (Google Sign-In). El backend acepta ambos tokens; la web tiene botón "Ingresar con Google" con popup.
 - Nueva ruta `POST /auth/firebase` en el backend: intercambia idToken de Firebase por JWT propio; crea usuario local automáticamente si no existe.
 - `TokensFirebase` y `TokensDual` en la capa de infraestructura del backend (`apps/api`).
-- `apps/web/src/lib/firebase.ts` con config del proyecto Firebase `esmeralsrelesiente`.
+- `apps/web/src/lib/firebase.ts` con config del proyecto Firebase (`tu-proyecto`).
 - Función `loginFirebase` en `apps/web/src/lib/api.ts`.
-- Despliegue a Cloudflare Pages: nuevo proyecto `esmeraldas-resiliente.pages.dev` (URL corta, sin Workers).
+- Despliegue a Cloudflare Pages: nuevo proyecto `tu-sitio.pages.dev` (URL corta, sin Workers).
 - `wrangler.jsonc` migrado de Workers assets a Pages (`pages_build_output_dir`).
 - Corrección del nombre del proyecto Cloudflare: de `esmeral` a `esmeraldas-resiliente`.
 - `firebase-debug.log` y `.firebase/` agregados al `.gitignore`.
@@ -51,7 +51,7 @@ Todos los cambios relevantes del proyecto se registran aquí. Se sigue una estru
 - App móvil: el directorio avisa cuando el camino al albergue cruza una vía bloqueada (`paso_bloqueado` de PostGIS).
 - Documento `docs/arquitectura/estructura.md` reparado: árbol de carpetas real y entregables con rutas vigentes.
 - Ingreso con Google: ya no exige credenciales de administrador de Firebase y crea usuarios con UUID propio. Se quitan los reportes de prueba de la semilla.
-- Historial de git limpio: eliminadas todas las referencias a "Claude" como autor en las 7 ramas del repositorio. Rama `claude/peaceful-galileo-g66qx0` borrada de GitHub.
+- Historial de git limpiado y unificado por el equipo en las ramas activas del repositorio.
 
 - Inventario de agua, alimentos y medicinas: la entrega descuenta stock en la misma transacción y no permite entregar más de lo que hay.
 - Ruta de evacuación: los albergues cuyo camino cruza una vía bloqueada se marcan y van al final (PostGIS `ST_Intersects`).
@@ -97,7 +97,7 @@ Todos los cambios relevantes del proyecto se registran aquí. Se sigue una estru
 - Esqueleto de la aplicación Flutter en `mobile/` con Clean Architecture, cola offline en `hive_ce`, flujo de sincronización en dos pasos (`POST /reportes` y `POST /reportes/:id/foto`) y directorio de albergues con respaldo sin internet.
 - Integración de `TAREAS_MOVIL_FRANCO.md` (M1–M5) en `mobile/`: `DioApiClient` real con interceptor JWT y mapeo de `Failure`s, login/registro y botón de Google OAuth con PKCE, mapa de Esmeraldas (`FlutterMap`) de fondo con respaldo vectorial offline, navegación inferior por rol (ciudadano, operador 911 y administrador), paleta de `docs/DISENO.md` sin emojis y búsqueda de albergue más cercano.
 - Flujo de inicio ciudadano en 3 pasos sobre el mapa de Esmeraldas (`CrearReportePage`): mapa interactivo y seleccionable con botón lateral de ubicación GPS (`Geolocator`) y botón inferior de reporte, tarjeta de confirmación de coordenadas y formulario flotante.
-- Configuración de autenticación OAuth de Google desde `google-services.json` (`esmeralsrelesiente`) en `mobile/android/app/`, exclusión en `.gitignore` y compilación de `app-release.apk` con Android SDK 36 y OpenJDK 21.
+- Configuración de autenticación OAuth de Google desde `google-services.json` en `mobile/android/app/`, exclusión en `.gitignore` y compilación de `app-release.apk` con Android SDK 36 y OpenJDK 21.
 - Sincronización automática inmediata al crear reportes ciudadanos en `mobile/`, visualización de pines de incidentes interactivos en el mapa inicial (`MapaFondoEsmeraldas`) tanto online como en modo offline vectorial, e integración de la cola local de Hive con `OperacionesRepository`.
 - Flujo real de captura fotográfica y permisos nativos en `mobile/` (`PhotoCaptureService` con `image_picker`, `flutter_image_compress` y `path_provider`): selector de cámara o galería, manejo de permisos (`CAMERA`, `READ_MEDIA_IMAGES`, `NSCameraUsageDescription`), compresión a 1280 px (JPEG 75%) fuera de Hive y previsualización de miniatura con tamaño en KB.
 - Integración de tareas `M6`, `M10` y `M11` de `TAREAS_MOVIL_FRANCO.md` en `mobile/` con el backend oficial (`origin/backend`): envío de reportes de emergencia anónimos sin cabecera `Authorization` cuando no hay sesión activa, omisión del Paso 2 de foto cuando no existe archivo real (sin subir JPEG de relleno), manejo de `401` conservando la cola de Hive y visualización de alertas activas (`GET /alertas`) en `DirectorioAlberguesPage`.

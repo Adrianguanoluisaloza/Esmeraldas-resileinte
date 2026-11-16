@@ -7,11 +7,11 @@ class AppConfig {
 
   static const String _envApiBaseUrl = String.fromEnvironment(
     'API_BASE_URL',
-    defaultValue: 'https://api-esmeraldas.cifralabapp.com',
+    defaultValue: '',
   );
 
   /// URL base del backend configurada mediante `--dart-define=API_BASE_URL=...`.
-  /// Por defecto conecta al backend público en vivo del proyecto.
+  /// En desarrollo apunta al backend local si no se define otra URL.
   static String get apiBaseUrl {
     if (_envApiBaseUrl.isNotEmpty) return _envApiBaseUrl;
     return kIsWeb ? 'http://localhost:3000' : 'http://10.0.2.2:3000';
@@ -23,16 +23,16 @@ class AppConfig {
     defaultValue: false,
   );
 
-  /// OAuth de Google (cliente configurado en `google-services.json`, proyecto `esmeralsrelesiente`).
+  /// OAuth de Google (pasar mediante `--dart-define=GOOGLE_CLIENT_ID=...`).
   static const String googleClientId = String.fromEnvironment(
     'GOOGLE_CLIENT_ID',
-    defaultValue: '644267053650-hdva73c46tut51k2tjrgk23ul4n4r5ve.apps.googleusercontent.com',
+    defaultValue: 'reemplazar-client-id.apps.googleusercontent.com',
   );
 
   /// Esquema inverso del `client_id` de Google (`appAuthRedirectScheme` en `android/app/build.gradle.kts`).
   static const String googleRedirectUri = String.fromEnvironment(
     'GOOGLE_REDIRECT_URI',
-    defaultValue: 'com.googleusercontent.apps.644267053650-hdva73c46tut51k2tjrgk23ul4n4r5ve:/oauthredirect',
+    defaultValue: 'com.googleusercontent.apps.reemplazar-client-id:/oauthredirect',
   );
 
   /// Seguridad de sesión.

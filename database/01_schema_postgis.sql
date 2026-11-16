@@ -33,7 +33,7 @@ CREATE TABLE zonas_riesgo (
   nombre_sector VARCHAR(120) NOT NULL,
   tipo_amenaza  VARCHAR(20)  NOT NULL CHECK (tipo_amenaza IN ('inundacion', 'deslizamiento', 'desbordamiento')),
   nivel_riesgo  VARCHAR(10)  NOT NULL CHECK (nivel_riesgo IN ('bajo', 'medio', 'alto', 'critico')),
-  -- Quién respalda el dato: oficial (SNGR, GAD) o simulado para el escenario del hackathon.
+  -- Quién respalda el dato: oficial (SNGR, GAD) o simulado para el escenario de prueba.
   origen        VARCHAR(10)  NOT NULL DEFAULT 'simulado' CHECK (origen IN ('oficial', 'simulado')),
   fuente        TEXT,
   geom          GEOMETRY(Polygon, 4326) NOT NULL
@@ -147,7 +147,7 @@ CREATE TABLE inventario (
 
 -- Integridad extra --------------------------------------------------------------------------------
 ALTER TABLE reportes ADD CONSTRAINT reportes_vulnerables_coherentes
-  CHECK (ninos + adultos_mayores <= GREATEST(personas_afectadas, ninos + adultos_mayores));
+  CHECK (ninos + adultos_mayores <= personas_afectadas);
 ALTER TABLE reportes ADD CONSTRAINT reportes_coordenadas_esmeraldas
   CHECK (ST_Y(geom) BETWEEN -0.5 AND 1.6 AND ST_X(geom) BETWEEN -80.3 AND -78.4);
 

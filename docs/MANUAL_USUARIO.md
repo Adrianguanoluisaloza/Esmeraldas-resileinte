@@ -2,7 +2,7 @@
 
 Esmeraldas Resiliente no reemplaza al ECU 911. En una emergencia, llama al 911.
 
-Web: https://esmeraldas-resiliente.pages.dev
+Web: https://tu-sitio.pages.dev
 
 ## Entrar
 

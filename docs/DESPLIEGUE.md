@@ -62,7 +62,7 @@ Celular (emulador Android) contra la PC: `--dart-define=API_BASE_URL=http://10.0
    - Caddy o Nginx con certificado, delante del puerto 3000.
    - Túnel rápido sin dominio: `docker compose --profile tunel up -d tunel` y leer la URL con
      `docker logs esmeraldas-tunel`. Si el contenedor se reinicia, la URL cambia y hay que publicar la web de nuevo.
-   - Túnel con nombre (producción): `docker compose --profile tunel-fijo up -d --no-deps tunel-fijo`, con URL `https://api-esmeraldas.cifralabapp.com`.
+   - Túnel con nombre (producción): `docker compose --profile tunel-fijo up -d --no-deps tunel-fijo`, con URL `https://api.tu-dominio.com`.
 6. `CORS_ORIGENES` con la URL exacta de la web (la de Cloudflare Pages y el dominio propio).
 7. Copias de la base: `docker compose exec db pg_dump -U resiliente resiliente > respaldo.sql` (programarlo con cron).
 
@@ -83,7 +83,7 @@ En el `.env` de la API, `CORS_ORIGENES` debe incluir la URL exacta de la web pub
 (por ejemplo un túnel rápido nuevo), hay que volver a compilar y publicar la web. Un túnel con nombre fijo evita eso.
 Nunca publicar sin orden de Adrian. Primero a una rama de prueba.
 
-Producción: API en `https://api-esmeraldas.cifralabapp.com` y web en `https://esmeraldas-resiliente.pages.dev`.
+Producción: API en `https://api.tu-dominio.com` y web en `https://tu-sitio.pages.dev`.
 
 ## 4. Variables
 

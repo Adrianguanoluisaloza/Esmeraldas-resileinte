@@ -10,16 +10,16 @@ Franco, este archivo contiene todo listo para que hagas `git pull` en tu celular
 
 El backend ya está levantado y expuesto a través de un túnel seguro Cloudflare activo:
 
-- **URL Pública del Backend:** `https://seasonal-acceptable-crimes-remember.trycloudflare.com`
+- **URL Pública del Backend:** `https://tunel-ejemplo.trycloudflare.com`
 - **Comprobación rápida (navegador o terminal):**  
-  `https://seasonal-acceptable-crimes-remember.trycloudflare.com/salud`  
+  `https://tunel-ejemplo.trycloudflare.com/salud`  
   Responde: `{"estado":"ok", ...}`
 
 > [!NOTE]
 > `AppConfig.apiBaseUrl` ya viene configurado para apuntar automáticamente a este túnel si compilas en Android/iOS físico.
 > Si deseas forzar la URL explícitamente:
 > ```bash
-> flutter run --dart-define=API_BASE_URL=https://seasonal-acceptable-crimes-remember.trycloudflare.com
+> flutter run --dart-define=API_BASE_URL=https://tunel-ejemplo.trycloudflare.com
 > ```
 
 ---

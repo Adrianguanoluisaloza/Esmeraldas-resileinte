@@ -15,8 +15,8 @@ Este documento resume la solución y enlaza el detalle de cada parte.
 
 Producción:
 
-- Web: https://esmeraldas-resiliente.pages.dev
-- API: https://api-esmeraldas.cifralabapp.com
+- Web: https://tu-sitio.pages.dev
+- API: https://api.tu-dominio.com
 - App Android: https://github.com/Adrianguanoluisaloza/Esmeraldas-resileinte/releases/download/app-movil/esmeraldas-resiliente.apk
 
 Los datos de la semilla son simulados. La interfaz distingue siempre reporte ciudadano, dato simulado y alerta oficial. La plataforma no reemplaza al ECU 911.

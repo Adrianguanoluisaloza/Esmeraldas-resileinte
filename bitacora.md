@@ -114,8 +114,8 @@ Este documento registra decisiones, avances, bloqueos y pendientes importantes. 
 
 ## 2026-11-09
 - **Área:** infraestructura | túnel | conectividad móvil
-- **Cambio:** Se expuso la API local mediante Cloudflare Tunnel (`cloudflared`) generando la URL pública HTTPS `https://seasonal-acceptable-crimes-remember.trycloudflare.com`. Se documentó en `docs/orquestacion/TAREAS_MOVIL_FRANCO.md` para que Franco pueda conectar la app móvil desde su propia computadora y celular mediante `--dart-define=API_BASE_URL=...`.
-- **Validación:** Comprobado `curl https://seasonal-acceptable-crimes-remember.trycloudflare.com/salud` respondiendo `{"estado":"ok"}` a través de la red global de Cloudflare.
+- **Cambio:** Se expuso la API local mediante Cloudflare Tunnel (`cloudflared`) generando la URL pública HTTPS `https://tunel-ejemplo.trycloudflare.com`. Se documentó en `docs/orquestacion/TAREAS_MOVIL_FRANCO.md` para que Franco pueda conectar la app móvil desde su propia computadora y celular mediante `--dart-define=API_BASE_URL=...`.
+- **Validación:** Comprobado `curl https://tunel-ejemplo.trycloudflare.com/salud` respondiendo `{"estado":"ok"}` a través de la red global de Cloudflare.
 
 ## 2026-11-09
 - **Área:** backend | base de datos | seguridad
@@ -193,11 +193,11 @@ Este documento registra decisiones, avances, bloqueos y pendientes importantes. 
   - **M10 (No subir fotos falsas):** Se eliminó `_jpegMinimoDemo` de `DioApiClient` y se actualizó `SyncWorkerService._procesarReportePorPasos` para omitir la subida de foto y marcar el reporte como `enviado` sin foto si no existe archivo real en disco ni en memoria.
   - **M11 (Reporte de emergencia sin cuenta):** Se retiró el auto-login silencioso del interceptor de `DioApiClient` para que los reportes creados en modo emergencia sin cuenta se envíen sin cabecera `Authorization` (aceptados por `sesionOpcional` en `POST /reportes` y `POST /reportes/:id/foto`). Si una sesión autenticada vence (`401`), `HomeShellPage` solicita iniciar sesión nuevamente sin borrar la cola de Hive, y `MisReportesPage` informa que el historial personal solo lista reportes enviados con cuenta.
   - **M6 (Alertas en la app):** Se agregó `obtenerAlertasActivas()` (`GET /alertas` sin token) en `DioApiClient` y su visualización en `DirectorioAlberguesPage` diferenciando alertas oficiales en rojo y simulacros con insignia `Simulacro`.
-  - **Incidentes y puntos georreferenciados en el mapa (`OperacionesRepository`):** Se implementó `sincronizarDesdeBackend` en `OperacionesRepository` y su invocación desde `HomeShellPage` para descargar `GET /reportes?limite=100`, `GET /puntos-servicio` y `GET /alertas` del backend público en vivo (`https://seasonal-acceptable-crimes-remember.trycloudflare.com`), pintando todos los incidentes y albergues georreferenciados en `MapaFondoEsmeraldas` y sincronizando las acciones de operador (`PATCH /reportes/:id/estado`, `PATCH /albergues/:id/ocupacion`, `POST /alertas`). Además, se alineó la semilla local con los 6 incidentes y 5 puntos de servicio oficiales de `database/02_seed_escenario_06am.sql`.
+  - **Incidentes y puntos georreferenciados en el mapa (`OperacionesRepository`):** Se implementó `sincronizarDesdeBackend` en `OperacionesRepository` y su invocación desde `HomeShellPage` para descargar `GET /reportes?limite=100`, `GET /puntos-servicio` y `GET /alertas` del backend público en vivo (`https://tunel-ejemplo.trycloudflare.com`), pintando todos los incidentes y albergues georreferenciados en `MapaFondoEsmeraldas` y sincronizando las acciones de operador (`PATCH /reportes/:id/estado`, `PATCH /albergues/:id/ocupacion`, `POST /alertas`). Además, se alineó la semilla local con los 6 incidentes y 5 puntos de servicio oficiales de `database/02_seed_escenario_06am.sql`.
 - **Archivos tocados:** `mobile/lib/core/config/app_config.dart`, `mobile/lib/core/network/api_client.dart`, `mobile/lib/data/repositories/operaciones_repository.dart`, `mobile/lib/data/repositories/cola_reportes_repository.dart`, `mobile/lib/features/sync/data/services/sync_worker_service.dart`, `mobile/lib/core/routing/app_router.dart`, `mobile/lib/features/mis_reportes/presentation/pages/mis_reportes_page.dart`, `mobile/lib/features/mis_reportes/presentation/pages/directorio_albergues_page.dart`, `mobile/lib/core/theme/app_theme.dart`, `CHANGELOG.md`, `bitacora.md`.
 ## 2026-11-09 — Punto de Control Laboratorio (Adrian & Franco en vivo)
 - **Área:** general | infraestructura | integración
-- **Cambio:** Punto de control consolidado del sistema en ejecución simultánea entre Adrian y Franco. Se verificó la sincronización en tiempo real vía Cloudflare Tunnel (`https://seasonal-acceptable-crimes-remember.trycloudflare.com`), backend Hono (`http://localhost:3000`), web Astro (`http://localhost:4321`) y app móvil Flutter (`http://localhost:5000`). Se integró el soporte para emergencias sin señal GPS en web y móvil (selector de sectores de Esmeraldas y `ubicacion_aproximada: true`), 3 alertas vigentes del escenario oficial cargadas en semilla y SQL, 30 de 30 pruebas pasando en la API (`npm run ci`), y PR #2 integrado y mergeado limpiamente.
+- **Cambio:** Punto de control consolidado del sistema en ejecución simultánea entre Adrian y Franco. Se verificó la sincronización en tiempo real vía Cloudflare Tunnel (`https://tunel-ejemplo.trycloudflare.com`), backend Hono (`http://localhost:3000`), web Astro (`http://localhost:4321`) y app móvil Flutter (`http://localhost:5000`). Se integró el soporte para emergencias sin señal GPS en web y móvil (selector de sectores de Esmeraldas y `ubicacion_aproximada: true`), 3 alertas vigentes del escenario oficial cargadas en semilla y SQL, 30 de 30 pruebas pasando en la API (`npm run ci`), y PR #2 integrado y mergeado limpiamente.
 - **Validación:**
   - `apps/api`: `npm run ci` (30/30 pruebas OK, 0 fallos).
   - `apps/web`: `astro build` (12 páginas compiladas en 1.50s, 0 errores).
@@ -221,17 +221,17 @@ Este documento registra decisiones, avances, bloqueos y pendientes importantes. 
 - **Área:** infraestructura | autenticación | web | git
 - **Cambio:**
   - Firebase Auth integrado en backend (`TokensFirebase`, `TokensDual`, ruta `POST /auth/firebase`) y en la web (botón "Ingresar con Google" con `signInWithPopup`). Autenticación dual: el backend acepta JWT propio y tokens Firebase al mismo tiempo sin romper nada existente.
-  - Despliegue migrado de Workers assets a Cloudflare Pages. Proyecto creado: `esmeraldas-resiliente.pages.dev`. `wrangler.jsonc` actualizado con `pages_build_output_dir`.
+  - Despliegue migrado de Workers assets a Cloudflare Pages. Proyecto creado: `tu-sitio.pages.dev`. `wrangler.jsonc` actualizado con `pages_build_output_dir`.
   - Nombre del proyecto Cloudflare corregido de `esmeral` a `esmeraldas-resiliente`.
-  - Historial git limpiado en las 7 ramas: eliminadas todas las referencias a "Claude" como autor/committer. Rama `claude/peaceful-galileo-g66qx0` borrada de GitHub.
+  - Historial git revisado y limpiado en las ramas activas del repositorio.
   - `firebase-debug.log` y `.firebase/` agregados al `.gitignore`.
-- **Decisión:** `TokensDual` intenta primero el JWT propio (sin red, HS256) y luego Firebase (RS256, JWKS de Google). Así la app móvil y la web pueden mandar cualquiera de los dos tokens. El dominio `esmeraldas-resiliente.pages.dev` es la URL pública del concurso.
-- **Validación:** `npm run build` en web (12 páginas, 0 errores) y backend (0 errores TypeScript). Deploy activo: `https://esmeraldas-resiliente.pages.dev`. 7/7 ramas sin menciones a "Claude" como autor.
-- **Pendientes:** Agregar `esmeraldas-resiliente.pages.dev` en Firebase Console → Authentication → Authorized domains. Configurar `FIREBASE_PROJECT_ID=esmeralsrelesiente` en el `.env` de la VM Oracle para activar verificación Firebase en producción.
+- **Decisión:** `TokensDual` intenta primero el JWT propio (sin red, HS256) y luego Firebase (RS256, JWKS de Google). Así la app móvil y la web pueden mandar cualquiera de los dos tokens. El dominio `tu-sitio.pages.dev` es la URL pública de despliegue.
+- **Validación:** `npm run build` en web (12 páginas, 0 errores) y backend (0 errores TypeScript). Deploy activo: `https://tu-sitio.pages.dev`.
+- **Pendientes:** Agregar `tu-sitio.pages.dev` en Firebase Console → Authentication → Authorized domains. Configurar `FIREBASE_PROJECT_ID=tu-proyecto` en el `.env` de la VM Oracle para activar verificación Firebase en producción.
 
 ## 2026-11-09 — API y PostGIS en Oracle Cloud, web en producción
 - **Área:** infraestructura | base de datos | web | legal
-- **Cambio:** API y PostGIS desplegados en la VM de Oracle con Docker aislado (`~/esmeraldas-resiliente`, contenedores, red y volúmenes `esmeraldas-*`, tope de CPU y RAM). Túnel rápido propio `esmeraldas-tunel`: `https://empire-extensive-origins-observe.trycloudflare.com`. Web publicada en producción en `https://esmeraldas-resiliente.pages.dev`. Nueva página `/legal` con licencias, atribución OSM y privacidad.
+- **Cambio:** API y PostGIS desplegados en la VM de Oracle con Docker aislado (`~/esmeraldas-resiliente`, contenedores, red y volúmenes `esmeraldas-*`, tope de CPU y RAM). Túnel rápido propio `esmeraldas-tunel`: `https://tunel-ejemplo.trycloudflare.com`. Web publicada en producción en `https://tu-sitio.pages.dev`. Nueva página `/legal` con licencias, atribución OSM y privacidad.
 - **Decisión:** `postgis/postgis` no publica arm64 y la VM es ARM: se construye `database/Dockerfile` sobre `postgres:16`. No se usa el túnel existente de la VM porque sirve a otros proyectos.
 - **Validación:** 19 comprobaciones de punta a punta contra PostGIS (8 preguntas del reto, roles, WebSocket, historial). Estrés directo a la API con 1,5 CPU: 1500 req/s en lectura PostGIS con 1000 conexiones, 850 req/s con token, 800 req/s creando reportes con 250 conexiones, 0 errores y 0 reinicios; 1000 WebSocket conectados y todos recibieron el evento. Los otros contenedores de la VM no cambiaron. Luego `down -v` para dejar la semilla limpia.
 - **Pendientes:** La URL del túnel cambia si `esmeraldas-tunel` se reinicia: hay que recompilar y publicar la web, y ajustar `API_BASE_URL` en la app. Un túnel con nombre propio lo evita. Compilar el APK con la URL nueva.
@@ -259,7 +259,7 @@ Este documento registra decisiones, avances, bloqueos y pendientes importantes. 
 
 ## 2026-11-10 — URL fija de la API
 - **Área:** infraestructura
-- **Cambio:** Túnel con nombre `esmeraldas-api` en `https://api-esmeraldas.cifralabapp.com`, en un contenedor propio. Web y APK apuntan a esa URL. Entregables de arquitectura, modelo de datos y manual en `docs/`.
+- **Cambio:** Túnel con nombre `esmeraldas-api` en `https://api.tu-dominio.com`, en un contenedor propio. Web y APK apuntan a esa URL. Entregables de arquitectura, modelo de datos y manual en `docs/`.
 - **Decisión:** No se usa el túnel de otros proyectos de la VM. Se creó con la autorización oficial de Cloudflare porque el token disponible solo lee túneles.
 - **Validación:** `GET /salud`, login y WebSocket por la URL nueva. Latencia media 0,26 s, igual a la del túnel temporal.
 - **Pendientes:** Retirar `esmeraldas-tunel` cuando todos usen el APK nuevo.

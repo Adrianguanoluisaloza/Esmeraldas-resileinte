@@ -1,7 +1,6 @@
-# Organización del equipo
+# Cómo organizamos el equipo (Adrian y Franco)
 
-Cada integrante trabaja en su carril con tareas cortas y verificables. El contrato
-`contrato/openapi.yaml` es el punto de unión: nadie lo cambia sin acuerdo de los tres carriles.
+Nos dividimos el proyecto en tres carriles con tareas cortas para no pisarnos archivos. El contrato `contrato/openapi.yaml` es nuestro punto de unión: si hace falta un campo nuevo, primero se acuerda ahí.
 
 | Carril | Responsable | Rama | Tareas |
 |---|---|---|---|
@@ -9,18 +8,10 @@ Cada integrante trabaja en su carril con tareas cortas y verificables. El contra
 | Móvil (`mobile`) | Franco | `desarrollofranco` | `TAREAS_MOVIL_FRANCO.md` |
 | Backend (`apps/api`, `database`) | Adrian | `backend` | `TAREAS_BACKEND.md` |
 
-## Cómo se toma una tarea
+## Flujo de trabajo que seguimos
 
-1. Leer `AGENTS.md`, `docs/DISENO.md` y el archivo de tareas del carril.
-2. Hacer solo la tarea elegida y tocar solo los archivos que indica.
-3. Correr los comandos de verificación de la tarea antes de subir.
-4. Un commit pequeño por tarea, con mensaje claro.
-
-## Reglas
-
-1. Sin refactors de paso.
-2. Contrato primero: si falta un campo, se pide el cambio en `contrato/openapi.yaml`; no se inventa en el cliente.
-3. Nada de secretos en el repo. Nada inventado presentado como real (marcar "simulado").
-4. Cero emojis en la interfaz. Iconos: Lucide en web, `Icons` de Material en Flutter.
-5. Si la verificación falla, no se sube.
-6. Al terminar una tarea grande: una línea en `CHANGELOG.md` y una entrada en `bitacora.md`.
+1. Revisar `AGENTS.md`, `docs/DISENO.md` y la tarea del carril correspondiente.
+2. Trabajar solo los archivos de la tarea sin mezclar refactors ajenos.
+3. Si usamos IA como apoyo en alguna pieza, revisar el código generado, correr las pruebas y validar el contrato antes de subir.
+4. Correr las verificaciones del módulo (`npm run ci`, `npm run build`, `flutter test`).
+5. Anotar los avances importantes en `CHANGELOG.md` y `bitacora.md`.
