@@ -41,3 +41,9 @@ Todo con PostGIS: `cp .env.example .env`, completar las claves y `docker compose
 - `docs/ARQUITECTURA.md`, `docs/MODELO_DATOS.md`, `docs/ROLES.md`, `docs/MANUAL_USUARIO.md`.
 - `docs/DISENO.md`, `docs/DESPLIEGUE.md`, `docs/SEGURIDAD.md`, `docs/PROPUESTAS.md`.
 - `apps/api/README.md`: endpoints por módulo del reto.
+
+## Autores, licencia y apoyo
+
+- **Autores:** Adrian Guanoluisa Loza (`@Adrianguanoluisaloza`) y Franco (`@xGeo123`).
+- **Licencia:** [Apache License 2.0](LICENSE). Todo uso o redistribución debe conservar la atribución de autoría indicada en [NOTICE](NOTICE).
+- **Apoyo y donaciones:** Si el proyecto te resulta útil o deseas apoyar el mantenimiento de la infraestructura y nuevas mejoras para la comunidad, puedes contactar a los autores mediante GitHub o abrir un *Issue* en el repositorio. Para despliegues institucionales dedicados o soporte técnico, coordina directamente con el equipo autor.
