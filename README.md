@@ -46,4 +46,4 @@ Todo con PostGIS: `cp .env.example .env`, completar las claves y `docker compose
 
 - **Autores:** Adrian Guanoluisa Loza (`@Adrianguanoluisaloza`) y Franco (`@xGeo123`).
 - **Licencia:** [Apache License 2.0](LICENSE). Todo uso o redistribución debe conservar la atribución de autoría indicada en [NOTICE](NOTICE).
-- **Apoyo y donaciones:** Si el proyecto te resulta útil o deseas apoyar el mantenimiento de la infraestructura y nuevas mejoras para la comunidad, puedes contactar a los autores mediante GitHub o abrir un *Issue* en el repositorio. Para despliegues institucionales dedicados o soporte técnico, coordina directamente con el equipo autor.
+- **Apoyo y donaciones:** Si el proyecto te resulta útil o deseas apoyar el mantenimiento de la infraestructura y nuevas mejoras para la comunidad, puedes colaborar en [Ko-fi (cifralabapp)](https://ko-fi.com/cifralabapp) o abrir un *Issue* en el repositorio. Para despliegues institucionales dedicados o soporte técnico, coordina directamente con el equipo autor.
