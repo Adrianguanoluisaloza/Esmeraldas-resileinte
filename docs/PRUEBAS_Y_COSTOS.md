@@ -45,7 +45,9 @@ Al terminar, la API y la base seguían sanas, con 0 reinicios y sin falta de mem
 
 - Con 1000 conexiones simultáneas, el 99 % de las consultas respondió en menos de 0.9 segundos.
 - El rendimiento se mantiene casi plano al subir conexiones. Eso indica saturación cerca de 1500 solicitudes por segundo en lectura: más conexiones esperan más, pero no fallan.
-- Cálculo teórico: 799 reportes por segundo son unos 47 900 por minuto, sin fotos.
+- Cálculo teórico medido (con 1.5 CPU en API y 1.5 CPU en PostGIS): 799 reportes por segundo equivalen a unos **47 900 usuarios distintos enviando un reporte en el mismo minuto** (sin fotos), o cerca de **240 000 personas en una ventana de 5 minutos**.
+- Estimación dedicando los 4 OCPU y 24 GB de RAM de la VM (con varias instancias de la API y generador externo, ~1.5x a 1.7x): unos **2200 a 2500 req/s** en lectura y **1200 a 1350 req/s** en escritura (**~72 000 a 81 000 reportes/minuto** sin fotos).
+- Con fotos comprimidas (~200 KB), el límite real pasa a ser el ancho de banda del enlace (por ejemplo, a 100 Mbps entrarían unas **60 fotos/s**, es decir **~3600 reportes con foto por minuto**). Los **10 TB/mes** de transferencia de Oracle cubren millones de envíos al mes.
 - **No se encontró el punto de quiebre.** La prueba paró en 1000 conexiones de lectura y 250 de escritura.
 
 ### Lo que esta prueba no mide
