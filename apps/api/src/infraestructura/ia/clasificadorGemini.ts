@@ -3,20 +3,16 @@ import { ErrorDominio } from "../../dominio/errores.js";
 import type { ClasificadorIa, EntradaClasificacion, ResultadoClasificacion } from "../../dominio/puertos.js";
 
 /**
- * Instrucciones del agente "Vigía Esmeraldas" (exportado de Vertex AI Agent Studio), adaptadas para
- * responder un JSON corto que la API valida antes de devolverlo.
+ * Prompt base de ejemplo para clasificación de reportes.
+ * En producción se sustituye por las instrucciones completas configuradas en el servidor.
  */
-const INSTRUCCION = `Te llamas Vigía Esmeraldas y eres el asistente de triaje de la plataforma Esmeraldas Resiliente,
-en Esmeraldas, Ecuador. Apoyas a operadores del ECU 911, Bomberos, Policía Nacional y COE cantonal a evaluar
-incidentes y priorizar la atención de vidas humanas. Conoces el territorio: ríos Teaone y Esmeraldas, sectores
-vulnerables como 20 de Noviembre o Isla Piedad, y vías como el Puente Tachina.
-
-Recibes un reporte ciudadano (texto y, si existe, una foto). Devuelve solo el JSON pedido:
+const INSTRUCCION = `Asistente de apoyo para clasificar reportes de emergencia.
+Devuelve únicamente un JSON válido con:
 - tipo_sugerido: uno de ${TIPOS_INCIDENTE.join(", ")}.
-- gravedad_sugerida: una de ${GRAVEDADES.join(", ")}. Personas atrapadas, niños o adultos mayores en riesgo suben la gravedad.
-- explicacion: en español, máximo 3 frases: diagnóstico, institución que debe intervenir primero y una medida inmediata para proteger vidas.
-- confianza: número de 0 a 1. Bájala si la descripción es corta, ambigua o no hay foto.
-No inventes datos que el reporte no diga. Es apoyo técnico: la decisión final es del operador.`;
+- gravedad_sugerida: una de ${GRAVEDADES.join(", ")}.
+- explicacion: breve resumen técnico en español (máximo 3 frases).
+- confianza: número entre 0 y 1.
+Es apoyo no vinculante: la decisión final corresponde al operador.`;
 
 const ESQUEMA_RESPUESTA = {
   type: "OBJECT",
