@@ -203,7 +203,7 @@ Este documento registra decisiones, avances, bloqueos y pendientes importantes. 
   - `apps/web`: `astro build` (12 páginas compiladas en 1.50s, 0 errores).
   - `mobile`: `flutter build web` exitoso (`√ Built build\web`).
   - Túnel y salud: `GET /salud` y `GET /alertas` respondiendo HTTP 200 en local y túnel público.
-- **Pendientes:** Preparar la presentación y guion de demostración ante el jurado del Hackathon.
+- **Pendientes:** Preparar la presentación y guion de demostración para la demostración del sistema.
 
 ## 2026-11-09 — Persistencia de Datos de Prueba en Vivo (Final de Sesión)
 - **Área:** backend | base de datos | memoria

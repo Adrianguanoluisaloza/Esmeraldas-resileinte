@@ -34,7 +34,7 @@ Qué protege el sistema, cómo y qué falta. Se revisa antes de cada despliegue.
 - [ ] `CORS_ORIGENES` solo con los dominios https reales de la web.
 - [ ] `CONFIAR_EN_PROXY=true` solo si la API está detrás de Cloudflare Tunnel.
 - [ ] Puertos abiertos en Oracle: ninguno para 3000 ni 5432 (todo entra por el túnel).
-- [ ] Cambiar `DEMO_PASSWORD` o no crear cuentas demo fuera del hackathon.
+- [ ] Cambiar `DEMO_PASSWORD` o no crear cuentas demo en producción real.
 - [ ] `npm audit --omit=dev` en `apps/api` y `apps/web` sin vulnerabilidades altas.
 - [ ] Respaldo de la base programado (`pg_dump`) y probado restaurando en otra base.
 

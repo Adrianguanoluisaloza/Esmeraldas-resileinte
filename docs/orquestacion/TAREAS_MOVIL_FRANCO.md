@@ -31,7 +31,7 @@ Errores: siempre `{"codigo": "...", "mensaje": "..."}`. Para la cola:
 - `401 NO_AUTENTICADO` -> pedir login otra vez, no borrar la cola.
 - Sin respuesta, timeout o `5xx` -> reintentar con tu backoff (5, 15, 30, 60 s).
 
-Cuentas demo: `ciudadano@demo.esmeraldas-resiliente.ec`, clave `demo-resiliente-2026` (solo para el hackathon).
+Cuentas demo: `ciudadano@demo.esmeraldas-resiliente.ec`, clave `demo-resiliente-2026` (solo para demostración).
 
 ## M1. Implementar `DioApiClient` de verdad
 

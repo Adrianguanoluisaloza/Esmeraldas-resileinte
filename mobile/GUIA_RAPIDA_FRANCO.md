@@ -24,7 +24,7 @@ El backend ya está levantado y expuesto a través de un túnel seguro Cloudflar
 
 ---
 
-## 2. Credenciales de Demostración (Hackathon)
+## 2. Credenciales de Demostración (Demo)
 
 Todas las cuentas demo usan la misma contraseña:
 
@@ -60,7 +60,7 @@ Todas las cuentas demo usan la misma contraseña:
 
 ---
 
-## 4. Cómo probar el flujo estrella del Hackathon (Offline-First)
+## 4. Cómo probar el flujo estrella de la Demo (Offline-First)
 
 1. **Reporte sin señal:**
    - Abre la app y toca *"Emergencia sin internet: reportar ahora"* (o activa el chip **Offline / Modo Avión** arriba a la derecha).

@@ -148,4 +148,4 @@ esmeraldas-resiliente/
 - Datos oficiales y datos simulados deben verse diferenciados (rutas, zonas y alertas de prueba marcadas como simuladas).
 - La IA nunca se presenta como alerta oficial ni con porcentajes que no pueda medir; mostrar explicación en palabras y confianza, con aviso de que es apoyo a la decisión del operador.
 - Verificar nombres de lugares y datos de contacto antes de usarlos, aunque sea simulación. La sigla correcta de la universidad es UTLVTE.
-- Los mapas offline en el celular quedan como mejora futura (paquete de teselas propio); no entran en el hackathon.
+- Los mapas offline en el celular quedan como mejora futura (paquete de teselas propio); quedan fuera de esta versión.

@@ -12,7 +12,7 @@
 
 **Hive no dibuja mapas.** Solo guarda datos. PostGIS no corre en el celular ni en Hive.
 
-## 2. Decisión para el hackathon
+## 2. Decisión para el prototipo
 
 1. **La app del ciudadano no depende del mapa.** Al tomar el reporte muestra "Ubicación capturada ✓" con las coordenadas y la precisión en metros.
 2. **Offline, albergues y centros de salud se muestran como lista** (nombre, estado del cupo y botón de llamar), leída de Hive. Si se quiere el más cercano, se calcula en el celular con una fórmula de distancia entre dos coordenadas.
@@ -27,14 +27,14 @@ Se puede, con estas reglas:
 - **Solo con internet:** el mapa se muestra cuando hay conexión (por ejemplo en "Mis reportes" o en la lista de albergues). Sin conexión, la app cae a la lista y a la tarjeta de coordenadas, sin pantalla en blanco ni errores.
 - **Nunca debe bloquear el reporte:** crear un reporte no puede depender de que el mapa cargue.
 - **Paquete sugerido:** `flutter_map` con OpenStreetMap (verificar versión en pub.dev). Respetar la política de uso de los servidores públicos de OSM: sirve para una demo, no para tráfico nacional.
-- **No hacer mapa offline en el hackathon:** exige un paquete de teselas propio de Esmeraldas guardado en el teléfono. No suma puntos y puede romper la demo.
+- **No incluir paquete offline de teselas en esta versión:** exige un paquete de teselas propio de Esmeraldas guardado en el teléfono. No suma puntos y puede romper la demo.
 
 ## 4. Para uso real (mejora futura)
 
 - Paquete de mapa propio de la zona, servido desde nuestro servidor o desde un proveedor que lo permita, y guardado en el celular para uso offline.
 - Cambiar el almacenamiento local de Hive a SQLite, tocando solo una capa (la clase "repositorio de la cola"), sin cambiar las pantallas.
 
-## 5. Frases para el jurado
+## 5. Puntos clave de la arquitectura
 
 - "El GPS no necesita internet: la app guarda las coordenadas en el momento del reporte y las envía al volver la conexión."
 - "El reporte no depende del mapa. El mapa offline queda como mejora futura con un paquete de teselas propio de Esmeraldas."

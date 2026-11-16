@@ -91,7 +91,7 @@ Todas documentadas en `.env.example`. Reglas:
 
 - Solo las `PUBLIC_*` llegan al navegador. Nada secreto con ese prefijo.
 - `JWT_SECRET`, `POSTGRES_PASSWORD`, `DEMO_PASSWORD`: solo en el `.env` de la VM o en secretos de CI.
-- Cambiar `DEMO_PASSWORD` después del hackathon y borrar las cuentas demo si el sistema pasa a uso real.
+- Cambiar `DEMO_PASSWORD` después de la demostración y borrar las cuentas demo si el sistema pasa a uso real.
 
 ## 5. Antes de la demo (checklist)
 

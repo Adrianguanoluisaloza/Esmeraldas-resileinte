@@ -90,9 +90,9 @@ El reporte completo debe tomar menos de 15 segundos.
 - **Respaldo offline:** antes de mostrar el mapa, comprobar conexión real. Si no hay, mostrar la **lista** (nombre, cupo, botón de llamar, distancia calculada en el celular con la fórmula de distancia entre dos coordenadas) y un aviso claro: "Sin conexión: mostrando lista".
 - Si las teselas fallan a mitad de camino, mostrar el mismo respaldo y no un cuadro vacío.
 
-**No hacer en el hackathon:** mapa offline con paquete de teselas propio, ni descarga masiva de teselas de los servidores públicos de OpenStreetMap (su política lo prohíbe). Para uso real, se arma un paquete de mapa propio de Esmeraldas.
+**Fuera del alcance actual:** mapa offline con paquete de teselas propio, ni descarga masiva de teselas de los servidores públicos de OpenStreetMap (su política lo prohíbe). Para uso real, se arma un paquete de mapa propio de Esmeraldas.
 
-**Para la demo:** no poner el mapa en la pantalla donde se activa el modo avión, para que el jurado no vea un cuadro en blanco en el momento clave.
+**Para la demo:** no poner el mapa en la pantalla donde se activa el modo avión, para que no se vea un cuadro en blanco en el momento clave.
 
 ## 8. Permisos (Android)
 
