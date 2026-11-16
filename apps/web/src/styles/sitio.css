@@ -19,6 +19,11 @@
 .st-bajada { margin-top: var(--er-s5); max-width: 42ch; font-size: 17px; line-height: 1.55; color: var(--er-text-2); text-wrap: pretty; }
 .st-acciones { display: flex; flex-wrap: wrap; gap: var(--er-s3); margin-top: var(--er-s6); }
 .st-nota { margin-top: var(--er-s4); font-size: var(--er-fs-sm); color: var(--er-muted); }
+/* QR de descarga: el SVG trae su propio fondo blanco para que se lea también en modo oscuro. */
+.st-qr { display: flex; align-items: center; gap: var(--er-s4); margin-top: var(--er-s6); }
+.st-qr img { width: 168px; height: 168px; border: 1px solid var(--er-border); border-radius: var(--er-r-md); }
+.st-qr figcaption { display: grid; gap: 4px; max-width: 22ch; font-size: var(--er-fs-sm); color: var(--er-muted); }
+.st-qr figcaption strong { color: var(--er-text); font-size: var(--er-fs-md); }
 
 .st-video { display: block; width: 100%; aspect-ratio: 16 / 9; object-fit: cover; border: 1px solid var(--er-border-strong); border-radius: var(--er-r-lg); background: var(--er-surface-2); animation: er-aparecer .42s var(--er-salida) 80ms backwards; }
 
