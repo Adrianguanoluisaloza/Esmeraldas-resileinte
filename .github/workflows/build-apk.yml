@@ -1,13 +1,6 @@
 name: Compilar APK y Distribuir
 
 on:
-  push:
-    branches:
-      - main
-      - desarrollofranco
-    paths:
-      - 'mobile/**'
-      - '.github/workflows/build-apk.yml'
   workflow_dispatch:
 
 jobs:
